@@ -18,4 +18,31 @@ public class ExampleTest {
         var result = TestUtils.parse(SpecsIo.getResource("fixtures/public/input.jmm"));
         TestUtils.noErrors(result.getReports());
     }
+    //custom test
+    @Test
+    public void testPrecedence1() {
+        var parserResult = TestUtils.parse("2+2*3");
+        TestUtils.noErrors(parserResult.getReports());
+    }
+    @Test
+    public void testPrecedence2() {
+        var parserResult = TestUtils.parse("2*2+3");
+        TestUtils.noErrors(parserResult.getReports());
+    }
+    @Test
+    public void testWhile() {
+        var parserResult = TestUtils.parse("while(true) this;");
+        TestUtils.noErrors(parserResult.getReports());
+    }
+
+    @Test
+    public void testType() {
+        var parserResult = TestUtils.parse("true");
+        TestUtils.noErrors(parserResult.getReports());
+    }
+    @Test
+    public void testExpression() {
+        var parserResult = TestUtils.parse("true;");
+        TestUtils.noErrors(parserResult.getReports());
+    }
 }

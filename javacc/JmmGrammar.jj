@@ -14,6 +14,8 @@ TOKEN :
 	< INTEGER : (["0" - "9"])+ >
 ;
 
+
+
 Start : AdditiveExpression <EOF> ;
 
 AdditiveExpression :
@@ -36,4 +38,61 @@ Factor :
 	< INTEGER > |
 	< MINUS> Factor |
 	< OPEN_PAREN > AdditiveExpression < CLOSE_PAREN >
+;
+
+
+
+Program : ImportDeclaration ClassDeclaration <EOF> ;
+
+ImportDeclaration:
+    (
+        "import" IDENTIFIER ( "." IDENTIFIER )* ";"
+    )*
+;
+
+ClassDeclaration:
+    "class" IDENTIFIER
+    (
+        "extends" IDENTIFIER
+    )?
+    "{" ( VarDeclaration )* ( MethodDeclaration )*
+    "}"
+;
+
+VarDeclaration:
+    Type IDENTIFIER ";"
+;
+
+MethodDeclaration:
+    "public" Type IDENTIFIER "("
+    (Type IDENTIFIER ( "," Type IDENTIFIER )* )?
+    ")"
+    "{" ( VarDeclaration )* ( Statement )* "return" Expression ";" "}" |
+    "public" "static" "void" "main" "(" "String" "[" "]" IDENTIFIER ")" "{" ( VarDeclaration )* ( Statement )* "}"
+;
+
+Type:
+    "int" "[" "]" |
+    "boolean" |
+    "int" |
+    IDENTIFIER
+;
+
+Statement:
+    "{" ( Statement )* "}" |
+    "if" "(" Expression ")" Statement "else" Statement |
+    "while" "(" Expression ")" Statement |
+    Expression ";" |
+    IDENTIFIER "=" Expression ";" |
+    IDENTIFIER "[" Expression "]" "=" Expression ";"
+;
+
+Expression:
+    "true" |
+    "false" |
+    "this"
+;
+
+IDENTIFIER:
+    "string"
 ;
