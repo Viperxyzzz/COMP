@@ -11,12 +11,15 @@ TOKEN :
 	< DIVIDE : "/" > |
 	< OPEN_PAREN : "(" > |
 	< CLOSE_PAREN : ")" > |
-	< INTEGER : (["0" - "9"])+ >
+	< CLASS : "class" > |
+	< INT_ARR : "int[]" > |
+	< INT : "int" > |
+	< INTEGER : (["0" - "9"])+ > |
+    < IDENTIFIER: (["a" - "z"])+ >
 ;
 
 
-
-Start : AdditiveExpression <EOF> ;
+Start : ImportDeclaration ClassDeclaration <EOF>;
 
 AdditiveExpression :
 	MultiplicativeExpression
@@ -41,41 +44,38 @@ Factor :
 ;
 
 
-
-Program : ImportDeclaration ClassDeclaration <EOF> ;
-
 ImportDeclaration:
     (
-        "import" IDENTIFIER ( "." IDENTIFIER )* ";"
+        "import" < IDENTIFIER > ( "." < IDENTIFIER > )* ";"
     )*
 ;
 
 ClassDeclaration:
-    "class" IDENTIFIER
+    < CLASS > < IDENTIFIER >
     (
-        "extends" IDENTIFIER
+        "extends" < IDENTIFIER >
     )?
     "{" ( VarDeclaration )* ( MethodDeclaration )*
     "}"
 ;
 
 VarDeclaration:
-    Type IDENTIFIER ";"
+    Type < IDENTIFIER > ";"
 ;
 
 MethodDeclaration:
-    "public" Type IDENTIFIER "("
-    (Type IDENTIFIER ( "," Type IDENTIFIER )* )?
+    "public" Type < IDENTIFIER > "("
+    (Type < IDENTIFIER > ( "," Type < IDENTIFIER > )* )?
     ")"
     "{" ( VarDeclaration )* ( Statement )* "return" Expression ";" "}" |
-    "public" "static" "void" "main" "(" "String" "[" "]" IDENTIFIER ")" "{" ( VarDeclaration )* ( Statement )* "}"
+    "public" "static" "void" "main" "(" "String" "[" "]" < IDENTIFIER > ")" "{" ( VarDeclaration )* ( Statement )* "}"
 ;
 
 Type:
-    "int" "[" "]" |
+    <INT_ARR> |
     "boolean" |
     "int" |
-    IDENTIFIER
+    < IDENTIFIER >
 ;
 
 Statement:
@@ -83,16 +83,17 @@ Statement:
     "if" "(" Expression ")" Statement "else" Statement |
     "while" "(" Expression ")" Statement |
     Expression ";" |
-    IDENTIFIER "=" Expression ";" |
-    IDENTIFIER "[" Expression "]" "=" Expression ";"
+    < IDENTIFIER > "=" Expression ";" |
+    < IDENTIFIER > "[" Expression "]" "=" Expression ";"
 ;
 
 Expression:
     "true" |
     "false" |
-    "this"
-;
-
-IDENTIFIER:
-    "string"
+    < IDENTIFIER > |
+    "this" |
+    "new" "int" "[" Expression "]" |
+    "new" < IDENTIFIER > "(" ")" |
+    "!" Expression |
+    "(" Expression ")"
 ;

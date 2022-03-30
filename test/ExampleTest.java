@@ -37,12 +37,12 @@ public class ExampleTest {
 
     @Test
     public void testType() {
-        var parserResult = TestUtils.parse("true");
+        var parserResult = TestUtils.parse("int", "Type");
         TestUtils.noErrors(parserResult.getReports());
     }
     @Test
     public void testExpression() {
-        var parserResult = TestUtils.parse("true;");
+        var parserResult = TestUtils.parse("class ola {}");
         TestUtils.noErrors(parserResult.getReports());
     }
 }
