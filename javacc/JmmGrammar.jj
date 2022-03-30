@@ -11,11 +11,27 @@ TOKEN :
 	< DIVIDE : "/" > |
 	< OPEN_PAREN : "(" > |
 	< CLOSE_PAREN : ")" > |
+	< IMPORT : "import" > |
 	< CLASS : "class" > |
+	< EXTENDS : "extends" > |
+	< RETURN : "return" > |
+	< PUBLIC : "public" > |
+	< STATIC : "static" > |
+	< VOID : "void" > |
+	< MAIN : "main" > |
+	< IF : "if" > |
+	< ELSE : "else" > |
+	< WHILE : "while" > |
+	< STRING : "string" > |
+	< BOOLEAN : "boolean" > |
 	< INT_ARR : "int[]" > |
 	< INT : "int" > |
+	< TRUE : "true" > |
+	< FALSE : "false" > |
+	< THIS : "this" > |
+	< NEW : "new" > |
 	< INTEGER : (["0" - "9"])+ > |
-    < IDENTIFIER: (["a" - "z"])+ >
+    < IDENTIFIER: ((["a" - "z"] | ["A" - "Z"] | "$" | "_") (["a" - "z"] | ["A" - "Z"] | "$" | "_" | ["0" - "9"])*) >
 ;
 
 
@@ -46,14 +62,14 @@ Factor :
 
 ImportDeclaration:
     (
-        "import" < IDENTIFIER > ( "." < IDENTIFIER > )* ";"
+        < IMPORT > < IDENTIFIER > ( "." < IDENTIFIER > )* ";"
     )*
 ;
 
 ClassDeclaration:
     < CLASS > < IDENTIFIER >
     (
-        "extends" < IDENTIFIER >
+        < EXTENDS > < IDENTIFIER >
     )?
     "{" ( VarDeclaration )* ( MethodDeclaration )*
     "}"
@@ -64,36 +80,36 @@ VarDeclaration:
 ;
 
 MethodDeclaration:
-    "public" Type < IDENTIFIER > "("
+    < PUBLIC > Type < IDENTIFIER > OPEN_PAREN
     (Type < IDENTIFIER > ( "," Type < IDENTIFIER > )* )?
-    ")"
-    "{" ( VarDeclaration )* ( Statement )* "return" Expression ";" "}" |
-    "public" "static" "void" "main" "(" "String" "[" "]" < IDENTIFIER > ")" "{" ( VarDeclaration )* ( Statement )* "}"
+    CLOSE_PAREN
+    "{" ( VarDeclaration )* ( Statement )* < RETURN > Expression ";" "}" |
+    < PUBLIC > < STATIC > < VOID > < MAIN > OPEN_PAREN < STRING > "[" "]" < IDENTIFIER > CLOSE_PAREN "{" ( VarDeclaration )* ( Statement )* "}"
 ;
 
 Type:
-    <INT_ARR> |
-    "boolean" |
-    "int" |
+    < INT_ARR > |
+    < BOOLEAN > |
+    < INT > |
     < IDENTIFIER >
 ;
 
 Statement:
     "{" ( Statement )* "}" |
-    "if" "(" Expression ")" Statement "else" Statement |
-    "while" "(" Expression ")" Statement |
+    < IF > OPEN_PAREN Expression CLOSE_PAREN Statement < ELSE > Statement |
+    < WHILE > OPEN_PAREN Expression CLOSE_PAREN Statement |
     Expression ";" |
     < IDENTIFIER > "=" Expression ";" |
     < IDENTIFIER > "[" Expression "]" "=" Expression ";"
 ;
 
 Expression:
-    "true" |
-    "false" |
+    < TRUE > |
+    < FALSE > |
     < IDENTIFIER > |
-    "this" |
-    "new" "int" "[" Expression "]" |
-    "new" < IDENTIFIER > "(" ")" |
+    < THIS > |
+    < NEW > < INT > "[" Expression "]" |
+    < NEW > < IDENTIFIER > OPEN_PAREN CLOSE_PAREN |
     "!" Expression |
-    "(" Expression ")"
+    OPEN_PAREN Expression CLOSE_PAREN
 ;
