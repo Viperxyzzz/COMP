@@ -85,20 +85,21 @@ MethodDeclaration:
 
 Pti:
     < PUBLIC > Type < IDENTIFIER > < OPEN_PAREN > (Type < IDENTIFIER > ( "," Type < IDENTIFIER > )* )? < CLOSE_PAREN > "{"
-    ( VarDeclaration )* ( Statement )* < RETURN > Expression ";"
+    (SCAN 2 VarDeclaration )* ( Statement )* < RETURN > Expression ";"
     "}"
 ;
 
 Psvm:
     < PUBLIC > < STATIC > < VOID > < MAIN > < OPEN_PAREN > < STRING > "[" "]" < IDENTIFIER > < CLOSE_PAREN > "{"
-    ( VarDeclaration )* ( Statement )*
+    (SCAN 2 VarDeclaration )* ( Statement )*
     "}"
 ;
 
 Type:
     < INT_ARR > |
     < BOOLEAN > |
-    < INT >
+    < INT > |
+    < IDENTIFIER >
 ;
 
 Statement:
@@ -119,8 +120,7 @@ Expression:
     < FALSE > |
     < IDENTIFIER > |
     < THIS > |
-    < NEW > < INT > "[" Expression "]" |
-    < NEW > < IDENTIFIER > < OPEN_PAREN > < CLOSE_PAREN > |
+    < NEW > (< INT > "[" Expression "]" | < IDENTIFIER > < OPEN_PAREN > < CLOSE_PAREN >) |
     "!" Expression |
     < OPEN_PAREN > Expression < CLOSE_PAREN >
 ;

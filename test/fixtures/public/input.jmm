@@ -1,10 +1,16 @@
 import a1;
 import a2;
 class c1 extends otherclass {
-    public static void main (String [] s1) {
+    public int f (int[] a1, int a2) {
        int a;
+       a a;
        a;
        a[new int [true]] = b;
        a = b;
+       new int [true];
+       new int [this];
+       new a ();
+       while (true) true;
+       return true;
     }
 }
