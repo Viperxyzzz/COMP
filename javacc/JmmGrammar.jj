@@ -22,7 +22,7 @@ TOKEN :
 	< IF : "if" > |
 	< ELSE : "else" > |
 	< WHILE : "while" > |
-	< STRING : "string" > |
+	< STRING : "String" > |
 	< BOOLEAN : "boolean" > |
 	< INT_ARR : "int[]" > |
 	< INT : "int" > |
@@ -80,27 +80,38 @@ VarDeclaration:
 ;
 
 MethodDeclaration:
-    < PUBLIC > Type < IDENTIFIER > OPEN_PAREN
-    (Type < IDENTIFIER > ( "," Type < IDENTIFIER > )* )?
-    CLOSE_PAREN
-    "{" ( VarDeclaration )* ( Statement )* < RETURN > Expression ";" "}" |
-    < PUBLIC > < STATIC > < VOID > < MAIN > OPEN_PAREN < STRING > "[" "]" < IDENTIFIER > CLOSE_PAREN "{" ( VarDeclaration )* ( Statement )* "}"
+    (SCAN 2 Pti | Psvm)
+;
+
+Pti:
+    < PUBLIC > Type < IDENTIFIER > < OPEN_PAREN > (Type < IDENTIFIER > ( "," Type < IDENTIFIER > )* )? < CLOSE_PAREN > "{"
+    ( VarDeclaration )* ( Statement )* < RETURN > Expression ";"
+    "}"
+;
+
+Psvm:
+    < PUBLIC > < STATIC > < VOID > < MAIN > < OPEN_PAREN > < STRING > "[" "]" < IDENTIFIER > < CLOSE_PAREN > "{"
+    ( VarDeclaration )* ( Statement )*
+    "}"
 ;
 
 Type:
     < INT_ARR > |
     < BOOLEAN > |
-    < INT > |
-    < IDENTIFIER >
+    < INT >
 ;
 
 Statement:
     "{" ( Statement )* "}" |
-    < IF > OPEN_PAREN Expression CLOSE_PAREN Statement < ELSE > Statement |
-    < WHILE > OPEN_PAREN Expression CLOSE_PAREN Statement |
-    Expression ";" |
-    < IDENTIFIER > "=" Expression ";" |
-    < IDENTIFIER > "[" Expression "]" "=" Expression ";"
+    < IF > < OPEN_PAREN > Expression < CLOSE_PAREN > Statement < ELSE > Statement |
+    < WHILE > < OPEN_PAREN > Expression < CLOSE_PAREN > Statement |
+    (SCAN 2 Expression ";" | Assignment)
+;
+
+Assignment:
+    < IDENTIFIER >
+    ("=" | "[" Expression "]" "=")
+    Expression ";"
 ;
 
 Expression:
@@ -109,7 +120,7 @@ Expression:
     < IDENTIFIER > |
     < THIS > |
     < NEW > < INT > "[" Expression "]" |
-    < NEW > < IDENTIFIER > OPEN_PAREN CLOSE_PAREN |
+    < NEW > < IDENTIFIER > < OPEN_PAREN > < CLOSE_PAREN > |
     "!" Expression |
-    OPEN_PAREN Expression CLOSE_PAREN
+    < OPEN_PAREN > Expression < CLOSE_PAREN >
 ;

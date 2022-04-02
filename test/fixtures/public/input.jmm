@@ -1,5 +1,10 @@
-class 9 {
-    bool true99;
-    bool var1
-    var1 = true99;
+import a1;
+import a2;
+class c1 extends otherclass {
+    public static void main (String [] s1) {
+       int a;
+       a;
+       a[new int [true]] = b;
+       a = b;
+    }
 }
