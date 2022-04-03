@@ -116,6 +116,17 @@ Assignment:
 ;
 
 Expression:
+    ExpressionFirst (
+        ("&&" | < PLUS > | < MINUS > | < TIMES > | < DIVIDE > ) Expression |
+        "[" Expression "]" |
+        "." "length" |
+        "." < IDENTIFIER > "(" ( Expression ( "," Expression )* )? ")"
+    )*
+;
+
+
+ExpressionFirst:
+    < INTEGER > |
     < TRUE > |
     < FALSE > |
     < IDENTIFIER > |
