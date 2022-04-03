@@ -3,9 +3,10 @@ import a2;
 class c1 extends otherclass {
     public int f (int[] a1, int a2) {
        int a;
+       9.length;
+       9.a(a);
        a [9];
-       9 [a];
-       a = b;
+       a = true;
        true;
        a = b;
        new int [true];

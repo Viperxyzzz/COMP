@@ -22,6 +22,7 @@ TOKEN :
 	< IF : "if" > |
 	< ELSE : "else" > |
 	< WHILE : "while" > |
+	< LENGTH : "length" > |
 	< STRING : "String" > |
 	< BOOLEAN : "boolean" > |
 	< INT_ARR : "int[]" > |
@@ -119,8 +120,7 @@ Expression:
     ExpressionFirst (
         ("&&" | < PLUS > | < MINUS > | < TIMES > | < DIVIDE > ) Expression |
         "[" Expression "]" |
-        "." "length" |
-        "." < IDENTIFIER > "(" ( Expression ( "," Expression )* )? ")"
+        "." ( < LENGTH > | < IDENTIFIER > "(" ( Expression ( "," Expression )* )? ")" )
     )*
 ;
 
