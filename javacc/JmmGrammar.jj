@@ -23,6 +23,7 @@ TOKEN :
 	< ELSE : "else" > |
 	< WHILE : "while" > |
 	< LENGTH : "length" > |
+	< EQUAL : "=" > |
 	< STRING : "String" > |
 	< BOOLEAN : "boolean" > |
 	< INT_ARR : "int[]" > |
@@ -72,11 +73,11 @@ ClassDeclaration:
     (
         < EXTENDS > < IDENTIFIER >
     )?
-    "{" ( VarDeclaration )* ( MethodDeclaration )*
+    "{" ( VarDecl )* ( MethodDeclaration )*
     "}"
 ;
 
-VarDeclaration:
+VarDecl:
     Type < IDENTIFIER > ";"
 ;
 
@@ -86,13 +87,13 @@ MethodDeclaration:
 
 Pti:
     < PUBLIC > Type < IDENTIFIER > < OPEN_PAREN > (Type < IDENTIFIER > ( "," Type < IDENTIFIER > )* )? < CLOSE_PAREN > "{"
-    (SCAN 2 VarDeclaration )* ( Statement )* < RETURN > Expression ";"
+    (SCAN 2 VarDecl )* ( Statement )* < RETURN > Expression ";"
     "}"
 ;
 
 Psvm:
     < PUBLIC > < STATIC > < VOID > < MAIN > < OPEN_PAREN > < STRING > "[" "]" < IDENTIFIER > < CLOSE_PAREN > "{"
-    (SCAN 2 VarDeclaration )* ( Statement )*
+    (SCAN 2 VarDecl )* ( Statement )*
     "}"
 ;
 
@@ -112,7 +113,7 @@ Statement:
 
 Assignment:
     < IDENTIFIER >
-    ("=" | "[" Expression "]" "=")
+    (< EQUAL > | "[" Expression "]" < EQUAL >)
     Expression ";"
 ;
 
