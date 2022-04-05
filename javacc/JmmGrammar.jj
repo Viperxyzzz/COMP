@@ -33,6 +33,9 @@ TOKEN :
 	< THIS : "this" > |
 	< NEW : "new" > |
 	< INTEGER : (["0" - "9"])+ > |
+	< LSQUARE : "[" > |
+	< RSQUARE : "]" > |
+	< SEMICOLON : ";" > |
     < IDENTIFIER: ((["a" - "z"] | ["A" - "Z"] | "$" | "_") (["a" - "z"] | ["A" - "Z"] | "$" | "_" | ["0" - "9"])*) >
 ;
 
@@ -64,7 +67,7 @@ Factor :
 
 ImportDeclaration:
     (
-        < IMPORT > < IDENTIFIER > ( "." < IDENTIFIER > )* ";"
+        < IMPORT > < IDENTIFIER > ( "." < IDENTIFIER > )* < SEMICOLON >
     )*
 ;
 
@@ -78,7 +81,7 @@ ClassDeclaration:
 ;
 
 VarDecl:
-    Type < IDENTIFIER > ";"
+    Type < IDENTIFIER > < SEMICOLON >
 ;
 
 MethodDeclaration:
@@ -87,7 +90,7 @@ MethodDeclaration:
 
 Pti:
     < PUBLIC > Type < IDENTIFIER > < OPEN_PAREN > (Type < IDENTIFIER > ( "," Type < IDENTIFIER > )* )? < CLOSE_PAREN > "{"
-    (SCAN 2 VarDecl )* ( Statement )* < RETURN > Expression ";"
+    (SCAN 2 VarDecl )* ( Statement )* < RETURN > Expression < SEMICOLON >
     "}"
 ;
 
@@ -108,19 +111,18 @@ Statement:
     "{" ( Statement )* "}" |
     < IF > < OPEN_PAREN > Expression < CLOSE_PAREN > Statement < ELSE > Statement |
     < WHILE > < OPEN_PAREN > Expression < CLOSE_PAREN > Statement |
-    (SCAN 2 Expression ";" | Assignment)
+    (SCAN 2 Expression < SEMICOLON > | Assignment)
 ;
 
 Assignment:
     < IDENTIFIER >
-    (< EQUAL > | "[" Expression "]" < EQUAL >)
-    Expression ";"
+    (< EQUAL > | < LSQUARE > Expression < RSQUARE > < EQUAL >)
+    Expression < SEMICOLON >
 ;
 
 Expression:
     ExpressionFirst (
         ("&&" | < PLUS > | < MINUS > | < TIMES > | < DIVIDE > ) Expression |
-        "[" Expression "]" |
         "." ( < LENGTH > | < IDENTIFIER > "(" ( Expression ( "," Expression )* )? ")" )
     )*
 ;
