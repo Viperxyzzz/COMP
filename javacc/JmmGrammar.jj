@@ -32,10 +32,11 @@ TOKEN :
 	< FALSE : "false" > |
 	< THIS : "this" > |
 	< NEW : "new" > |
-	< INTEGER : (["0" - "9"])+ > |
 	< LSQUARE : "[" > |
 	< RSQUARE : "]" > |
 	< SEMICOLON : ";" > |
+	< LESSTHAN : "<" > |
+    < INTEGER : (["0" - "9"])+ > |
     < IDENTIFIER: ((["a" - "z"] | ["A" - "Z"] | "$" | "_") (["a" - "z"] | ["A" - "Z"] | "$" | "_" | ["0" - "9"])*) >
 ;
 
@@ -81,7 +82,7 @@ ClassDeclaration:
 ;
 
 VarDecl:
-    Type < IDENTIFIER > < SEMICOLON >
+    SCAN 2 Type < IDENTIFIER > < SEMICOLON >
 ;
 
 MethodDeclaration:
@@ -90,13 +91,13 @@ MethodDeclaration:
 
 Pti:
     Type < IDENTIFIER > < OPEN_PAREN > (Type < IDENTIFIER > ( "," Type < IDENTIFIER > )* )? < CLOSE_PAREN > "{"
-    (SCAN 2 VarDecl )* ( Statement )* < RETURN > Expression < SEMICOLON >
+    ( VarDecl )* ( Statement )* < RETURN > Expression < SEMICOLON >
     "}"
 ;
 
 Psvm:
     < STATIC > < VOID > < MAIN > < OPEN_PAREN > < STRING > "[" "]" < IDENTIFIER > < CLOSE_PAREN > "{"
-    (SCAN 2 VarDecl )* ( Statement )*
+    ( VarDecl )* ( Statement )*
     "}"
 ;
 
@@ -122,7 +123,7 @@ Assignment:
 
 Expression:
     ExpressionFirst (
-        ("&&" | < PLUS > | < MINUS > | < TIMES > | < DIVIDE > ) Expression |
+        ("&&" | < PLUS > | < MINUS > | < TIMES > | < DIVIDE > | < LESSTHAN >) Expression |
         "." ( < LENGTH > | < IDENTIFIER > "(" ( Expression ( "," Expression )* )? ")" )
     )*
 ;
@@ -134,7 +135,7 @@ ExpressionFirst:
     < FALSE > |
     < IDENTIFIER > |
     < THIS > |
-    < NEW > (< INT > "[" Expression "]" | < IDENTIFIER > < OPEN_PAREN > < CLOSE_PAREN >) |
+    < NEW > (< INT > < LSQUARE > Expression < RSQUARE > | < IDENTIFIER > < OPEN_PAREN > < CLOSE_PAREN >) |
     "!" Expression |
     < OPEN_PAREN > Expression < CLOSE_PAREN >
 ;

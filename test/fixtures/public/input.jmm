@@ -3,10 +3,13 @@ import a2;
 class c1 extends otherclass {
     public int f (int[] a1, int a2) {
        int a;
+       a a;
+       a = b;
        9.length;
        9.a(a);
        a [9] = 12;
        a && b;
+       1 < 2 < 3 < 4;
        a = true;
        true;
        a = b;
