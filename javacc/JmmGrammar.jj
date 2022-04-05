@@ -85,17 +85,17 @@ VarDecl:
 ;
 
 MethodDeclaration:
-    (SCAN 2 Pti | Psvm)
+    < PUBLIC > (Pti | Psvm)
 ;
 
 Pti:
-    < PUBLIC > Type < IDENTIFIER > < OPEN_PAREN > (Type < IDENTIFIER > ( "," Type < IDENTIFIER > )* )? < CLOSE_PAREN > "{"
+    Type < IDENTIFIER > < OPEN_PAREN > (Type < IDENTIFIER > ( "," Type < IDENTIFIER > )* )? < CLOSE_PAREN > "{"
     (SCAN 2 VarDecl )* ( Statement )* < RETURN > Expression < SEMICOLON >
     "}"
 ;
 
 Psvm:
-    < PUBLIC > < STATIC > < VOID > < MAIN > < OPEN_PAREN > < STRING > "[" "]" < IDENTIFIER > < CLOSE_PAREN > "{"
+    < STATIC > < VOID > < MAIN > < OPEN_PAREN > < STRING > "[" "]" < IDENTIFIER > < CLOSE_PAREN > "{"
     (SCAN 2 VarDecl )* ( Statement )*
     "}"
 ;
