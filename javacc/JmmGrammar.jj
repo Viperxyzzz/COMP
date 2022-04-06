@@ -1,6 +1,7 @@
 PARSER_PACKAGE=pt.up.fe.comp;
 PARSER_CLASS=JmmGrammarParser;
 SMART_NODE_CREATION=false;
+TOKENS_ARE_NODES = false;
 
 SKIP : " " | "\t" | "\r" | "\n" | <"//" (~["\n"])*>;
 
@@ -24,6 +25,7 @@ TOKEN :
 	< WHILE : "while" > |
 	< LENGTH : "length" > |
 	< EQUAL : "=" > |
+	< EQUALEQUAL : "==" > |
 	< STRING : "String" > |
 	< BOOLEAN : "boolean" > |
 	< INT_ARR : "int[]" > |
@@ -36,12 +38,29 @@ TOKEN :
 	< RSQUARE : "]" > |
 	< SEMICOLON : ";" > |
 	< LESSTHAN : "<" > |
+	< BIGGERTHAN : ">" > |
     < INTEGER : (["0" - "9"])+ > |
     < IDENTIFIER: ((["a" - "z"] | ["A" - "Z"] | "$" | "_") (["a" - "z"] | ["A" - "Z"] | "$" | "_" | ["0" - "9"])*) >
 ;
 
 
 Start : ImportDeclaration ClassDeclaration <EOF>;
+
+LogicalExpression:
+    ComparableExpression
+    (
+        ("&&" | "||")
+        ComparableExpression
+    )?
+;
+
+ComparableExpression:
+    AdditiveExpression
+    (
+        (< LESSTHAN > | < BIGGERTHAN > | < EQUALEQUAL >)
+        AdditiveExpression
+    )?
+;
 
 AdditiveExpression :
 	MultiplicativeExpression
@@ -52,11 +71,15 @@ AdditiveExpression :
 ;
 
 MultiplicativeExpression :
-	Factor
+	ParenExpression
 	(
 		(< TIMES > | < DIVIDE >)
-		Factor
+		ParenExpression
 	)?
+;
+
+ParenExpression :
+	< OPEN_PAREN > LogicalExpression <CLOSE_PAREN >
 ;
 
 Factor :
@@ -112,19 +135,14 @@ Statement:
     "{" ( Statement )* "}" |
     < IF > < OPEN_PAREN > Expression < CLOSE_PAREN > Statement < ELSE > Statement |
     < WHILE > < OPEN_PAREN > Expression < CLOSE_PAREN > Statement |
-    (SCAN 2 Expression < SEMICOLON > | Assignment)
-;
-
-Assignment:
-    < IDENTIFIER >
-    (< EQUAL > | < LSQUARE > Expression < RSQUARE > < EQUAL >)
     Expression < SEMICOLON >
 ;
 
 Expression:
     ExpressionFirst (
-        ("&&" | < PLUS > | < MINUS > | < TIMES > | < DIVIDE > | < LESSTHAN >) Expression |
-        "." ( < LENGTH > | < IDENTIFIER > "(" ( Expression ( "," Expression )* )? ")" )
+        ("&&" | < PLUS > | < MINUS > | < TIMES > | < DIVIDE > | < LESSTHAN > | < EQUAL >) Expression |
+        "." ( < LENGTH > | < IDENTIFIER > "(" ( Expression ( "," Expression )* )? ")" ) |
+        < LSQUARE > Expression <RSQUARE>
     )*
 ;
 
@@ -137,5 +155,34 @@ ExpressionFirst:
     < THIS > |
     < NEW > (< INT > < LSQUARE > Expression < RSQUARE > | < IDENTIFIER > < OPEN_PAREN > < CLOSE_PAREN >) |
     "!" Expression |
-    < OPEN_PAREN > Expression < CLOSE_PAREN >
+    < OPEN_PAREN > Expression < CLOSE_PAREN > |
+    < LSQUARE > Expression < RSQUARE >
 ;
+
+// Injections for the implementation of JmmNode
+// Since this is injected into BaseNode, it affects only non-terminals
+INJECT BaseNode :
+		import pt.up.fe.comp.jmm.ast.JmmNode;
+		import pt.up.fe.comp.jmm.ast.AJmmNode;
+		import pt.up.fe.specs.util.SpecsCollections;
+		extends AJmmNode
+{
+    @Override
+    public List<JmmNode> getChildren() {
+
+        return SpecsCollections.cast(children(), JmmNode.class);
+    }
+
+    @Override
+    public void add(JmmNode child, int index) {
+
+        if (child instanceof Node) {
+
+            addChild(index, (Node) child);
+        } else {
+
+            throw new RuntimeException("Node " + child + " is not a Node.");
+        }
+
+    }
+}
