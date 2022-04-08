@@ -3,8 +3,6 @@ import a2;
 class c1 extends otherclass {
     public int f (int[] a1, int a2) {
        int a;
-       1 * 2 + 3;
-
-       return true;
+       return a;
     }
 }

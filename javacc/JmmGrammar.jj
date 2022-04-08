@@ -48,7 +48,7 @@ TOKEN :
 
 Start : ImportDeclaration ClassDeclaration <EOF>;
 
-Assignment:
+Assignment #void:
     LogicalExpression
     (
         < EQUAL >
@@ -56,7 +56,7 @@ Assignment:
     )?
 ;
 
-LogicalExpression:
+LogicalExpression #void:
     ComparableExpression
     (
         (< AND > | < OR >)
@@ -64,7 +64,7 @@ LogicalExpression:
     )?
 ;
 
-ComparableExpression:
+ComparableExpression #void:
     AdditiveExpression
     (
         (< LESSTHAN > | < BIGGERTHAN > | < EQUALEQUAL >)
@@ -72,7 +72,7 @@ ComparableExpression:
     )?
 ;
 
-AdditiveExpression :
+AdditiveExpression #void:
 	MultiplicativeExpression
 	(
 		(< PLUS > | < MINUS >)
@@ -80,7 +80,7 @@ AdditiveExpression :
 	)?
 ;
 
-MultiplicativeExpression :
+MultiplicativeExpression #void:
 	ParenExpression
 	(
 		(< TIMES > | < DIVIDE >)
@@ -88,28 +88,28 @@ MultiplicativeExpression :
 	)?
 ;
 
-ParenExpression :
+ParenExpression #void:
     ArrayExpression
 	(
 	    < OPEN_PAREN > Assignment < CLOSE_PAREN >
     )?
 ;
 
-ArrayExpression:
+ArrayExpression #void:
     DotExpression
     (
         < LSQUARE > Assignment <RSQUARE>
     )?
 ;
 
-DotExpression:
+DotExpression #void:
      Factor
      (
         "." ( < LENGTH > | < IDENTIFIER > "(" ( Assignment ( "," Assignment )* )? ")" )
      )*
  ;
 
-Factor :
+Factor:
 	< INTEGER > |
 	< MINUS> Factor |
 	ExpressionFirst
@@ -177,7 +177,7 @@ ExpressionFirst:
     < INTEGER > |
     < TRUE > |
     < FALSE > |
-    < IDENTIFIER > |
+    < IDENTIFIER > ({jjtThis.put("name", lastConsumedToken.getImage()); }) #ola |
     < THIS > |
     < NEW > (< INT > < LSQUARE > Assignment < RSQUARE > | < IDENTIFIER > < OPEN_PAREN > < CLOSE_PAREN >) |
     "!" Expression |
@@ -210,5 +210,40 @@ INJECT BaseNode :
             throw new RuntimeException("Node " + child + " is not a Node.");
         }
 
+    }
+}
+
+// Injections for the implementation of JmmNode
+// Since this is injected into Token, it affects only terminals
+INJECT Token :
+		import pt.up.fe.comp.jmm.ast.JmmNode;
+		import pt.up.fe.comp.jmm.ast.AJmmNode;
+		import pt.up.fe.specs.util.SpecsCollections;
+		extends AJmmNode
+{
+    @Override
+    public List<JmmNode> getChildren() {
+
+        return SpecsCollections.cast(children(), JmmNode.class);
+    }
+
+    @Override
+    public void add(JmmNode child, int index) {
+
+		throw new RuntimeException("Cannot add child nodes to a Token.");
+    }
+
+    @Override
+    public List<String> getAttributes() {
+        return SpecsCollections.concat("image", super.getAttributes());
+    }
+
+    @Override
+    public String get(String attribute) {
+		if(attribute.equals("image")) {
+			return getImage();
+		}
+
+        return super.get(attribute);
     }
 }
