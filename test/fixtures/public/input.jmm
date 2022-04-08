@@ -3,22 +3,8 @@ import a2;
 class c1 extends otherclass {
     public int f (int[] a1, int a2) {
        int a;
-       a a;
-       a = b[0];
-       a = b;
-       9.length;
-       9.a(a);
-       a [9] = 12;
-       a && b;
-       1 < 2 < 3 < 4;
-       9 + 9;
-       a = true;
-       true;
-       a = b;
-       new int [true];
-       new int [this];
-       new a ();
-       while (true) true;
+       1 * 2 + 3;
+
        return true;
     }
 }

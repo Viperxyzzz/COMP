@@ -39,6 +39,8 @@ TOKEN :
 	< SEMICOLON : ";" > |
 	< LESSTHAN : "<" > |
 	< BIGGERTHAN : ">" > |
+	< AND : "&&" > |
+	< OR : "||" > |
     < INTEGER : (["0" - "9"])+ > |
     < IDENTIFIER: ((["a" - "z"] | ["A" - "Z"] | "$" | "_") (["a" - "z"] | ["A" - "Z"] | "$" | "_" | ["0" - "9"])*) >
 ;
@@ -46,11 +48,19 @@ TOKEN :
 
 Start : ImportDeclaration ClassDeclaration <EOF>;
 
+Assignment:
+    LogicalExpression
+    (
+        < EQUAL >
+        Assignment
+    )?
+;
+
 LogicalExpression:
     ComparableExpression
     (
-        ("&&" | "||")
-        ComparableExpression
+        (< AND > | < OR >)
+        Assignment
     )?
 ;
 
@@ -58,7 +68,7 @@ ComparableExpression:
     AdditiveExpression
     (
         (< LESSTHAN > | < BIGGERTHAN > | < EQUALEQUAL >)
-        AdditiveExpression
+        Assignment
     )?
 ;
 
@@ -66,7 +76,7 @@ AdditiveExpression :
 	MultiplicativeExpression
 	(
 		(< PLUS > | < MINUS >)
-		MultiplicativeExpression
+		Assignment
 	)?
 ;
 
@@ -74,18 +84,35 @@ MultiplicativeExpression :
 	ParenExpression
 	(
 		(< TIMES > | < DIVIDE >)
-		ParenExpression
+		Assignment
 	)?
 ;
 
 ParenExpression :
-	< OPEN_PAREN > LogicalExpression <CLOSE_PAREN >
+    ArrayExpression
+	(
+	    < OPEN_PAREN > Assignment < CLOSE_PAREN >
+    )?
 ;
+
+ArrayExpression:
+    DotExpression
+    (
+        < LSQUARE > Assignment <RSQUARE>
+    )?
+;
+
+DotExpression:
+     Factor
+     (
+        "." ( < LENGTH > | < IDENTIFIER > "(" ( Assignment ( "," Assignment )* )? ")" )
+     )*
+ ;
 
 Factor :
 	< INTEGER > |
 	< MINUS> Factor |
-	< OPEN_PAREN > AdditiveExpression < CLOSE_PAREN >
+	ExpressionFirst
 ;
 
 
@@ -114,7 +141,7 @@ MethodDeclaration:
 
 Pti:
     Type < IDENTIFIER > < OPEN_PAREN > (Type < IDENTIFIER > ( "," Type < IDENTIFIER > )* )? < CLOSE_PAREN > "{"
-    ( VarDecl )* ( Statement )* < RETURN > Expression < SEMICOLON >
+    ( VarDecl )* ( Statement )* < RETURN > Assignment < SEMICOLON >
     "}"
 ;
 
@@ -133,9 +160,9 @@ Type:
 
 Statement:
     "{" ( Statement )* "}" |
-    < IF > < OPEN_PAREN > Expression < CLOSE_PAREN > Statement < ELSE > Statement |
-    < WHILE > < OPEN_PAREN > Expression < CLOSE_PAREN > Statement |
-    Expression < SEMICOLON >
+    < IF > < OPEN_PAREN > Assignment < CLOSE_PAREN > Statement < ELSE > Statement |
+    < WHILE > < OPEN_PAREN > Assignment < CLOSE_PAREN > Statement |
+    Assignment < SEMICOLON >
 ;
 
 Expression:
@@ -146,17 +173,16 @@ Expression:
     )*
 ;
 
-
 ExpressionFirst:
     < INTEGER > |
     < TRUE > |
     < FALSE > |
     < IDENTIFIER > |
     < THIS > |
-    < NEW > (< INT > < LSQUARE > Expression < RSQUARE > | < IDENTIFIER > < OPEN_PAREN > < CLOSE_PAREN >) |
+    < NEW > (< INT > < LSQUARE > Assignment < RSQUARE > | < IDENTIFIER > < OPEN_PAREN > < CLOSE_PAREN >) |
     "!" Expression |
-    < OPEN_PAREN > Expression < CLOSE_PAREN > |
-    < LSQUARE > Expression < RSQUARE >
+    < OPEN_PAREN > Assignment < CLOSE_PAREN > |
+    < LSQUARE > Assignment < RSQUARE >
 ;
 
 // Injections for the implementation of JmmNode
