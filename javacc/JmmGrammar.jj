@@ -51,7 +51,7 @@ Start : ImportDeclaration ClassDeclaration <EOF>;
 Assignment #void:
     LogicalExpression
     (
-        < EQUAL >
+        < EQUAL > #Equals
         Assignment
     )?
 ;
@@ -59,7 +59,7 @@ Assignment #void:
 LogicalExpression #void:
     ComparableExpression
     (
-        (< AND > | < OR >)
+        (< AND > #LogicalAnd | < OR > #LogicalOr)
         Assignment
     )?
 ;
@@ -67,7 +67,7 @@ LogicalExpression #void:
 ComparableExpression #void:
     AdditiveExpression
     (
-        (< LESSTHAN > | < BIGGERTHAN > | < EQUALEQUAL >)
+        (< LESSTHAN > #IsSmallerThan | < BIGGERTHAN > #IsBiggerThan | < EQUALEQUAL >)
         Assignment
     )?
 ;
@@ -109,7 +109,7 @@ DotExpression #void:
      )*
  ;
 
-Factor:
+Factor #void:
 	< INTEGER > |
 	< MINUS> Factor |
 	ExpressionFirst
@@ -135,7 +135,7 @@ VarDecl:
     SCAN 2 Type < IDENTIFIER > < SEMICOLON >
 ;
 
-MethodDeclaration:
+MethodDeclaration #void:
     < PUBLIC > (Pti | Psvm)
 ;
 
@@ -158,10 +158,10 @@ Type:
     < IDENTIFIER >
 ;
 
-Statement:
+Statement #void:
     "{" ( Statement )* "}" |
-    < IF > < OPEN_PAREN > Assignment < CLOSE_PAREN > Statement < ELSE > Statement |
-    < WHILE > < OPEN_PAREN > Assignment < CLOSE_PAREN > Statement |
+    < IF > #IfStatement < OPEN_PAREN > Assignment < CLOSE_PAREN > Statement < ELSE > Statement |
+    < WHILE > #WhileStatement < OPEN_PAREN > Assignment < CLOSE_PAREN > Statement |
     Assignment < SEMICOLON >
 ;
 
@@ -173,11 +173,11 @@ Expression:
     )*
 ;
 
-ExpressionFirst:
+ExpressionFirst #void:
     < INTEGER > |
     < TRUE > |
     < FALSE > |
-    < IDENTIFIER > ({jjtThis.put("name", lastConsumedToken.getImage()); }) #ola |
+    < IDENTIFIER > #Id |
     < THIS > |
     < NEW > (< INT > < LSQUARE > Assignment < RSQUARE > | < IDENTIFIER > < OPEN_PAREN > < CLOSE_PAREN >) |
     "!" Expression |
@@ -210,40 +210,5 @@ INJECT BaseNode :
             throw new RuntimeException("Node " + child + " is not a Node.");
         }
 
-    }
-}
-
-// Injections for the implementation of JmmNode
-// Since this is injected into Token, it affects only terminals
-INJECT Token :
-		import pt.up.fe.comp.jmm.ast.JmmNode;
-		import pt.up.fe.comp.jmm.ast.AJmmNode;
-		import pt.up.fe.specs.util.SpecsCollections;
-		extends AJmmNode
-{
-    @Override
-    public List<JmmNode> getChildren() {
-
-        return SpecsCollections.cast(children(), JmmNode.class);
-    }
-
-    @Override
-    public void add(JmmNode child, int index) {
-
-		throw new RuntimeException("Cannot add child nodes to a Token.");
-    }
-
-    @Override
-    public List<String> getAttributes() {
-        return SpecsCollections.concat("image", super.getAttributes());
-    }
-
-    @Override
-    public String get(String attribute) {
-		if(attribute.equals("image")) {
-			return getImage();
-		}
-
-        return super.get(attribute);
     }
 }

@@ -3,6 +3,10 @@ import a2;
 class c1 extends otherclass {
     public int f (int[] a1, int a2) {
        int a;
+       if (a < 0) {
+        a = 0; }
+       else {
+        a = 1;}
        return a;
     }
 }
