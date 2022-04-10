@@ -48,11 +48,60 @@ TOKEN :
 
 Start : ImportDeclaration ClassDeclaration <EOF>;
 
+ImportDeclaration #void:
+    (
+        < IMPORT > #ImportDeclaration < IDENTIFIER >  ( "." < IDENTIFIER > )* < SEMICOLON >
+    )*
+;
+
+ClassDeclaration:
+    < CLASS > < IDENTIFIER >
+    (
+        < EXTENDS > #ExtendsExp < IDENTIFIER > #Id
+    )?
+    "{" ( VarDecl )* ( MethodDeclaration )*
+    "}"
+;
+
+VarDecl:
+    SCAN 2 Type < IDENTIFIER > #Id < SEMICOLON >
+;
+
+MethodDeclaration #void:
+    < PUBLIC > (Pti | Psvm)
+;
+
+Pti:
+    Type < IDENTIFIER > #Id < OPEN_PAREN > (Type < IDENTIFIER > ( "," Type < IDENTIFIER > )* )? < CLOSE_PAREN > "{"
+    ( VarDecl )* ( Statement )* < RETURN > #ReturnExp Assignment < SEMICOLON >
+    "}"
+;
+
+Psvm:
+    < STATIC > < VOID > < MAIN > < OPEN_PAREN > < STRING > "[" "]" < IDENTIFIER > < CLOSE_PAREN > "{"
+    ( VarDecl )* ( Statement )*
+    "}"
+;
+
+Type #void:
+    < INT_ARR > #TypeIntArray |
+    < BOOLEAN > #TypeBoolean |
+    < INT > #TypeInt |
+    < IDENTIFIER > ({jjtThis.put("foo", "bar"); }) #TypeId
+;
+
+Statement #void:
+    "{" ( Statement )* "}" |
+    < IF > #IfStatement < OPEN_PAREN > Assignment < CLOSE_PAREN > Statement < ELSE > #ElseStatement Statement |
+    < WHILE > #WhileStatement < OPEN_PAREN > Assignment < CLOSE_PAREN > Statement |
+    Assignment < SEMICOLON >
+;
+
 Assignment #void:
     LogicalExpression
     (
         < EQUAL > #Equals
-        Assignment
+        Assignment #Assignment
     )?
 ;
 
@@ -98,7 +147,7 @@ ParenExpression #void:
 ArrayExpression #void:
     DotExpression
     (
-        < LSQUARE > Assignment <RSQUARE>
+        < LSQUARE > Assignment < RSQUARE >
     )?
 ;
 
@@ -110,77 +159,27 @@ DotExpression #void:
  ;
 
 Factor #void:
-	< INTEGER > |
-	< MINUS> Factor |
+	< INTEGER > #IdInt |
+	< MINUS > #Negative Factor |
 	ExpressionFirst
 ;
 
-
-ImportDeclaration:
-    (
-        < IMPORT > < IDENTIFIER > ( "." < IDENTIFIER > )* < SEMICOLON >
-    )*
-;
-
-ClassDeclaration:
-    < CLASS > < IDENTIFIER >
-    (
-        < EXTENDS > < IDENTIFIER >
-    )?
-    "{" ( VarDecl )* ( MethodDeclaration )*
-    "}"
-;
-
-VarDecl:
-    SCAN 2 Type < IDENTIFIER > < SEMICOLON >
-;
-
-MethodDeclaration #void:
-    < PUBLIC > (Pti | Psvm)
-;
-
-Pti:
-    Type < IDENTIFIER > < OPEN_PAREN > (Type < IDENTIFIER > ( "," Type < IDENTIFIER > )* )? < CLOSE_PAREN > "{"
-    ( VarDecl )* ( Statement )* < RETURN > Assignment < SEMICOLON >
-    "}"
-;
-
-Psvm:
-    < STATIC > < VOID > < MAIN > < OPEN_PAREN > < STRING > "[" "]" < IDENTIFIER > < CLOSE_PAREN > "{"
-    ( VarDecl )* ( Statement )*
-    "}"
-;
-
-Type:
-    < INT_ARR > |
-    < BOOLEAN > |
-    < INT > |
-    < IDENTIFIER >
-;
-
-Statement #void:
-    "{" ( Statement )* "}" |
-    < IF > #IfStatement < OPEN_PAREN > Assignment < CLOSE_PAREN > Statement < ELSE > Statement |
-    < WHILE > #WhileStatement < OPEN_PAREN > Assignment < CLOSE_PAREN > Statement |
-    Assignment < SEMICOLON >
-;
-
-Expression:
+Expression #void:
     ExpressionFirst (
         ("&&" | < PLUS > | < MINUS > | < TIMES > | < DIVIDE > | < LESSTHAN > | < EQUAL >) Expression |
         "." ( < LENGTH > | < IDENTIFIER > "(" ( Expression ( "," Expression )* )? ")" ) |
-        < LSQUARE > Expression <RSQUARE>
+        < LSQUARE > Expression < RSQUARE >
     )*
 ;
 
 ExpressionFirst #void:
-    < INTEGER > |
-    < TRUE > |
-    < FALSE > |
+    < INTEGER > #Id |
+    < TRUE > #TrueId |
+    < FALSE > #FalseId |
     < IDENTIFIER > #Id |
-    < THIS > |
+    < THIS > #ThisId |
     < NEW > (< INT > < LSQUARE > Assignment < RSQUARE > | < IDENTIFIER > < OPEN_PAREN > < CLOSE_PAREN >) |
-    "!" Expression |
+    "!" Assignment #Not |
     < OPEN_PAREN > Assignment < CLOSE_PAREN > |
     < LSQUARE > Assignment < RSQUARE >
 ;
