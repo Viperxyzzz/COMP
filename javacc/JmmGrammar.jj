@@ -92,7 +92,7 @@ Type #void:
 
 Statement #void:
     "{" ( Statement )* "}" |
-    < IF > < OPEN_PAREN > Assignment < CLOSE_PAREN > Statement #IfStatement < ELSE > Statement #ElseStatement |
+    < IF > (< OPEN_PAREN > Assignment < CLOSE_PAREN > Statement) #IfStatement < ELSE > Statement #ElseStatement |
     < WHILE > #WhileStatement < OPEN_PAREN > Assignment < CLOSE_PAREN > Statement |
     Assignment < SEMICOLON >
 ;
