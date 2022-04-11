@@ -73,7 +73,7 @@ MethodDeclaration #void:
 
 Pti:
     Type < IDENTIFIER > #Id < OPEN_PAREN > (Type < IDENTIFIER > ( "," Type < IDENTIFIER > )* )? < CLOSE_PAREN > "{"
-    ( VarDecl )* ( Statement )* < RETURN > #ReturnExp Assignment < SEMICOLON >
+    ( VarDecl )* ( Statement )* < RETURN > Assignment < SEMICOLON > #ReturnExp(1)
     "}"
 ;
 
@@ -92,7 +92,7 @@ Type #void:
 
 Statement #void:
     "{" ( Statement )* "}" |
-    < IF > #IfStatement < OPEN_PAREN > Assignment < CLOSE_PAREN > Statement < ELSE > #ElseStatement Statement |
+    < IF > < OPEN_PAREN > Assignment < CLOSE_PAREN > Statement #IfStatement < ELSE > Statement #ElseStatement |
     < WHILE > #WhileStatement < OPEN_PAREN > Assignment < CLOSE_PAREN > Statement |
     Assignment < SEMICOLON >
 ;
@@ -100,8 +100,7 @@ Statement #void:
 Assignment #void:
     LogicalExpression
     (
-        < EQUAL > #Equals
-        LogicalExpression
+        (< EQUAL > LogicalExpression) ({ jjtThis.put("op", "assign"); }) #BinOp(2)
     )?
 ;
 
@@ -161,7 +160,7 @@ DotExpression #void:
 
 Factor #void:
 	< INTEGER > ({ jjtThis.put("value", lastConsumedToken.getImage()); }) #IdInt |
-	< MINUS > #Negative Factor |
+	< MINUS > Factor #Negative(1) |
 	< TRUE > #TrueId |
     < FALSE > #FalseId |
     < IDENTIFIER > ({ jjtThis.put("value", lastConsumedToken.getImage()); }) #Id |
