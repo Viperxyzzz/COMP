@@ -101,7 +101,7 @@ Assignment #void:
     LogicalExpression
     (
         < EQUAL > #Equals
-        Assignment #Assignment
+        LogicalExpression
     )?
 ;
 
@@ -109,72 +109,60 @@ LogicalExpression #void:
     ComparableExpression
     (
         (< AND > #LogicalAnd | < OR > #LogicalOr)
-        Assignment
+        ComparableExpression
     )?
 ;
 
 ComparableExpression #void:
     AdditiveExpression
     (
-        (< LESSTHAN > Assignment) ({ jjtThis.put("op", "smaller"); }) #BinOp(2) |
-        (< BIGGERTHAN > Assignment) ({ jjtThis.put("op", "bigger"); }) #BinOp(2) |
-        (< EQUALEQUAL > Assignment) ({ jjtThis.put("op", "is_equal"); }) #BinOp(2)
+        (< LESSTHAN > AdditiveExpression) ({ jjtThis.put("op", "smaller"); }) #BinOp(2) |
+        (< BIGGERTHAN > AdditiveExpression) ({ jjtThis.put("op", "bigger"); }) #BinOp(2) |
+        (< EQUALEQUAL > AdditiveExpression) ({ jjtThis.put("op", "is_equal"); }) #BinOp(2)
     )?
 ;
 
 AdditiveExpression #void:
 	MultiplicativeExpression
 	(
-		(< PLUS > Assignment) ({ jjtThis.put("op", "add"); }) #BinOp(2) |
-		(< MINUS > Assignment) ({ jjtThis.put("op", "sub"); }) #BinOp(2)
+		(< PLUS > MultiplicativeExpression) ({ jjtThis.put("op", "add"); }) #BinOp(2) |
+		(< MINUS > MultiplicativeExpression) ({ jjtThis.put("op", "sub"); }) #BinOp(2)
 	)?
 ;
 
 MultiplicativeExpression #void:
 	ArrayExpression
 	(
-		(< TIMES > Assignment) ({ jjtThis.put("op", "mult"); }) #BinOp(2) |
-		(< DIVIDE > Assignment) ({ jjtThis.put("op", "div"); }) #BinOp(2)
+		(< TIMES > ArrayExpression) ({ jjtThis.put("op", "mult"); }) #BinOp(2) |
+		(< DIVIDE > ArrayExpression) ({ jjtThis.put("op", "div"); }) #BinOp(2)
 	)?
 ;
 
 ArrayExpression #void:
     ParenExpression
     (
-        < LSQUARE > Assignment < RSQUARE >
+        < LSQUARE > ParenExpression < RSQUARE >
     )?
 ;
 
 ParenExpression #void:
     DotExpression
 	(
-	    < OPEN_PAREN > Assignment < CLOSE_PAREN >
+	    < OPEN_PAREN > DotExpression < CLOSE_PAREN >
     )?
 ;
 
 DotExpression #void:
      Factor
      (
-        "." ( < LENGTH > | < IDENTIFIER > "(" ( Assignment ( "," Assignment )* )? ")" )
+        "." ( < LENGTH > | < IDENTIFIER > "(" ( Factor ( "," Factor )* )? ")" )
      )*
  ;
 
 Factor #void:
 	< INTEGER > ({ jjtThis.put("value", lastConsumedToken.getImage()); }) #IdInt |
 	< MINUS > #Negative Factor |
-	ExpressionFirst
-;
-
-Expression #void:
-    ExpressionFirst (
-        ("&&" | < PLUS > | < MINUS > | < TIMES > | < DIVIDE > | < LESSTHAN > | < EQUAL >) Expression |
-        "." ( < LENGTH > | < IDENTIFIER > "(" ( Expression ( "," Expression )* )? ")" ) |
-        < LSQUARE > Expression < RSQUARE >
-    )*
-;
-
-ExpressionFirst #void:
-    < TRUE > #TrueId |
+	< TRUE > #TrueId |
     < FALSE > #FalseId |
     < IDENTIFIER > ({ jjtThis.put("value", lastConsumedToken.getImage()); }) #Id |
     < THIS > #ThisId |

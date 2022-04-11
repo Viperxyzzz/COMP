@@ -2,7 +2,7 @@ import a1;
 import a2;
 class c1 extends otherclass {
     public int f () {
-       1*2+3;
+       1*2+3*4;
        1+2*3;
        if (a < 0) {
         a = 0; }
