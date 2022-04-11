@@ -1,9 +1,9 @@
 import a1;
 import a2;
 class c1 extends otherclass {
-    public int f (int[] a1, int a2) {
-       int a;
-       a a;
+    public int f () {
+       1*2+3;
+       1+2*3;
        if (a < 0) {
         a = 0; }
        else {

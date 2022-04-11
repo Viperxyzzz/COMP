@@ -116,38 +116,39 @@ LogicalExpression #void:
 ComparableExpression #void:
     AdditiveExpression
     (
-        (< LESSTHAN > #IsSmallerThan | < BIGGERTHAN > #IsBiggerThan | < EQUALEQUAL >)
-        Assignment
+        (< LESSTHAN > Assignment) ({ jjtThis.put("op", "smaller"); }) #BinOp(2) |
+        (< BIGGERTHAN > Assignment) ({ jjtThis.put("op", "bigger"); }) #BinOp(2) |
+        (< EQUALEQUAL > Assignment) ({ jjtThis.put("op", "is_equal"); }) #BinOp(2)
     )?
 ;
 
 AdditiveExpression #void:
 	MultiplicativeExpression
 	(
-		(< PLUS > | < MINUS >)
-		Assignment
+		(< PLUS > Assignment) ({ jjtThis.put("op", "add"); }) #BinOp(2) |
+		(< MINUS > Assignment) ({ jjtThis.put("op", "sub"); }) #BinOp(2)
 	)?
 ;
 
 MultiplicativeExpression #void:
-	ParenExpression
+	ArrayExpression
 	(
-		(< TIMES > | < DIVIDE >)
-		Assignment
+		(< TIMES > Assignment) ({ jjtThis.put("op", "mult"); }) #BinOp(2) |
+		(< DIVIDE > Assignment) ({ jjtThis.put("op", "div"); }) #BinOp(2)
 	)?
 ;
 
-ParenExpression #void:
-    ArrayExpression
-	(
-	    < OPEN_PAREN > Assignment < CLOSE_PAREN >
+ArrayExpression #void:
+    ParenExpression
+    (
+        < LSQUARE > Assignment < RSQUARE >
     )?
 ;
 
-ArrayExpression #void:
+ParenExpression #void:
     DotExpression
-    (
-        < LSQUARE > Assignment < RSQUARE >
+	(
+	    < OPEN_PAREN > Assignment < CLOSE_PAREN >
     )?
 ;
 
@@ -159,7 +160,7 @@ DotExpression #void:
  ;
 
 Factor #void:
-	< INTEGER > #IdInt |
+	< INTEGER > ({ jjtThis.put("value", lastConsumedToken.getImage()); }) #IdInt |
 	< MINUS > #Negative Factor |
 	ExpressionFirst
 ;
@@ -173,10 +174,9 @@ Expression #void:
 ;
 
 ExpressionFirst #void:
-    < INTEGER > #Id |
     < TRUE > #TrueId |
     < FALSE > #FalseId |
-    < IDENTIFIER > #Id |
+    < IDENTIFIER > ({ jjtThis.put("value", lastConsumedToken.getImage()); }) #Id |
     < THIS > #ThisId |
     < NEW > (< INT > < LSQUARE > Assignment < RSQUARE > | < IDENTIFIER > < OPEN_PAREN > < CLOSE_PAREN >) |
     "!" Assignment #Not |
