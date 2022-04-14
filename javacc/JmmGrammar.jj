@@ -140,21 +140,21 @@ MultiplicativeExpression #void:
 ArrayExpression #void:
     ParenExpression
     (
-        < LSQUARE > ParenExpression < RSQUARE >
+        < LSQUARE > Assignment < RSQUARE >
     )?
 ;
 
 ParenExpression #void:
     DotExpression
 	(
-	    < OPEN_PAREN > DotExpression < CLOSE_PAREN >
+	    < OPEN_PAREN > Assignment < CLOSE_PAREN >
     )?
 ;
 
 DotExpression #void:
      Factor
      (
-        "." ( < LENGTH > | < IDENTIFIER > "(" ( Factor ( "," Factor )* )? ")" )
+        "." ( < LENGTH > | < IDENTIFIER > "(" ( Assignment ( "," Assignment )* )? ")" )
      )*
  ;
 
