@@ -80,7 +80,7 @@ MethodDeclaration #void:
     < PUBLIC > (MainMethod | OtherMethod)
 ;
 
-MainMethod #MainMethod:
+MainMethod:
     < STATIC > < VOID > < MAIN > < OPEN_PAREN > < STRING > "[" "]" < IDENTIFIER > ({ jjtThis.put("value", lastConsumedToken.getImage()); }) #Param < CLOSE_PAREN >
     "{"
         ( VarDecl )* ( Statement )*
@@ -88,8 +88,9 @@ MainMethod #MainMethod:
 ;
 
 OtherMethod #MethodDecl:
-    Type < IDENTIFIER > < OPEN_PAREN > (Type < IDENTIFIER > ( "," Type < IDENTIFIER > )* )? < CLOSE_PAREN > "{"
-    ( VarDecl )* ( Statement )* < RETURN > Assignment < SEMICOLON > #ReturnExp(1)
+    Type < IDENTIFIER > < OPEN_PAREN > (Type < IDENTIFIER > ( "," Type < IDENTIFIER > )* )? < CLOSE_PAREN >
+    "{"
+        ( VarDecl )* ( Statement )* < RETURN > Assignment < SEMICOLON > #ReturnExp(1)
     "}"
 ;
 
@@ -97,7 +98,7 @@ Type #void:
     < INT_ARR > #TypeIntArray |
     < BOOLEAN > #TypeBoolean |
     < INT > #TypeInt |
-    < IDENTIFIER > ({jjtThis.put("foo", "bar"); }) #TypeId
+    < IDENTIFIER > ({ jjtThis.put("value", lastConsumedToken.getImage()); }) #TypeId
 ;
 
 Statement #void:

@@ -3,6 +3,9 @@ import a2;
 class c1 extends otherclass {
     public int f () {
        a = 1 + 2;
-       return (a*b+2);
+       return -a;
+    }
+    public static void main(String[] args){
+       a = 1 + 2;
     }
 }
