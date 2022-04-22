@@ -47,13 +47,10 @@ TOKEN :
 ;
 
 
-Start : ImportDeclaration ClassDeclaration <EOF>;
+Start : (ImportDeclaration)* ClassDeclaration <EOF>;
 
-ImportDeclaration #void:
-    (
-        < IMPORT > < IDENTIFIER > ({ jjtThis.put("value", lastConsumedToken.getImage()); }) #ImportDeclaration
-        InnerImport
-    )*
+ImportDeclaration:
+     < IMPORT > < IDENTIFIER > ({ jjtThis.put("value", lastConsumedToken.getImage()); }) #MainImport InnerImport
 ;
 
 InnerImport #void:
@@ -63,8 +60,8 @@ InnerImport #void:
     )
 ;
 
-ClassDeclaration #void:
-    < CLASS > < IDENTIFIER > #ClassDeclaration Extends
+ClassDeclaration #ClassDeclaration:
+    < CLASS > < IDENTIFIER > Extends
     "{" ( VarDecl )* ( MethodDeclaration )*
     "}"
 ;
@@ -76,22 +73,23 @@ Extends #void:
 ;
 
 VarDecl:
-    SCAN 2 Type < IDENTIFIER > #Id < SEMICOLON >
+    SCAN 2 Type < IDENTIFIER > < SEMICOLON >
 ;
 
 MethodDeclaration #void:
-    < PUBLIC > (Pti | Psvm)
+    < PUBLIC > (MainMethod | OtherMethod)
 ;
 
-Pti:
-    Type < IDENTIFIER > #Id < OPEN_PAREN > (Type < IDENTIFIER > ( "," Type < IDENTIFIER > )* )? < CLOSE_PAREN > "{"
-    ( VarDecl )* ( Statement )* < RETURN > Assignment < SEMICOLON > #ReturnExp(1)
+MainMethod #MainMethod:
+    < STATIC > < VOID > < MAIN > < OPEN_PAREN > < STRING > "[" "]" < IDENTIFIER > ({ jjtThis.put("value", lastConsumedToken.getImage()); }) #Param < CLOSE_PAREN >
+    "{"
+        ( VarDecl )* ( Statement )*
     "}"
 ;
 
-Psvm:
-    < STATIC > < VOID > < MAIN > < OPEN_PAREN > < STRING > "[" "]" < IDENTIFIER > < CLOSE_PAREN > "{"
-    ( VarDecl )* ( Statement )*
+OtherMethod #MethodDecl:
+    Type < IDENTIFIER > < OPEN_PAREN > (Type < IDENTIFIER > ( "," Type < IDENTIFIER > )* )? < CLOSE_PAREN > "{"
+    ( VarDecl )* ( Statement )* < RETURN > Assignment < SEMICOLON > #ReturnExp(1)
     "}"
 ;
 

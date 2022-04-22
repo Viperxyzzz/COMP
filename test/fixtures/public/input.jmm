@@ -2,15 +2,7 @@ import a1.blue.red.white;
 import a2;
 class c1 extends otherclass {
     public int f () {
-       1*2+3*(4+(5+6));
-       1+2*3;
-       if (a < 0) {
-        a = 0;
-        a = 1;}
-       else {
-        -a = 1;
-        a = 0;
-        a = 2;}
+       a = 1 + 2;
        return (a*b+2);
     }
 }
