@@ -41,6 +41,7 @@ TOKEN :
 	< BIGGERTHAN : ">" > |
 	< AND : "&&" > |
 	< OR : "||" > |
+	< DOT : "." > |
     < INTEGER : (["0" - "9"])+ > |
     < IDENTIFIER: ((["a" - "z"] | ["A" - "Z"] | "$" | "_") (["a" - "z"] | ["A" - "Z"] | "$" | "_" | ["0" - "9"])*) >
 ;
@@ -50,17 +51,28 @@ Start : ImportDeclaration ClassDeclaration <EOF>;
 
 ImportDeclaration #void:
     (
-        < IMPORT > #ImportDeclaration < IDENTIFIER >  ( "." < IDENTIFIER > )* < SEMICOLON >
+        < IMPORT > < IDENTIFIER > ({ jjtThis.put("value", lastConsumedToken.getImage()); }) #ImportDeclaration
+        InnerImport
     )*
 ;
 
-ClassDeclaration:
-    < CLASS > < IDENTIFIER >
+InnerImport #void:
     (
-        < EXTENDS > #ExtendsExp < IDENTIFIER > #Id
-    )?
+        < DOT > < IDENTIFIER > ({ jjtThis.put("value", lastConsumedToken.getImage()); }) #InnerImport InnerImport |
+        < SEMICOLON >
+    )
+;
+
+ClassDeclaration #void:
+    < CLASS > < IDENTIFIER > #ClassDeclaration Extends
     "{" ( VarDecl )* ( MethodDeclaration )*
     "}"
+;
+
+Extends #void:
+    (
+        < EXTENDS > < IDENTIFIER > ({ jjtThis.put("value", lastConsumedToken.getImage()); }) #ExtendsExp
+    )?
 ;
 
 VarDecl:
@@ -154,7 +166,7 @@ ParenExpression #void:
 DotExpression #void:
      Factor
      (
-        "." ( < LENGTH > | < IDENTIFIER > "(" ( Assignment ( "," Assignment )* )? ")" )
+        < DOT > ( < LENGTH > | < IDENTIFIER > "(" ( Assignment ( "," Assignment )* )? ")" )
      )*
  ;
 

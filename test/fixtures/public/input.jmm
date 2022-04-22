@@ -1,4 +1,4 @@
-import a1;
+import a1.blue.red.white;
 import a2;
 class c1 extends otherclass {
     public int f () {
