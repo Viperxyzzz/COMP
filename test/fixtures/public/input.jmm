@@ -1,9 +1,9 @@
 import a1.blue.red.white;
 import a2;
 class c1 extends otherclass {
-    public int f () {
+    public f f (int a, int c) {
        a = 1 + 2;
-       return -a;
+       return -(a+b);
     }
     public static void main(String[] args){
        a = 1 + 2;

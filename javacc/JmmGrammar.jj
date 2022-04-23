@@ -88,10 +88,21 @@ MainMethod:
 ;
 
 OtherMethod #MethodDecl:
-    Type < IDENTIFIER > < OPEN_PAREN > (Type < IDENTIFIER > ( "," Type < IDENTIFIER > )* )? < CLOSE_PAREN >
+    Type < IDENTIFIER > ({ jjtThis.put("value", lastConsumedToken.getImage()); }) #MethodName
+    < OPEN_PAREN >
+        (Param)?
+    < CLOSE_PAREN >
     "{"
         ( VarDecl )* ( Statement )* < RETURN > Assignment < SEMICOLON > #ReturnExp(1)
     "}"
+;
+
+Param:
+    Type < IDENTIFIER > ({ jjtThis.put("value", lastConsumedToken.getImage()); }) #Id MoreParam
+;
+
+MoreParam #void:
+    ( "," Type < IDENTIFIER > ({ jjtThis.put("value", lastConsumedToken.getImage()); }) #Id )*
 ;
 
 Type #void:
