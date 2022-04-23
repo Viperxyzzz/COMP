@@ -114,9 +114,17 @@ Type #void:
 
 Statement #void:
     "{" ( Statement )* "}" |
-    < IF > (< OPEN_PAREN > Assignment < CLOSE_PAREN > Statement) #IfStatement < ELSE > Statement #ElseStatement |
-    < WHILE > #WhileStatement < OPEN_PAREN > Assignment < CLOSE_PAREN > Statement |
+    IfStatement |
+    WhileStatement |
     Assignment < SEMICOLON >
+;
+
+IfStatement:
+    < IF > (< OPEN_PAREN > Assignment < CLOSE_PAREN > Statement) < ELSE > Statement #ElseStatement
+;
+
+WhileStatement:
+    < WHILE > < OPEN_PAREN > Assignment < CLOSE_PAREN > Statement
 ;
 
 Assignment #void:
@@ -176,7 +184,7 @@ ParenExpression #void:
 DotExpression #void:
      Factor
      (
-        < DOT > ( < LENGTH > | < IDENTIFIER > "(" ( Assignment ( "," Assignment )* )? ")" )
+        < DOT > ( < LENGTH > | < IDENTIFIER > ({ jjtThis.put("value", lastConsumedToken.getImage()); }) #Id "(" ( Assignment ( "," Assignment )* )? ")" )
      )*
  ;
 
