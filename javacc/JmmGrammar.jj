@@ -199,7 +199,7 @@ Factor #void:
     < FALSE > #FalseId |
     < IDENTIFIER > ({ jjtThis.put("value", lastConsumedToken.getImage()); }) #Id |
     < THIS > #ThisId |
-    < NEW > (< INT > < LSQUARE > Assignment < RSQUARE > | < IDENTIFIER > < OPEN_PAREN > < CLOSE_PAREN >) |
+    < NEW > (< INT > Array #NewArray(1) | < IDENTIFIER > ({ jjtThis.put("value", lastConsumedToken.getImage()); }) #Id < OPEN_PAREN > < CLOSE_PAREN > #NewExp(1))  |
     "!" Assignment #Not |
     < OPEN_PAREN > Assignment < CLOSE_PAREN >
 ;
