@@ -137,8 +137,8 @@ Assignment #void:
 LogicalExpression #void:
     ComparableExpression
     (
-        (< AND > #LogicalAnd | < OR > #LogicalOr)
-        ComparableExpression
+        (< AND > ComparableExpression) ({ jjtThis.put("op", "and"); }) #BinOp(2) |
+        (< OR > ComparableExpression) ({ jjtThis.put("op", "or"); }) #BinOp(2)
     )?
 ;
 
@@ -170,8 +170,12 @@ MultiplicativeExpression #void:
 ArrayExpression #void:
     ParenExpression
     (
-        < LSQUARE > Assignment < RSQUARE >
+         Array #ArrayExp(2)
     )?
+;
+
+Array #void:
+    < LSQUARE > Assignment < RSQUARE >
 ;
 
 ParenExpression #void:
@@ -197,8 +201,7 @@ Factor #void:
     < THIS > #ThisId |
     < NEW > (< INT > < LSQUARE > Assignment < RSQUARE > | < IDENTIFIER > < OPEN_PAREN > < CLOSE_PAREN >) |
     "!" Assignment #Not |
-    < OPEN_PAREN > Assignment < CLOSE_PAREN > |
-    < LSQUARE > Assignment < RSQUARE >
+    < OPEN_PAREN > Assignment < CLOSE_PAREN >
 ;
 
 // Injections for the implementation of JmmNode

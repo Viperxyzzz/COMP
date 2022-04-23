@@ -1,18 +1,14 @@
-import a1.blue.red.white;
-import a2;
+import a1.blue;
 class c1 extends otherclass {
-    public f f (int a, int c) {
-       a = 1 + 2;
-       while (a < 3*4) {
-       			if ((a/4) < b*5-a) {
-       				samples_in_circle = samples_in_circle + 1;
-       			} else if (a > b) {
-       			    a = 2;
-       			}
-       			else{
-       			}
-       			samples_so_far = samples_so_far + 1;
-       		}
-       return -(a+b);
+    public int f () {
+        b = a[1*2+3] + a[2];
+        if (a && b) {
+            amples_in_circle = samples_in_circle + 1;
+        } else if (a > b) {
+            a = 2;
+        }
+        else{
+        }
+        return -(a+b);
     }
 }
