@@ -36,12 +36,16 @@ TOKEN :
 	< NEW : "new" > |
 	< LSQUARE : "[" > |
 	< RSQUARE : "]" > |
+	< LBRACE : "{" > |
+	< RBRACE : "}" > |
 	< SEMICOLON : ";" > |
 	< LESSTHAN : "<" > |
 	< BIGGERTHAN : ">" > |
 	< AND : "&&" > |
 	< OR : "||" > |
 	< DOT : "." > |
+	< COMMA : "," > |
+	< EXCLAMATION : "!" > |
     < INTEGER : (["0" - "9"])+ > |
     < IDENTIFIER: ((["a" - "z"] | ["A" - "Z"] | "$" | "_") (["a" - "z"] | ["A" - "Z"] | "$" | "_" | ["0" - "9"])*) >
 ;
@@ -62,8 +66,8 @@ InnerImport #void:
 
 ClassDeclaration #ClassDeclaration:
     < CLASS > < IDENTIFIER > Extends
-    "{" ( VarDecl )* ( MethodDeclaration )*
-    "}"
+    < LBRACE > ( VarDecl )* ( MethodDeclaration )*
+    < RBRACE >
 ;
 
 Extends #void:
@@ -81,10 +85,10 @@ MethodDeclaration #void:
 ;
 
 MainMethod:
-    < STATIC > < VOID > < MAIN > < OPEN_PAREN > < STRING > "[" "]" < IDENTIFIER > ({ jjtThis.put("value", lastConsumedToken.getImage()); }) #Param < CLOSE_PAREN >
-    "{"
+    < STATIC > < VOID > < MAIN > < OPEN_PAREN > < STRING > < LSQUARE > < RSQUARE > < IDENTIFIER > ({ jjtThis.put("value", lastConsumedToken.getImage()); }) #Param < CLOSE_PAREN >
+    < LBRACE >
         ( VarDecl )* ( Statement )*
-    "}"
+    < RBRACE >
 ;
 
 OtherMethod #MethodDecl:
@@ -92,9 +96,9 @@ OtherMethod #MethodDecl:
     < OPEN_PAREN >
         (Param)?
     < CLOSE_PAREN >
-    "{"
+    < LBRACE >
         ( VarDecl )* ( Statement )* < RETURN > Assignment < SEMICOLON > #ReturnExp(1)
-    "}"
+    < RBRACE >
 ;
 
 Param:
@@ -102,7 +106,7 @@ Param:
 ;
 
 MoreParam #void:
-    ( "," Type < IDENTIFIER > ({ jjtThis.put("value", lastConsumedToken.getImage()); }) #Id )*
+    ( < COMMA > Type < IDENTIFIER > ({ jjtThis.put("value", lastConsumedToken.getImage()); }) #Id )*
 ;
 
 Type #void:
@@ -113,7 +117,7 @@ Type #void:
 ;
 
 Statement #void:
-    "{" ( Statement )* "}" |
+    < LBRACE > ( Statement )* < RBRACE > |
     IfStatement |
     WhileStatement |
     Assignment < SEMICOLON >
@@ -188,7 +192,7 @@ ParenExpression #void:
 DotExpression #void:
      Factor
      (
-        < DOT > ( < LENGTH > | < IDENTIFIER > ({ jjtThis.put("value", lastConsumedToken.getImage()); }) #Id "(" ( Assignment ( "," Assignment )* )? ")" )
+        < DOT > ( < LENGTH > | < IDENTIFIER > ({ jjtThis.put("value", lastConsumedToken.getImage()); }) #Id < OPEN_PAREN > ( Assignment ( "," Assignment )* )? < CLOSE_PAREN > )
      )*
  ;
 
@@ -200,7 +204,7 @@ Factor #void:
     < IDENTIFIER > ({ jjtThis.put("value", lastConsumedToken.getImage()); }) #Id |
     < THIS > #ThisId |
     < NEW > (< INT > Array #NewArray(1) | < IDENTIFIER > ({ jjtThis.put("value", lastConsumedToken.getImage()); }) #Id < OPEN_PAREN > < CLOSE_PAREN > #NewExp(1))  |
-    "!" Assignment #Not |
+    < EXCLAMATION > Assignment #Not |
     < OPEN_PAREN > Assignment < CLOSE_PAREN >
 ;
 

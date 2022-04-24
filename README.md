@@ -58,4 +58,4 @@ During the development of your compiler you will update this file in order to se
 
 *Bigger than ">"
 *Equal equal "=="
-*Logical OR "||~~~~"
+*Logical OR "||"
