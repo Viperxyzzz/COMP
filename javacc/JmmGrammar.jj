@@ -124,11 +124,11 @@ Statement #void:
 ;
 
 IfStatement:
-    < IF > (< OPEN_PAREN > Assignment < CLOSE_PAREN > Statement) < ELSE > Statement #ElseStatement
+    < IF > (< OPEN_PAREN > LogicalExpression < CLOSE_PAREN > Statement) < ELSE > Statement #ElseStatement
 ;
 
 WhileStatement:
-    < WHILE > < OPEN_PAREN > Assignment < CLOSE_PAREN > Statement
+    < WHILE > < OPEN_PAREN > LogicalExpression < CLOSE_PAREN > Statement
 ;
 
 Assignment #void:
@@ -172,40 +172,45 @@ MultiplicativeExpression #void:
 ;
 
 ArrayExpression #void:
-    ParenExpression
+    NotExpression
     (
          Array #ArrayExp(2)
     )?
 ;
 
 Array #void:
-    < LSQUARE > Assignment < RSQUARE >
+    < LSQUARE > LogicalExpression < RSQUARE >
 ;
 
-ParenExpression #void:
-    DotExpression
-	(
-	    < OPEN_PAREN > Assignment < CLOSE_PAREN >
-    )?
+NotExpression #void:
+    DotExpression |
+    < EXCLAMATION > LogicalExpression #Not
 ;
 
 DotExpression #void:
      Factor
      (
-        < DOT > ( < LENGTH > | < IDENTIFIER > ({ jjtThis.put("value", lastConsumedToken.getImage()); }) #Id < OPEN_PAREN > ( Assignment ( "," Assignment )* )? < CLOSE_PAREN > )
+        < DOT >
+        (
+            < LENGTH > #LengthExp |
+            < IDENTIFIER > ({ jjtThis.put("value", lastConsumedToken.getImage()); }) #Id < OPEN_PAREN > ( ParamToPass )? < CLOSE_PAREN >
+        ) #DotExp
      )*
- ;
+;
+
+ParamToPass:
+    LogicalExpression ( < COMMA > LogicalExpression )*
+;
 
 Factor #void:
 	< INTEGER > ({ jjtThis.put("value", lastConsumedToken.getImage()); }) #IdInt |
-	< MINUS > Factor #Negative(1) |
 	< TRUE > #TrueId |
     < FALSE > #FalseId |
     < IDENTIFIER > ({ jjtThis.put("value", lastConsumedToken.getImage()); }) #Id |
     < THIS > #ThisId |
     < NEW > (< INT > Array #NewArray(1) | < IDENTIFIER > ({ jjtThis.put("value", lastConsumedToken.getImage()); }) #Id < OPEN_PAREN > < CLOSE_PAREN > #NewExp(1))  |
-    < EXCLAMATION > Assignment #Not |
-    < OPEN_PAREN > Assignment < CLOSE_PAREN >
+    < MINUS > Factor #Negative(1) |
+    < OPEN_PAREN > LogicalExpression < CLOSE_PAREN >
 ;
 
 // Injections for the implementation of JmmNode

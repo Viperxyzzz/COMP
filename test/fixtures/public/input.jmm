@@ -1,16 +1,9 @@
 import a1.blue;
 class c1 extends otherclass {
     public int f () {
-        new int [a + 4 * b];
-        new a();
-        b = a[1] + a[2];
-        if (a && b) {
-            amples_in_circle = samples_in_circle + 1;
-        } else if (a > b) {
-            a = 2;
-        }
-        else{
-        }
+        if (winner < 1 && !(movesmade < 9)&& !(9 < movesmade))
+           winner = 0;
+        else{}
         return -(a+b);
     }
 }
