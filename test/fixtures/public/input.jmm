@@ -1,7 +1,8 @@
 import a1.blue;
 class c1 extends otherclass {
     public int f () {
-        if (winner < 1 && !(movesmade < 9)&& !(9 < movesmade))
+        a = a *a+a-a-a/5;
+        if (a && !a && !a)
            winner = 0;
         else{}
         return -(a+b);

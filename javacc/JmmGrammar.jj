@@ -143,7 +143,7 @@ LogicalExpression #void:
     (
         (< AND > ComparableExpression) ({ jjtThis.put("op", "and"); }) #BinOp(2) |
         (< OR > ComparableExpression) ({ jjtThis.put("op", "or"); }) #BinOp(2)
-    )?
+    )*
 ;
 
 ComparableExpression #void:
@@ -152,7 +152,7 @@ ComparableExpression #void:
         (< LESSTHAN > AdditiveExpression) ({ jjtThis.put("op", "smaller"); }) #BinOp(2) |
         (< BIGGERTHAN > AdditiveExpression) ({ jjtThis.put("op", "bigger"); }) #BinOp(2) |
         (< EQUALEQUAL > AdditiveExpression) ({ jjtThis.put("op", "is_equal"); }) #BinOp(2)
-    )?
+    )*
 ;
 
 AdditiveExpression #void:
@@ -160,7 +160,7 @@ AdditiveExpression #void:
 	(
 		(< PLUS > MultiplicativeExpression) ({ jjtThis.put("op", "add"); }) #BinOp(2) |
 		(< MINUS > MultiplicativeExpression) ({ jjtThis.put("op", "sub"); }) #BinOp(2)
-	)?
+	)*
 ;
 
 MultiplicativeExpression #void:
@@ -168,7 +168,7 @@ MultiplicativeExpression #void:
 	(
 		(< TIMES > ArrayExpression) ({ jjtThis.put("op", "mult"); }) #BinOp(2) |
 		(< DIVIDE > ArrayExpression) ({ jjtThis.put("op", "div"); }) #BinOp(2)
-	)?
+	)*
 ;
 
 ArrayExpression #void:
@@ -184,7 +184,7 @@ Array #void:
 
 NotExpression #void:
     DotExpression |
-    < EXCLAMATION > LogicalExpression #Not
+    < EXCLAMATION > LogicalExpression #Not(1)
 ;
 
 DotExpression #void:
