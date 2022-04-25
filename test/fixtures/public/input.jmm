@@ -2,7 +2,7 @@ import a1.blue;
 class c1 extends otherclass {
     public int f () {
         a = a *a+a-a-a/5;
-        if (a && !a && !a)
+        if (a && a && a+5-5-5-5+5)
            winner = 0;
         else{}
         return -(a+b);
