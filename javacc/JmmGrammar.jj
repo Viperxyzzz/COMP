@@ -54,18 +54,18 @@ TOKEN :
 Start : (ImportDeclaration)* ClassDeclaration <EOF>;
 
 ImportDeclaration:
-     < IMPORT > < IDENTIFIER > ({ jjtThis.put("value", lastConsumedToken.getImage()); }) #MainImport InnerImport
+     < IMPORT > < IDENTIFIER > ({ jjtThis.put("value", lastConsumedToken.getImage()); }) #Id InnerImport
 ;
 
 InnerImport #void:
     (
-        < DOT > < IDENTIFIER > ({ jjtThis.put("value", lastConsumedToken.getImage()); }) #InnerImport InnerImport |
+        < DOT > < IDENTIFIER > ({ jjtThis.put("value", lastConsumedToken.getImage()); }) #Id InnerImport |
         < SEMICOLON >
     )
 ;
 
-ClassDeclaration #ClassDeclaration:
-    < CLASS > < IDENTIFIER > Extends
+ClassDeclaration #void:
+    < CLASS > < IDENTIFIER > ({ jjtThis.put("value", lastConsumedToken.getImage()); }) #ClassDecl Extends
     < LBRACE > ( VarDecl )* ( MethodDeclaration )*
     < RBRACE >
 ;

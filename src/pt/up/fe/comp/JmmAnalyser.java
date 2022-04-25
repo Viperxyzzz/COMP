@@ -1,10 +1,12 @@
 package pt.up.fe.comp;
 
+import java.util.ArrayList;
 import java.util.Collections;
 
 import pt.up.fe.comp.jmm.analysis.JmmAnalysis;
 import pt.up.fe.comp.jmm.analysis.JmmSemanticsResult;
 import pt.up.fe.comp.jmm.analysis.table.SymbolTable;
+import pt.up.fe.comp.jmm.ast.JmmNode;
 import pt.up.fe.comp.jmm.parser.JmmParserResult;
 
 public class JmmAnalyser implements JmmAnalysis {
@@ -13,7 +15,11 @@ public class JmmAnalyser implements JmmAnalysis {
     public JmmSemanticsResult semanticAnalysis(JmmParserResult parserResult) {
         SymbolTable symbolTable = null;
 
+        JmmNode rootNode = parserResult.getRootNode();
 
+        var importCollector = new AstVisitor();
+        var imports = new ArrayList<String>();
+        System.out.print(importCollector.visit(rootNode, imports));
 
         return new JmmSemanticsResult(parserResult, symbolTable, Collections.emptyList());
 
