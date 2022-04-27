@@ -7,7 +7,11 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 public class AstVisitor extends PreorderJmmVisitor<List<String>,Boolean> {
-    public AstVisitor(){
+    MySymbolTable symbolTable;
+    public AstVisitor(MySymbolTable symbolTable){
+
+        this.symbolTable = symbolTable;
+
         addVisit("ImportDeclaration", this::visitImport);
         addVisit("ClassDecl", this::visitClass);
         addVisit("ExtendsExp", this::visitExtends);

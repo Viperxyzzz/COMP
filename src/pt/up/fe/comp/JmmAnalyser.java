@@ -13,11 +13,11 @@ public class JmmAnalyser implements JmmAnalysis {
 
     @Override
     public JmmSemanticsResult semanticAnalysis(JmmParserResult parserResult) {
-        SymbolTable symbolTable = null;
+        MySymbolTable symbolTable = new MySymbolTable();
 
         JmmNode rootNode = parserResult.getRootNode();
 
-        var importCollector = new AstVisitor();
+        var importCollector = new AstVisitor(symbolTable);
         var imports = new ArrayList<String>();
         System.out.print(importCollector.visit(rootNode, imports));
 

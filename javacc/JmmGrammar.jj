@@ -64,8 +64,8 @@ InnerImport #void:
     )
 ;
 
-ClassDeclaration #void:
-    < CLASS > < IDENTIFIER > ({ jjtThis.put("value", lastConsumedToken.getImage()); }) #ClassDecl Extends
+ClassDeclaration:
+    < CLASS > < IDENTIFIER > ({ jjtThis.put("value", lastConsumedToken.getImage()); }) #ClassName Extends
     < LBRACE > ( VarDecl )* ( MethodDeclaration )*
     < RBRACE >
 ;
@@ -97,9 +97,13 @@ OtherMethod #MethodDecl:
         (Param)?
     < CLOSE_PAREN >
     < LBRACE >
-        ( VarDecl )* ( Statement )* < RETURN > Assignment < SEMICOLON > #ReturnExp(1)
+       InitVarDecl InitStatement < RETURN > Assignment < SEMICOLON > #ReturnExp(1)
     < RBRACE >
 ;
+
+InitVarDecl: ( VarDecl )* ;
+
+InitStatement: ( Statement )* ;
 
 Param:
     Type < IDENTIFIER > ({ jjtThis.put("value", lastConsumedToken.getImage()); }) #Id MoreParam
@@ -184,7 +188,7 @@ Array #void:
 
 NotExpression #void:
     DotExpression |
-    < EXCLAMATION > LogicalExpression #Not(1)
+    < EXCLAMATION > ArrayExpression #Not(1)
 ;
 
 DotExpression #void:
