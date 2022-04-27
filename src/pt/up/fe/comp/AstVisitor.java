@@ -13,10 +13,10 @@ public class AstVisitor extends PreorderJmmVisitor<List<String>,Boolean> {
         this.symbolTable = symbolTable;
 
         addVisit("ImportDeclaration", this::visitImport);
-        addVisit("ClassDecl", this::visitClass);
-        addVisit("ExtendsExp", this::visitExtends);
+        addVisit("ClassDeclaration", this::visitClass);
+        /*addVisit("ExtendsExp", this::visitExtends);
         addVisit("MainMethod", this::visitMain);
-        addVisit("MethodDecl", this::visitMethod);
+        addVisit("MethodDecl", this::visitMethod);*/
     }
 
     private Boolean visitImport(JmmNode importDecl, List<String> imports){
@@ -29,9 +29,15 @@ public class AstVisitor extends PreorderJmmVisitor<List<String>,Boolean> {
         return true;
     }
 
-    private Boolean visitClass(JmmNode classDecl, List<String> className){
-        //className.add(classDecl.getKind());
-        className.add(classDecl.get("value"));
+    private Boolean visitClass(JmmNode classDeclaration, List<String> imports){
+        var className = classDeclaration.getChildren().get(0).get("value");
+        imports.add(className);
+
+        var index1 = classDeclaration.getChildren().get(1);
+        if (index1.getKind().equals("ExtendsExp")){
+            var extendsExp = index1.get("value");
+            imports.add(extendsExp);
+        }
 
         return true;
     }

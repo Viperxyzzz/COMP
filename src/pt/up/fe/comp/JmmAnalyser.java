@@ -18,9 +18,11 @@ public class JmmAnalyser implements JmmAnalysis {
         JmmNode rootNode = parserResult.getRootNode();
 
         MySymbolTable symbolTable = new MySymbolTable();
+
         var importCollector = new AstVisitor(symbolTable);
         var imports = new ArrayList<String>();
-        System.out.println(importCollector.visit(rootNode, imports));
+        importCollector.visit(rootNode, imports);
+        System.out.println(imports);
 
         return new JmmSemanticsResult(parserResult, symbolTable, Collections.emptyList());
 
