@@ -14,9 +14,11 @@ public class AstVisitor extends PreorderJmmVisitor<List<String>,Boolean> {
 
         addVisit("ImportDeclaration", this::visitImport);
         addVisit("ClassDeclaration", this::visitClass);
-        /*addVisit("ExtendsExp", this::visitExtends);
         addVisit("MainMethod", this::visitMain);
-        addVisit("MethodDecl", this::visitMethod);*/
+        addVisit("MethodDecl", this::visitMethod);
+        
+        /*addVisit("ExtendsExp", this::visitExtends);
+        */
     }
 
     private Boolean visitImport(JmmNode importDecl, List<String> imports){
@@ -49,27 +51,22 @@ public class AstVisitor extends PreorderJmmVisitor<List<String>,Boolean> {
     }
 
     private Boolean visitMain(JmmNode mainMethod, List<String> args){
-        var argString = mainMethod.getChildren().stream()
-                .map(Param -> Param.get("value"))
-                .collect(Collectors.joining("."));
-
+        var argString = mainMethod.getChildren().get(0).get("value");
         args.add(argString);
 
         return true;
     }
 
     private Boolean visitMethod(JmmNode methodDecl, List<String> args){
-        //var methodType = ;
+        var methodType = methodDecl.getChildren().get(0).getKind();
+        args.add(methodType);
 
-        //var methodName = ;
+        var methodName = methodDecl.getChildren().get(1).get("value");
+        args.add(methodName);
 
-        var argString = methodDecl.getChildren().stream()
-                .map(Param -> Param.get("value"))
-                .collect(Collectors.joining("."));
-
-
-
-        args.add(argString);
+        var parameters = methodDecl.getChildren().get(2);
+        //for (parameter : parameters){var paramType = parameter.getChildren().get(0); var paramValue = parameter.getChildren().get(1);}
+        //args.add(parameters);
 
         return true;
     }

@@ -87,7 +87,7 @@ MethodDeclaration #void:
 MainMethod:
     < STATIC > < VOID > < MAIN > < OPEN_PAREN > < STRING > < LSQUARE > < RSQUARE > < IDENTIFIER > ({ jjtThis.put("value", lastConsumedToken.getImage()); }) #Param < CLOSE_PAREN >
     < LBRACE >
-        ( VarDecl )* ( Statement )*
+        InitVarDecl InitStatement
     < RBRACE >
 ;
 
