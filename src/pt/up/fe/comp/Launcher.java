@@ -6,9 +6,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import pt.up.fe.comp.jmm.analysis.JmmSemanticsResult;
-import pt.up.fe.comp.jmm.jasmin.JasminBackend;
 import pt.up.fe.comp.jmm.jasmin.JasminResult;
-import pt.up.fe.comp.jmm.ollir.JmmOptimization;
 import pt.up.fe.comp.jmm.ollir.OllirResult;
 import pt.up.fe.comp.jmm.parser.JmmParserResult;
 import pt.up.fe.specs.util.SpecsIo;
@@ -67,10 +65,10 @@ public class Launcher {
         TestUtils.noErrors(optimizationResult.getReports());
 
         // Instantiate JasminBackend
-        JasminBackender backender = new JasminBackender();
+        JasminEmitter jasminEmitter = new JasminEmitter();
 
         // Backend Stage
-        JasminResult backendResult = backender.toJasmin(optimizationResult);
+        JasminResult backendResult = jasminEmitter.toJasmin(optimizationResult);
 
         // Check if there are parsing errors
         TestUtils.noErrors(backendResult.getReports());

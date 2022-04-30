@@ -80,18 +80,21 @@ VarDecl:
     SCAN 2 Type < IDENTIFIER > < SEMICOLON >
 ;
 
-MethodDeclaration #void:
+MethodDeclaration #MethodDecl:
     < PUBLIC > (MainMethod | OtherMethod)
 ;
 
-MainMethod:
-    < STATIC > < VOID > < MAIN > < OPEN_PAREN > < STRING > < LSQUARE > < RSQUARE > < IDENTIFIER > ({ jjtThis.put("value", lastConsumedToken.getImage()); }) #Param < CLOSE_PAREN >
+MainMethod #void:
+    < STATIC > < VOID > #TypeVoid < MAIN > ({ jjtThis.put("value", "main"); }) #MethodName
+    < OPEN_PAREN >
+        < STRING > < LSQUARE > < RSQUARE > #TypeStringArray < IDENTIFIER > ({ jjtThis.put("value", lastConsumedToken.getImage()); }) #Id
+    < CLOSE_PAREN > #Param(2)
     < LBRACE >
         InitVarDecl InitStatement
     < RBRACE >
 ;
 
-OtherMethod #MethodDecl:
+OtherMethod #void:
     Type < IDENTIFIER > ({ jjtThis.put("value", lastConsumedToken.getImage()); }) #MethodName
     < OPEN_PAREN >
         (Param)?

@@ -1,30 +1,31 @@
 package pt.up.fe.comp;
 
 import java.util.ArrayList;
-import java.util.Collections;
+import java.util.List;
 
 import pt.up.fe.comp.jmm.analysis.JmmAnalysis;
 import pt.up.fe.comp.jmm.analysis.JmmSemanticsResult;
-import pt.up.fe.comp.jmm.analysis.table.SymbolTable;
-import pt.up.fe.comp.jmm.ast.JmmNode;
-import pt.up.fe.comp.jmm.ast.examples.ExampleVisitor;
 import pt.up.fe.comp.jmm.parser.JmmParserResult;
+import pt.up.fe.comp.jmm.report.Report;
 
 public class JmmAnalyser implements JmmAnalysis {
 
     @Override
     public JmmSemanticsResult semanticAnalysis(JmmParserResult parserResult) {
-
-        JmmNode rootNode = parserResult.getRootNode();
+        List<Report> reports = new ArrayList<>();
 
         MySymbolTable symbolTable = new MySymbolTable();
 
-        var importCollector = new AstVisitor(symbolTable);
+        var symbolTableFiller = new SymbolTableFiller(symbolTable);
+        symbolTableFiller.visit(parserResult.getRootNode(), symbolTable);
+        reports.addAll(symbolTableFiller.getReports());
+
+        /*
         var imports = new ArrayList<String>();
         importCollector.visit(rootNode, imports);
-        System.out.println(imports);
+        System.out.println(imports);*/
 
-        return new JmmSemanticsResult(parserResult, symbolTable, Collections.emptyList());
+        return new JmmSemanticsResult(parserResult, symbolTable, reports);
 
     }
 
