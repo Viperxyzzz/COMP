@@ -12,6 +12,8 @@ import pt.up.fe.comp.jmm.report.Stage;
 import pt.up.fe.specs.util.SpecsIo;
 import pt.up.fe.specs.util.SpecsSystem;
 
+import javax.sound.sampled.Line;
+
 /**
  * Copyright 2022 SPeCS.
  * 
@@ -41,11 +43,13 @@ public class SimpleParser implements JmmParser {
             //parser.Start();
             SpecsSystem.invoke(parser, startingRule);
 
-            /*Node root = parser.rootNode();
-            root.toTree("");*/
+            var root = parser.rootNode();
+            new LineColAnnotator().visit((JmmNode) root);
 
-            var root = ((JmmNode) parser.rootNode()).sanitize();
-            System.out.println(root.toTree());
+
+            //var root = ((JmmNode) parser.rootNode()).sanitize();
+
+            System.out.println(((JmmNode)root).sanitize().toTree());
 
             if (!(root instanceof JmmNode)) {
                 return JmmParserResult.newError(new Report(ReportType.WARNING, Stage.SYNTATIC, -1,
