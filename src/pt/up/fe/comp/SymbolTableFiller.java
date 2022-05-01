@@ -1,6 +1,8 @@
 package pt.up.fe.comp;
 
+import pt.up.fe.comp.jmm.analysis.table.Symbol;
 import pt.up.fe.comp.jmm.analysis.table.SymbolTable;
+import pt.up.fe.comp.jmm.analysis.table.Type;
 import pt.up.fe.comp.jmm.ast.JmmNode;
 import pt.up.fe.comp.jmm.ast.PreorderJmmVisitor;
 import pt.up.fe.comp.jmm.report.Report;
@@ -52,37 +54,26 @@ public class SymbolTableFiller extends PreorderJmmVisitor<MySymbolTable,Boolean>
     }
 
     private Boolean visitMethod(JmmNode methodDecl, MySymbolTable symbolTable){
-        var methodType = methodDecl.getChildren().get(0).getKind();
-        //symbolTable.add(methodType);
-
         var methodName = methodDecl.getJmmChild(1).get("value");
-        //symbolTable.add(methodName);
 
         if (symbolTable.hasMethod(methodName)){
             reports.add(Report.newError(Stage.SEMANTIC, -1, -1, "Duplicated method: " + methodName, null)); //ver como ir buscar linha e col (na aula)
             return false;
         }
 
-        var parameters = methodDecl.getChildren().get(2);
-        //for (parameter : parameters){var paramType = parameter.getChildren().get(0); var paramValue = parameter.getChildren().get(1);}
-        //args.add(parameters);
+        var returnTypeNode = methodDecl.getJmmChild(0);
+        var returnType = AstUtils.buildType(returnTypeNode);
+
+        var params = methodDecl.getChildren().subList(2, methodDecl.getNumChildren()).stream()
+                .filter(node -> node.getKind().equals("Param"))
+                .collect(Collectors.toList());
+
+        var paramSymbols = params.stream()
+                .map(param -> new Symbol(AstUtils.buildType(param.getJmmChild(0)), param.getJmmChild(1).get("value")))
+                .collect(Collectors.toList());
+
+        symbolTable.addMethod(methodName, returnType, paramSymbols);
 
         return true;
-
-
-/*
-        var methodName = methodDecl.getJmmChild(1).get("value");
-
-        if (symbolTable.hasMethod(methodName)){
-            reports.add(Report.newError(Stage.SEMANTIC, -1, -1, "Duplicated method " + methodName, null)); //ver como ir buscar linha e col (na aula)
-            return false;
-        }
-
-        var returnType = methodDecl.getJmmChild(0);
-        var typeName = returnType.get("value");
-
-        var params = methodDecl.getChildren().subList(2, methodDecl.getNumChildren()-2); //verificar para nossa ast
-
-        symbolTable.addMethod(methodName, new Type(typeName, isArray), params);*/
     }
 }

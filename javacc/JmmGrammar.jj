@@ -85,9 +85,9 @@ MethodDeclaration #MethodDecl:
 ;
 
 MainMethod #void:
-    < STATIC > < VOID > #TypeVoid < MAIN > ({ jjtThis.put("value", "main"); }) #MethodName
+    < STATIC > < VOID > ({ jjtThis.put("value", "void"); }) #Type < MAIN > ({ jjtThis.put("value", "main"); }) #MethodName
     < OPEN_PAREN >
-        < STRING > < LSQUARE > < RSQUARE > #TypeStringArray < IDENTIFIER > ({ jjtThis.put("value", lastConsumedToken.getImage()); }) #Id
+        < STRING > < LSQUARE > < RSQUARE > ({ jjtThis.put("isArray", "True"); jjtThis.put("value", "String"); }) #Type < IDENTIFIER > ({ jjtThis.put("value", lastConsumedToken.getImage()); }) #Id
     < CLOSE_PAREN > #Param(2)
     < LBRACE >
         InitVarDecl InitStatement
@@ -97,7 +97,7 @@ MainMethod #void:
 OtherMethod #void:
     Type < IDENTIFIER > ({ jjtThis.put("value", lastConsumedToken.getImage()); }) #MethodName
     < OPEN_PAREN >
-        (Param)?
+        (Param ( < COMMA > Param )*)?
     < CLOSE_PAREN >
     < LBRACE >
        InitVarDecl InitStatement < RETURN > Assignment < SEMICOLON > #ReturnExp(1)
@@ -109,18 +109,14 @@ InitVarDecl: ( VarDecl )* ;
 InitStatement: ( Statement )* ;
 
 Param:
-    Type < IDENTIFIER > ({ jjtThis.put("value", lastConsumedToken.getImage()); }) #Id MoreParam
-;
-
-MoreParam #void:
-    ( < COMMA > Type < IDENTIFIER > ({ jjtThis.put("value", lastConsumedToken.getImage()); }) #Id )*
+    Type < IDENTIFIER > ({ jjtThis.put("value", lastConsumedToken.getImage()); }) #Id
 ;
 
 Type #void:
-    < INT_ARR > #TypeIntArray |
-    < BOOLEAN > #TypeBoolean |
-    < INT > #TypeInt |
-    < IDENTIFIER > ({ jjtThis.put("value", lastConsumedToken.getImage()); }) #TypeId
+    < INT_ARR > ({ jjtThis.put("isArray", "True"); jjtThis.put("value", "int"); }) #Type |
+    < BOOLEAN > ({ jjtThis.put("value", "boolean"); }) #Type |
+    < INT > ({ jjtThis.put("value", "int"); }) #Type |
+    < IDENTIFIER > ({ jjtThis.put("value", lastConsumedToken.getImage()); }) #Type
 ;
 
 Statement #void:

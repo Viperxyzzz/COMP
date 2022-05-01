@@ -88,7 +88,5 @@ public class MySymbolTable implements SymbolTable {
         methods.add(methodSignature);
         methodReturnTypes.put(methodSignature, returnType);
         methodParams.put(methodSignature, params);
-
-        //completar
     }
 }

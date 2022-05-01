@@ -10,5 +10,7 @@ public class AnalysisTest {
         var results = TestUtils.analyse(SpecsIo.getResource("fixtures/public/input.jmm"));
 
         System.out.println("SymbolTable: " + results.getSymbolTable().print());
+
+        //TestUtils.noErrors(results);
     }
 }

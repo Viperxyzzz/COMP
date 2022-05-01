@@ -20,10 +20,7 @@ public class JmmAnalyser implements JmmAnalysis {
         symbolTableFiller.visit(parserResult.getRootNode(), symbolTable);
         reports.addAll(symbolTableFiller.getReports());
 
-        /*
-        var imports = new ArrayList<String>();
-        importCollector.visit(rootNode, imports);
-        System.out.println(imports);*/
+        System.out.println(symbolTable.print());
 
         return new JmmSemanticsResult(parserResult, symbolTable, reports);
 
