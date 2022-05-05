@@ -1,7 +1,6 @@
 import a1.blue;
 class c1 extends otherclass {
     int one;
-    int one;
     int two;
     int[] three;
     public static void main(String[] args) {
@@ -11,7 +10,7 @@ class c1 extends otherclass {
         	ioPlus.printHelloWorld();
         }
     public int f (int a, int b) {
-        !a[0];
+        int test;
         if (a && !a && b)
            winner = 0;
         else{}

@@ -15,6 +15,7 @@ public class MySymbolTable implements SymbolTable {
     private final List<String> methods;
     private final Map<String, Type> methodReturnTypes;
     private final Map<String, List<Symbol>> methodParams;
+    private final Map<String, List<Symbol>> methodLocalVars;
 
     public MySymbolTable() {
         this.imports = new ArrayList<>();
@@ -24,7 +25,7 @@ public class MySymbolTable implements SymbolTable {
         this.methods = new ArrayList<>();
         this.methodReturnTypes = new HashMap<>();
         this.methodParams = new HashMap<>();
-
+        this.methodLocalVars = new HashMap<>();
     }
 
     @Override
@@ -80,16 +81,18 @@ public class MySymbolTable implements SymbolTable {
 
     @Override
     public List<Symbol> getLocalVariables(String methodSignature) {
-        return null;
+        return methodLocalVars.get(methodSignature);
     }
+
 
     public boolean hasMethod(String methodSignature){
         return methods.contains(methodSignature);
     }
 
-    public void addMethod(String methodSignature, Type returnType, List<Symbol> params){
+    public void addMethod(String methodSignature, Type returnType, List<Symbol> params, List<Symbol> localVars){
         methods.add(methodSignature);
         methodReturnTypes.put(methodSignature, returnType);
         methodParams.put(methodSignature, params);
+        methodLocalVars.put(methodSignature,localVars);
     }
 }
