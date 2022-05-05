@@ -23,6 +23,7 @@ public class SymbolTableFiller extends PreorderJmmVisitor<MySymbolTable,Boolean>
         addVisit("ImportDeclaration", this::visitImport);
         addVisit("ClassDeclaration", this::visitClass);
         addVisit("MethodDecl", this::visitMethod);
+        addVisit("VarDecl",this::visitVar);
 
     }
 
@@ -58,7 +59,7 @@ public class SymbolTableFiller extends PreorderJmmVisitor<MySymbolTable,Boolean>
         var methodName = methodDecl.getJmmChild(1).get("value");
 
         if (symbolTable.hasMethod(methodName)){
-            reports.add(Report.newError(Stage.SEMANTIC, Integer.valueOf(methodDecl.get("line")), Integer.valueOf(methodDecl.get("col")), "Duplicated method: " + methodName, null)); //ver como ir buscar linha e col (na aula)
+            reports.add(Report.newError(Stage.SEMANTIC, Integer.valueOf(methodDecl.get("line")), Integer.valueOf(methodDecl.get("col")), "Duplicated method: " + methodName, null));
             return false;
         }
 
@@ -76,5 +77,13 @@ public class SymbolTableFiller extends PreorderJmmVisitor<MySymbolTable,Boolean>
         symbolTable.addMethod(methodName, returnType, paramSymbols);
 
         return true;
+    }
+
+    private Boolean visitVar(JmmNode varDecl, MySymbolTable symbolTable){
+        var returnType = AstUtils.buildType(varDecl.getJmmChild(0));
+        var fieldSymbol = new Symbol(returnType,varDecl.getJmmChild(1).get("value"));
+        symbolTable.addField(fieldSymbol);
+        return true;
+
     }
 }

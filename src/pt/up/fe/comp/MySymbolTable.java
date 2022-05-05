@@ -8,6 +8,7 @@ import java.util.*;
 
 public class MySymbolTable implements SymbolTable {
     private final List<String> imports;
+    private final List<Symbol> fields;
     private String className;
     private String superClass;
 
@@ -17,6 +18,7 @@ public class MySymbolTable implements SymbolTable {
 
     public MySymbolTable() {
         this.imports = new ArrayList<>();
+        this.fields = new ArrayList<>();
         this.className = null;
         this.superClass = null;
         this.methods = new ArrayList<>();
@@ -54,7 +56,11 @@ public class MySymbolTable implements SymbolTable {
 
     @Override
     public List<Symbol> getFields() {
-        return Collections.emptyList();
+        return this.fields;
+    }
+
+    public void addField(Symbol field){
+        this.fields.add(field);
     }
 
     @Override

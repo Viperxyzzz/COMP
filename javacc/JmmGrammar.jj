@@ -77,7 +77,7 @@ Extends #void:
 ;
 
 VarDecl:
-    SCAN 2 Type < IDENTIFIER > < SEMICOLON >
+    SCAN 2 Type < IDENTIFIER > ({ jjtThis.put("value", lastConsumedToken.getImage()); }) #Id < SEMICOLON >
 ;
 
 MethodDeclaration #MethodDecl:
