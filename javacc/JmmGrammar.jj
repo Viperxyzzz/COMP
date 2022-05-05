@@ -87,7 +87,7 @@ MethodDeclaration #MethodDecl:
 MainMethod #void:
     < STATIC > < VOID > ({ jjtThis.put("value", "void"); }) #Type < MAIN > ({ jjtThis.put("value", "main"); }) #MethodName
     < OPEN_PAREN >
-        < STRING > < LSQUARE > < RSQUARE > ({ jjtThis.put("isArray", "True"); jjtThis.put("value", "String"); }) #Type < IDENTIFIER > ({ jjtThis.put("value", lastConsumedToken.getImage()); }) #Id
+        < STRING > < LSQUARE > < RSQUARE > ({ jjtThis.put("isArray", "True"); jjtThis.put("value", "String");}) #Type < IDENTIFIER > ({ jjtThis.put("value", lastConsumedToken.getImage()); }) #Id
     < CLOSE_PAREN > #Param(2)
     < LBRACE >
         InitVarDecl InitStatement

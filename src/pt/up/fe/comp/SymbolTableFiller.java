@@ -17,7 +17,7 @@ public class SymbolTableFiller extends PreorderJmmVisitor<MySymbolTable,Boolean>
 
     private final List<Report> reports;
 
-    public SymbolTableFiller(MySymbolTable symbolTable){
+    public SymbolTableFiller(){
         this.reports = new ArrayList<>();
 
         addVisit("ImportDeclaration", this::visitImport);
@@ -43,6 +43,7 @@ public class SymbolTableFiller extends PreorderJmmVisitor<MySymbolTable,Boolean>
     private Boolean visitClass(JmmNode classDeclaration, MySymbolTable symbolTable){
         var className = classDeclaration.getChildren().get(0).get("value");
         symbolTable.setClassName(className);
+        //classDeclaration.getOptional("extends").ifPresent(superClass -> symbolTable.setSuperClass(superClass));
 
         var index1 = classDeclaration.getChildren().get(1);
         if (index1.getKind().equals("ExtendsExp")){
@@ -57,7 +58,7 @@ public class SymbolTableFiller extends PreorderJmmVisitor<MySymbolTable,Boolean>
         var methodName = methodDecl.getJmmChild(1).get("value");
 
         if (symbolTable.hasMethod(methodName)){
-            reports.add(Report.newError(Stage.SEMANTIC, -1, -1, "Duplicated method: " + methodName, null)); //ver como ir buscar linha e col (na aula)
+            reports.add(Report.newError(Stage.SEMANTIC, Integer.valueOf(methodDecl.get("line")), Integer.valueOf(methodDecl.get("col")), "Duplicated method: " + methodName, null)); //ver como ir buscar linha e col (na aula)
             return false;
         }
 

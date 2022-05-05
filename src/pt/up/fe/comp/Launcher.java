@@ -54,7 +54,7 @@ public class Launcher {
 
         // Check if there are parsing errors
         TestUtils.noErrors(analysisResult.getReports());
-
+        /*
         // Instantiate JmmOptimization
         JmmOptimizer optimizer = new JmmOptimizer();
 
@@ -74,6 +74,7 @@ public class Launcher {
         TestUtils.noErrors(backendResult.getReports());
 
         // ... add remaining stages
+        */
     }
 
 }

@@ -4,10 +4,7 @@ import pt.up.fe.comp.jmm.analysis.table.Symbol;
 import pt.up.fe.comp.jmm.analysis.table.SymbolTable;
 import pt.up.fe.comp.jmm.analysis.table.Type;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class MySymbolTable implements SymbolTable {
     private final List<String> imports;
@@ -52,12 +49,12 @@ public class MySymbolTable implements SymbolTable {
     }
 
     public void setSuperClass(String className){
-        this.className = className;
+        this.superClass = className;
     }
 
     @Override
     public List<Symbol> getFields() {
-        return null;
+        return Collections.emptyList();
     }
 
     @Override

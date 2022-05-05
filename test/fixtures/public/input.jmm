@@ -3,6 +3,9 @@ class c1 extends otherclass {
     public static void main(String[] args) {
     		ioPlus.printHelloWorld();
     	}
+    public static void main(String[] args) {
+        		ioPlus.printHelloWorld();
+        }
     public int f (int a, int b) {
         !a[0];
         if (a && !a && b)

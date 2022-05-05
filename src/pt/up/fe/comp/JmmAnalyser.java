@@ -16,11 +16,10 @@ public class JmmAnalyser implements JmmAnalysis {
 
         MySymbolTable symbolTable = new MySymbolTable();
 
-        var symbolTableFiller = new SymbolTableFiller(symbolTable);
+        var symbolTableFiller = new SymbolTableFiller();
         symbolTableFiller.visit(parserResult.getRootNode(), symbolTable);
         reports.addAll(symbolTableFiller.getReports());
 
-        System.out.println(symbolTable.print());
 
         return new JmmSemanticsResult(parserResult, symbolTable, reports);
 
