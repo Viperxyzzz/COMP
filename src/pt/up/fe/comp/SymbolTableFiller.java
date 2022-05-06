@@ -73,7 +73,7 @@ public class SymbolTableFiller extends PreorderJmmVisitor<MySymbolTable,Boolean>
         var paramSymbols = params.stream()
                 .map(param -> new Symbol(AstUtils.buildType(param.getJmmChild(0)), param.getJmmChild(1).get("value")))
                 .collect(Collectors.toList());
-        
+
         List<Symbol> localVarsSymbols = new ArrayList<>();
         for(int i = 0; i < methodDecl.getNumChildren();i++){
             var node = methodDecl.getJmmChild(i);
@@ -90,6 +90,9 @@ public class SymbolTableFiller extends PreorderJmmVisitor<MySymbolTable,Boolean>
     }
 
     private Boolean visitVar(JmmNode varDecl, MySymbolTable symbolTable){
+        if(!varDecl.getJmmParent().getKind().equals("ClassDeclaration")){
+            return false;
+        }
         var returnType = AstUtils.buildType(varDecl.getJmmChild(0));
         var fieldSymbol = new Symbol(returnType,varDecl.getJmmChild(1).get("value"));
         symbolTable.addField(fieldSymbol);
