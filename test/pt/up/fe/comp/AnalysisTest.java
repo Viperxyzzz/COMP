@@ -11,6 +11,6 @@ public class AnalysisTest {
 
         System.out.println("SymbolTable: " + results.getSymbolTable().print());
 
-        //TestUtils.noErrors(results);
+        TestUtils.noErrors(results);
     }
 }

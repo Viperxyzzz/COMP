@@ -1,14 +1,12 @@
 import a1.blue;
+import otherclass;
 class c1 extends otherclass {
     int one;
     int two;
     int[] three;
     public static void main(String[] args) {
     		ioPlus.printHelloWorld();
-    	}
-    public static void main(String[] args) {
-        	ioPlus.printHelloWorld();
-        }
+    }
     public int f (int a, int b) {
         int test;
         if (a && !a && b)
