@@ -115,7 +115,30 @@ public class OllirToJasmin {
 
         code.append("invokestatic ");
 
+        var methodClass = ((Operand) inst.getFirstArg()).getName();
+        code.append(getFullyQualifiedName(methodClass));
+        code.append("/");
+
+        // rever esta parte
+        var calledMethod = ((LiteralElement) inst.getSecondArg()).getLiteral();
+        //code.append(calledMethod.substring(1, calledMethod.length()-1));
+        code.append(calledMethod);
+
+        code.append("(");
+
+        for(var operand : inst.getListOfOperands()){
+            getArgumentCode(operand);
+        }
+
+        code.append(")");
+        code.append(getJasminType(inst.getReturnType()));
+        code.append("\n");
+
         return code.toString();
+    }
+
+    private void getArgumentCode(Element operand){
+        throw new NotImplementedException(this);
     }
 
     public String getJasminType(Type type){

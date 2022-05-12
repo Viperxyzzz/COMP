@@ -1,6 +1,9 @@
 package pt.up.fe.comp;
 
 import org.junit.Test;
+
+import pt.up.fe.comp.TestUtils;
+import pt.up.fe.comp.jmm.jasmin.JasminResult;
 import pt.up.fe.specs.util.SpecsIo;
 
 public class JasminTest {
@@ -9,8 +12,11 @@ public class JasminTest {
         var jasminResult = TestUtils.backend(SpecsIo.getResource("fixtures/public/HelloWorld.jmm"));
         TestUtils.noErrors(jasminResult);
 
-        System.out.println("aqui\n");
         String result = jasminResult.run();
-        System.out.println("JASMIN: " + result);
+    }
+
+    @Test
+    public void test2(){
+        new JasminResult(SpecsIo.getResource("fixtures/public/jasmin/HelloWorld.j")).run();
     }
 }
