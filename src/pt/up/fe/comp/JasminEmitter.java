@@ -10,10 +10,9 @@ public class JasminEmitter implements JasminBackend {
 
     @Override
     public JasminResult toJasmin(OllirResult ollirResult) {
-        //ollirResult.getOllirClass();
 
-        String jasminCode = "";
-
+        String jasminCode = new OllirToJasmin(ollirResult.getOllirClass()).getCode();;
+        System.out.println("JASMIN: " + jasminCode);
         return new JasminResult(ollirResult, jasminCode, Collections.EMPTY_LIST);
     }
 }
