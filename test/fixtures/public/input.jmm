@@ -8,7 +8,9 @@ class c1 extends otherclass {
     		ioPlus.printHelloWorld();
     }
     public int f (int a, int b) {
-        int test;
+        int[] test;
+        a = test[3*a];
+        a = test[a.length];
         if (a && !a && b)
            winner = 0;
         else{}
