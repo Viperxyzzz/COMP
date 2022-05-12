@@ -83,7 +83,6 @@ public class SymbolTableFiller extends PreorderJmmVisitor<MySymbolTable,Boolean>
                         .map(localVar -> new Symbol(AstUtils.buildType(localVar.getJmmChild(0)), localVar.getJmmChild(1).get("value")))
                         .collect(Collectors.toList());
             }
-            System.out.println(localVarsSymbols);
         }
         symbolTable.addMethod(methodName, returnType, paramSymbols,localVarsSymbols);
 
@@ -97,8 +96,6 @@ public class SymbolTableFiller extends PreorderJmmVisitor<MySymbolTable,Boolean>
         var returnType = AstUtils.buildType(varDecl.getJmmChild(0));
         var fieldSymbol = new Symbol(returnType,varDecl.getJmmChild(1).get("value"));
         symbolTable.addField(fieldSymbol);
-
-        System.out.println(fieldSymbol);
         return true;
 
     }
