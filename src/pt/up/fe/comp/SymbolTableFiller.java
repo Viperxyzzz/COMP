@@ -90,7 +90,7 @@ public class SymbolTableFiller extends PreorderJmmVisitor<MySymbolTable,Boolean>
     }
 
     private Boolean visitVar(JmmNode varDecl, MySymbolTable symbolTable){
-        if(!varDecl.getJmmParent().getKind().equals("ClassDeclaration")){
+        if(!varDecl.getJmmParent().getKind().equals("ClassDeclaration")){ // are we declaring a variable inside a class?
             return false;
         }
         var returnType = AstUtils.buildType(varDecl.getJmmChild(0));
