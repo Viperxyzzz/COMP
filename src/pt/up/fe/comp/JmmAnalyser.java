@@ -9,6 +9,7 @@ import pt.up.fe.comp.jmm.analysis.JmmSemanticsResult;
 import pt.up.fe.comp.jmm.parser.JmmParserResult;
 import pt.up.fe.comp.jmm.report.Report;
 import pt.up.fe.comp.visitors.ExtendsValidImportCheck;
+import pt.up.fe.comp.visitors.ValidDotExpressionCheck;
 
 public class JmmAnalyser implements JmmAnalysis {
 
@@ -23,7 +24,9 @@ public class JmmAnalyser implements JmmAnalysis {
         reports.addAll(symbolTableFiller.getReports());
 
         List<SemanticAnalyser> analysers = Arrays.asList(new ExtendsValidImportCheck(symbolTable));
-
+        /*ValidDotExpressionCheck validDotExpressionCheck = new ValidDotExpressionCheck(symbolTable);
+        validDotExpressionCheck.visit(parserResult.getRootNode());
+        reports.addAll(validDotExpressionCheck.getReports());*/
         for(var analyzer : analysers){
             reports.addAll(analyzer.getReports());
         }
