@@ -4,7 +4,9 @@ class c1 extends otherclass {
     int one;
     int two;
     int[] three;
+    public static void main(String[] args) {
 
+    }
     public int f (int a, int b) {
         int[] test;
         int a;

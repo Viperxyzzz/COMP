@@ -30,26 +30,37 @@ public class SymbolTableFiller extends PreorderJmmVisitor<MySymbolTable,Boolean>
         addVisit("InitStatement", this::visitStatement);
         addVisit("ReturnExp", this::visitReturn);
         addVisit("ArrayExp", this::visitArray);
+        addVisit("BinOp", this::visitOperation);
         //addVisit("Id", this::visitId);
 
     }
 
+    private Boolean visitOperation(JmmNode jmmNode, MySymbolTable symbolTable) {
+        // Operands of an operation must types compatible with the operation (e.g. int + boolean is an error because + expects two integers.)
+        var leftOperand = jmmNode.getJmmChild(0);
+        var rightOperand = jmmNode.getJmmChild(1);
+        var operation = jmmNode.get("op");
+
+        switch (operation){
+            case "assign":
+                break;
+            case "and":
+                break;
+            case "smaller":
+                break;
+            case "add":
+            case "sub":
+            case "mult":
+            case "div":
+                break;
+
+        }
+
+        return true;
+    }
+
     private Boolean visitId(JmmNode jmmNode, MySymbolTable symbolTable) {
         // Verify if variable names used in the code have a corresponding declaration, either as a local variable, a method parameter or a field of the class (if applicable)
-
-        /*
-        if (jmmNode.getAncestor("DotExp").isPresent()){
-            var classImported = jmmNode.getAncestor("DotExp").get().getJmmChild(0).get("value");
-            System.out.println(classImported);
-        }
-        // Find Id nodes which are Children of InitStatement or ReturnExp and check their declared type => no Type means no declaration
-        else if (jmmNode.getAncestor("InitStatement").isPresent() || jmmNode.getAncestor("ReturnExp").isPresent()){
-            Type varType = AstUtils.getVarType(jmmNode.get("value"), jmmNode.getAncestor("MethodDecl").get().getJmmChild(1).get("value"), symbolTable);
-            if (varType == null){
-                return reports.add(new Report(ReportType.ERROR, Stage.SEMANTIC,Integer.valueOf(jmmNode.get("line")),
-                        Integer.valueOf(jmmNode.get("col")),"Variable " + jmmNode.get("value") + " not declared."));
-            }
-        }*/
 
         // Check the declared type => no Type means no declaration
         if (!jmmNode.getAncestor("DotExp").isPresent()){

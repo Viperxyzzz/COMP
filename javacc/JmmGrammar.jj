@@ -137,24 +137,21 @@ WhileStatement:
 Assignment #void:
     LogicalExpression
     (
-        (< EQUAL > LogicalExpression) ({ jjtThis.put("op", "assign"); }) #BinOp(2)
+        < EQUAL > LogicalExpression #Assigment(2)
     )?
 ;
 
 LogicalExpression #void:
     ComparableExpression
     (
-        (< AND > ComparableExpression) ({ jjtThis.put("op", "and"); }) #BinOp(2) |
-        (< OR > ComparableExpression) ({ jjtThis.put("op", "or"); }) #BinOp(2)
+        < AND > ComparableExpression #AndExp(2)
     )*
 ;
 
 ComparableExpression #void:
     AdditiveExpression
     (
-        (< LESSTHAN > AdditiveExpression) ({ jjtThis.put("op", "smaller"); }) #BinOp(2) |
-        (< BIGGERTHAN > AdditiveExpression) ({ jjtThis.put("op", "bigger"); }) #BinOp(2) |
-        (< EQUALEQUAL > AdditiveExpression) ({ jjtThis.put("op", "is_equal"); }) #BinOp(2)
+        < LESSTHAN > AdditiveExpression #SmallerThan(2)
     )*
 ;
 
