@@ -9,8 +9,9 @@ class c1 extends otherclass {
     }
     public int f (int a, int b) {
         int[] test;
-        a = test[3*a];
-        a = test[a.length];
+        int a;
+        a = test[1*2*3];
+        a = test[a+a.length];
         if (a && !a && b)
            winner = 0;
         else{}

@@ -25,6 +25,19 @@ public class SymbolTableFiller extends PreorderJmmVisitor<MySymbolTable,Boolean>
         addVisit("MethodDecl", this::visitMethod);
         addVisit("VarDecl",this::visitVar);
 
+        addVisit("ArrayExp", this::visitArray);
+
+    }
+
+    private Boolean visitArray(JmmNode arrayExp, MySymbolTable symbolTable) {
+        System.out.println(arrayExp);
+
+        // Array access is done over an array
+        if (arrayExp.getJmmChild(0).getKind().equals("INT_ARR")){ // tipo array
+            return true;
+        }
+
+        return true;
     }
 
     public List<Report> getReports(){

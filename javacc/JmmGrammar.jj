@@ -197,7 +197,7 @@ DotExpression #void:
         (
             < LENGTH > #LengthExp |
             < IDENTIFIER > ({ jjtThis.put("value", lastConsumedToken.getImage()); }) #Id < OPEN_PAREN > ( ParamToPass )? < CLOSE_PAREN >
-        ) #DotExp
+        ) #DotExp(2)
      )*
 ;
 
