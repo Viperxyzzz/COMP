@@ -1,0 +1,9 @@
+import BoardBase;
+import java.io.File;
+import ioPlus;
+
+public HelloWorld extends BoardBase {
+    .method public main(args.array.String).V{
+        invokestatic(ioPlus,"printHelloWorld").V;
+    }
+}
