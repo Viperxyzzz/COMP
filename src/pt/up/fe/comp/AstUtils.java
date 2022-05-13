@@ -14,4 +14,31 @@ public class AstUtils {
 
         return new Type(typeName, isArray1);
     }
+
+    public static Type getVarType(String varName, String methodName, MySymbolTable symbolTable){
+        var localVars = symbolTable.getLocalVariables(methodName);
+        for (var localVar: localVars){
+            if (localVar.getName().equals(varName)){
+                System.out.println(varName + " está nas localVars\n");
+                return localVar.getType();
+            }
+        }
+        var methodParams = symbolTable.getParameters(methodName);
+        for (var param: methodParams){
+            if (param.getName().equals(varName)){
+                System.out.println(varName + " está nos params\n");
+                return param.getType();
+            }
+        }
+
+        var fields = symbolTable.getFields();
+        for (var field : fields){
+            if (field.getName().equals(varName)){
+                System.out.println(varName + " está nos fields\n");
+                return field.getType();
+            }
+        }
+
+        return null;
+    }
 }
