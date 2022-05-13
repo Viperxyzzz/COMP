@@ -18,6 +18,7 @@ public class OllirGenerator extends AJmmVisitor<Integer, Integer> {
         addVisit("ClassDeclaration", this::classDeclVisit);
         addVisit("MethodDecl", this::methodDeclVisit);
         addVisit("InitStatement",this::initStatementVisit);
+        addVisit("DotExp",this::dotExpVisit);
     }
 
     public String getCode(){
@@ -94,7 +95,16 @@ public class OllirGenerator extends AJmmVisitor<Integer, Integer> {
 
     private Integer initStatementVisit(JmmNode jmmNode, Integer integer) {
         //2:35:00
+        /*
+        visit(jmmNode.getJmmChild(0));
+        code.append(";\n");
+        */
+        return 0;
+    }
 
+
+    private Integer dotExpVisit(JmmNode dotExp, Integer integer){
+        //
         return 0;
     }
 
