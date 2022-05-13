@@ -101,6 +101,7 @@ public class OllirGenerator extends AJmmVisitor<Integer, Integer> {
         */
         return 0;
     }
+    
     private Integer dotExpVisit(JmmNode dotExp, Integer integer){
         //
         return 0;
