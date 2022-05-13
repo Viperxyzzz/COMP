@@ -1,18 +1,17 @@
-import a1.blue;
+import a1;
 import otherclass;
 class c1 extends otherclass {
     int one;
     int two;
     int[] three;
-    public static void main(String[] args) {
 
-    		ioPlus.printHelloWorld(one, two);
-    		ioPlus.length;
-    }
     public int f (int a, int b) {
         int[] test;
         int a;
+        newType winner;
 
+        winner = test[a1.print()];
+        a = a + 1;
         if (a && !a && b)
            winner = 0;
         else{}

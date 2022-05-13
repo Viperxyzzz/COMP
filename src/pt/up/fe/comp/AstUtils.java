@@ -19,14 +19,14 @@ public class AstUtils {
         var localVars = symbolTable.getLocalVariables(methodName);
         for (var localVar: localVars){
             if (localVar.getName().equals(varName)){
-                System.out.println(varName + " está nas localVars\n");
+                //System.out.println(varName + " está nas localVars\n");
                 return localVar.getType();
             }
         }
         var methodParams = symbolTable.getParameters(methodName);
         for (var param: methodParams){
             if (param.getName().equals(varName)){
-                System.out.println(varName + " está nos params\n");
+                //System.out.println(varName + " está nos params\n");
                 return param.getType();
             }
         }
@@ -34,7 +34,7 @@ public class AstUtils {
         var fields = symbolTable.getFields();
         for (var field : fields){
             if (field.getName().equals(varName)){
-                System.out.println(varName + " está nos fields\n");
+                //System.out.println(varName + " está nos fields\n");
                 return field.getType();
             }
         }

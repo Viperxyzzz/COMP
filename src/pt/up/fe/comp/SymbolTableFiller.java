@@ -1,5 +1,6 @@
 package pt.up.fe.comp;
 
+import jdk.swing.interop.SwingInterOpUtils;
 import pt.up.fe.comp.jmm.analysis.table.Symbol;
 import pt.up.fe.comp.jmm.analysis.table.SymbolTable;
 import pt.up.fe.comp.jmm.analysis.table.Type;
@@ -17,7 +18,6 @@ import java.util.stream.Collectors;
 public class SymbolTableFiller extends PreorderJmmVisitor<MySymbolTable,Boolean> {
 
     private final List<Report> reports;
-    private String currentMethodName;
 
     public SymbolTableFiller(){
         this.reports = new ArrayList<>();
@@ -28,18 +28,56 @@ public class SymbolTableFiller extends PreorderJmmVisitor<MySymbolTable,Boolean>
         addVisit("VarDecl",this::visitVar);
 
         addVisit("InitStatement", this::visitStatement);
+        addVisit("ReturnExp", this::visitReturn);
         addVisit("ArrayExp", this::visitArray);
+        //addVisit("Id", this::visitId);
 
     }
 
-    private Boolean visitStatement(JmmNode initStatement, MySymbolTable symbolTable) {
+    private Boolean visitId(JmmNode jmmNode, MySymbolTable symbolTable) {
+        // Verify if variable names used in the code have a corresponding declaration, either as a local variable, a method parameter or a field of the class (if applicable)
+
+        /*
+        if (jmmNode.getAncestor("DotExp").isPresent()){
+            var classImported = jmmNode.getAncestor("DotExp").get().getJmmChild(0).get("value");
+            System.out.println(classImported);
+        }
+        // Find Id nodes which are Children of InitStatement or ReturnExp and check their declared type => no Type means no declaration
+        else if (jmmNode.getAncestor("InitStatement").isPresent() || jmmNode.getAncestor("ReturnExp").isPresent()){
+            Type varType = AstUtils.getVarType(jmmNode.get("value"), jmmNode.getAncestor("MethodDecl").get().getJmmChild(1).get("value"), symbolTable);
+            if (varType == null){
+                return reports.add(new Report(ReportType.ERROR, Stage.SEMANTIC,Integer.valueOf(jmmNode.get("line")),
+                        Integer.valueOf(jmmNode.get("col")),"Variable " + jmmNode.get("value") + " not declared."));
+            }
+        }*/
+
+        // Check the declared type => no Type means no declaration
+        if (!jmmNode.getAncestor("DotExp").isPresent()){
+            Type varType = AstUtils.getVarType(jmmNode.get("value"), jmmNode.getAncestor("MethodDecl").get().getJmmChild(1).get("value"), symbolTable);
+            System.out.println("var: " + jmmNode.get("value"));
+            if (varType == null){
+                return reports.add(new Report(ReportType.ERROR, Stage.SEMANTIC,Integer.valueOf(jmmNode.get("line")),
+                        Integer.valueOf(jmmNode.get("col")),"Variable " + jmmNode.get("value") + " not declared."));
+            }
+        }
+
+        return true;
+    }
+
+    private Boolean visitStatement(JmmNode jmmNode, MySymbolTable symbolTable) {
+        addVisit("Id", this::visitId);
+        return true;
+    }
+
+    private Boolean visitReturn(JmmNode jmmNode, MySymbolTable symbolTable) {
+        addVisit("Id", this::visitId);
         return true;
     }
 
     private Boolean visitArray(JmmNode arrayExp, MySymbolTable symbolTable) {
         // Array access is done over an array
         var arrayName = arrayExp.getJmmChild(0).get("value");
-        var varType = AstUtils.getVarType(arrayName, currentMethodName, symbolTable);
+        var varType = AstUtils.getVarType(arrayName, arrayExp.getAncestor("MethodDecl").get().getJmmChild(1).get("value"), symbolTable);
         if (varType == null){
             return reports.add(new Report(ReportType.ERROR, Stage.SEMANTIC,Integer.valueOf(arrayExp.get("line")),
                     Integer.valueOf(arrayExp.get("col")),"Array access cannot be done over a non declared variable."));
@@ -50,11 +88,11 @@ public class SymbolTableFiller extends PreorderJmmVisitor<MySymbolTable,Boolean>
         }
 
         // Array access index is an expression of type integer
-        if (!arrayExp.getJmmChild(1).getKind().equals("IdInt")){ // ou expressão do tipo int
+        /*if (!arrayExp.getJmmChild(1).getKind().equals("IdInt")){ // ou expressão do tipo int
             return reports.add(new Report(ReportType.ERROR, Stage.SEMANTIC,Integer.valueOf(arrayExp.get("line")),
                     Integer.valueOf(arrayExp.get("col")),"Array access index should be of type Int, got " +
                     arrayExp.getJmmChild(1).getKind() + " instead."));
-        }
+        }*/
 
         return true;
     }
@@ -89,7 +127,6 @@ public class SymbolTableFiller extends PreorderJmmVisitor<MySymbolTable,Boolean>
 
     private Boolean visitMethod(JmmNode methodDecl, MySymbolTable symbolTable){
         var methodName = methodDecl.getJmmChild(1).get("value");
-        this.currentMethodName = methodName;
 
         if (symbolTable.hasMethod(methodName)){
             reports.add(Report.newError(Stage.SEMANTIC, Integer.valueOf(methodDecl.get("line")), Integer.valueOf(methodDecl.get("col")), "Duplicated method: " + methodName, null));
