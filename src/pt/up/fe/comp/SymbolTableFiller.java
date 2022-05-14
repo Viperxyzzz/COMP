@@ -27,86 +27,8 @@ public class SymbolTableFiller extends PreorderJmmVisitor<MySymbolTable,Boolean>
         addVisit("MethodDecl", this::visitMethod);
         addVisit("VarDecl",this::visitVar);
 
-        addVisit("InitStatement", this::visitStatement);
-        addVisit("ReturnExp", this::visitReturn);
-        addVisit("ArrayExp", this::visitArray);
-        addVisit("BinOp", this::visitOperation);
-        //addVisit("Id", this::visitId);
-
     }
 
-    private Boolean visitOperation(JmmNode jmmNode, MySymbolTable symbolTable) {
-        // Operands of an operation must types compatible with the operation (e.g. int + boolean is an error because + expects two integers.)
-        var leftOperand = jmmNode.getJmmChild(0);
-        var rightOperand = jmmNode.getJmmChild(1);
-        var operation = jmmNode.get("op");
-
-        switch (operation){
-            case "assign":
-                break;
-            case "and":
-                break;
-            case "smaller":
-                break;
-            case "add":
-            case "sub":
-            case "mult":
-            case "div":
-                break;
-
-        }
-
-        return true;
-    }
-
-    private Boolean visitId(JmmNode jmmNode, MySymbolTable symbolTable) {
-        // Verify if variable names used in the code have a corresponding declaration, either as a local variable, a method parameter or a field of the class (if applicable)
-
-        // Check the declared type => no Type means no declaration
-        if (!jmmNode.getAncestor("DotExp").isPresent()){
-            Type varType = AstUtils.getVarType(jmmNode.get("value"), jmmNode.getAncestor("MethodDecl").get().getJmmChild(1).get("value"), symbolTable);
-            System.out.println("var: " + jmmNode.get("value"));
-            if (varType == null){
-                return reports.add(new Report(ReportType.ERROR, Stage.SEMANTIC,Integer.valueOf(jmmNode.get("line")),
-                        Integer.valueOf(jmmNode.get("col")),"Variable " + jmmNode.get("value") + " not declared."));
-            }
-        }
-
-        return true;
-    }
-
-    private Boolean visitStatement(JmmNode jmmNode, MySymbolTable symbolTable) {
-        addVisit("Id", this::visitId);
-        return true;
-    }
-
-    private Boolean visitReturn(JmmNode jmmNode, MySymbolTable symbolTable) {
-        addVisit("Id", this::visitId);
-        return true;
-    }
-
-    private Boolean visitArray(JmmNode arrayExp, MySymbolTable symbolTable) {
-        // Array access is done over an array
-        var arrayName = arrayExp.getJmmChild(0).get("value");
-        var varType = AstUtils.getVarType(arrayName, arrayExp.getAncestor("MethodDecl").get().getJmmChild(1).get("value"), symbolTable);
-        if (varType == null){
-            return reports.add(new Report(ReportType.ERROR, Stage.SEMANTIC,Integer.valueOf(arrayExp.get("line")),
-                    Integer.valueOf(arrayExp.get("col")),"Array access cannot be done over a non declared variable."));
-        } else if (!varType.isArray()){
-            return reports.add(new Report(ReportType.ERROR, Stage.SEMANTIC,Integer.valueOf(arrayExp.get("line")),
-                    Integer.valueOf(arrayExp.get("col")),"Array access cannot be done over a " +
-                    varType.getName() + " type."));
-        }
-
-        // Array access index is an expression of type integer
-        /*if (!arrayExp.getJmmChild(1).getKind().equals("IdInt")){ // ou expressão do tipo int
-            return reports.add(new Report(ReportType.ERROR, Stage.SEMANTIC,Integer.valueOf(arrayExp.get("line")),
-                    Integer.valueOf(arrayExp.get("col")),"Array access index should be of type Int, got " +
-                    arrayExp.getJmmChild(1).getKind() + " instead."));
-        }*/
-
-        return true;
-    }
 
     public List<Report> getReports(){
         return reports;
@@ -171,9 +93,9 @@ public class SymbolTableFiller extends PreorderJmmVisitor<MySymbolTable,Boolean>
     }
 
     private Boolean visitVar(JmmNode varDecl, MySymbolTable symbolTable){
-        if(!varDecl.getJmmParent().getKind().equals("ClassDeclaration")){ // are we declaring a variable inside a class?
+        /*if(!varDecl.getJmmParent().getKind().equals("ClassDeclaration")){ // are we declaring a variable inside a class?
             return false;
-        }
+        }*/
         var returnType = AstUtils.buildType(varDecl.getJmmChild(0));
         var fieldSymbol = new Symbol(returnType,varDecl.getJmmChild(1).get("value"));
         symbolTable.addField(fieldSymbol);
