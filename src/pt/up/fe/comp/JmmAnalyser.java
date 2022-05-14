@@ -21,15 +21,16 @@ public class JmmAnalyser implements JmmAnalysis {
 
         var symbolTableFiller = new SymbolTableFiller();
         symbolTableFiller.visit(parserResult.getRootNode(), symbolTable);
+        /*
         reports.addAll(symbolTableFiller.getReports());
-
         List<SemanticAnalyser> analysers = Arrays.asList(new ExtendsValidImportCheck(symbolTable));
         /*ValidDotExpressionCheck validDotExpressionCheck = new ValidDotExpressionCheck(symbolTable);
         validDotExpressionCheck.visit(parserResult.getRootNode());
-        reports.addAll(validDotExpressionCheck.getReports());*/
+        reports.addAll(validDotExpressionCheck.getReports());
+
         for(var analyzer : analysers){
             reports.addAll(analyzer.getReports());
-        }
+        }*/
 
         return new JmmSemanticsResult(parserResult, symbolTable, reports);
 

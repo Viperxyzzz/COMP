@@ -137,7 +137,7 @@ WhileStatement:
 Assignment #void:
     LogicalExpression
     (
-        < EQUAL > LogicalExpression #Assigment(2)
+        < EQUAL > LogicalExpression #Assignment(2)
     )?
 ;
 

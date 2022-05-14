@@ -1,6 +1,7 @@
 import a1;
 import otherclass;
-class c1 extends otherclass {
+import null;
+class c1 extends null{
     int one;
     int two;
     int[] three;

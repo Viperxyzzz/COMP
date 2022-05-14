@@ -3,6 +3,7 @@ package pt.up.fe.comp;
 import pt.up.fe.comp.jmm.analysis.JmmSemanticsResult;
 import pt.up.fe.comp.jmm.ollir.JmmOptimization;
 import pt.up.fe.comp.jmm.ollir.OllirResult;
+import pt.up.fe.comp.ollir.OllirGenerator;
 
 import java.util.Collections;
 
@@ -10,7 +11,10 @@ public class JmmOptimizer implements JmmOptimization {
 
     @Override
     public OllirResult toOllir(JmmSemanticsResult semanticsResult) {
-        String ollirCode = "";
+        var ollirGenerator = new OllirGenerator(semanticsResult.getSymbolTable());
+        ollirGenerator.visit(semanticsResult.getRootNode());
+        var ollirCode = ollirGenerator.getCode();
+        System.out.print("OLLIR CODE :\n" + ollirCode);
         return new OllirResult(semanticsResult,ollirCode, Collections.emptyList());
     }
 }
