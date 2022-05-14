@@ -55,8 +55,6 @@ public class Launcher {
         // Check if there are parsing errors
         TestUtils.noErrors(analysisResult.getReports());
 
-        System.out.println("SymbolTable: " + analysisResult.getSymbolTable().print());
-/*
         // Instantiate JmmOptimization
         JmmOptimizer optimizer = new JmmOptimizer();
 
@@ -65,9 +63,7 @@ public class Launcher {
 
         // Check if there are parsing errors
         TestUtils.noErrors(optimizationResult.getReports());
-
-        var optimizationResult = ;
-
+        /*
         // Instantiate JasminBackend
         JasminEmitter jasminEmitter = new JasminEmitter();
 
@@ -78,7 +74,9 @@ public class Launcher {
         TestUtils.noErrors(backendResult.getReports());
 
         // ... add remaining stages
-*/
+        */
+
+
     }
 
 }
