@@ -23,6 +23,10 @@ public class JmmAnalyser implements JmmAnalysis {
         symbolTableFiller.visit(parserResult.getRootNode(), symbolTable);
         reports.addAll(symbolTableFiller.getReports());
 
+        var semanticVerification = new SemanticVerification();
+        semanticVerification.visit(parserResult.getRootNode(), symbolTable);
+        reports.addAll(semanticVerification.getReports());
+
         List<SemanticAnalyser> analysers = Arrays.asList(new ExtendsValidImportCheck(symbolTable));
         /*ValidDotExpressionCheck validDotExpressionCheck = new ValidDotExpressionCheck(symbolTable);
         validDotExpressionCheck.visit(parserResult.getRootNode());
