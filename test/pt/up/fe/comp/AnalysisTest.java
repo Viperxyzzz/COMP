@@ -7,7 +7,7 @@ public class AnalysisTest {
 
     @Test
     public void test(){
-        var results = TestUtils.analyse(SpecsIo.getResource("fixtures/public/input.jmm"));
+        var results = TestUtils.analyse(SpecsIo.getResource("fixtures/public/HelloWorld.jmm"));
 
         //System.out.println("SymbolTable: " + results.getSymbolTable().print());
 
