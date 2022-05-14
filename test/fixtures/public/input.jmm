@@ -1,23 +1,25 @@
-import a1;
-import otherclass;
-import null;
-class c1 extends null{
-    int one;
-    int two;
-    int[] three;
-    public static void main(String[] args) {
+import io;
+import foo.Bar;
+import Table;
 
-    }
-    public int f (int a, int b) {
-        int[] test;
-        int a;
-        newType winner;
+class SymbolTable extends Table {
 
-        winner = test[a1.print()];
-        a = a + 1;
-        if (a && !a && b)
-           winner = 0;
-        else{}
-        return -(a+b);
-    }
+	int intField;
+	boolean boolField;
+
+	public int method1() {
+		int intLocal1;
+		boolean boolLocal1;
+		Bar barLocal1;
+
+		return 0;
+	}
+
+	public Bar method2(int intParam1, boolean boolParam1, Bar barParam1) {
+		return barParam1;
+	}
+
+
+	public static void main(String[] args) {
+	}
 }

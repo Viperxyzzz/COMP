@@ -38,4 +38,10 @@ public class OllirUtils {
         tempId += 1;
         return temp;
     }
+    public static String getConstructor(String methodName){
+        String constructor = "\t.construct "+methodName+"().V {\n" +
+                "\t\tinvokespecial(this, \"<init>\").V;\n" +
+                "\t}";
+        return constructor;
+    }
 }

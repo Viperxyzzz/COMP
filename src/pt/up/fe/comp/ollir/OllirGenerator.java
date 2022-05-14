@@ -8,6 +8,14 @@ import pt.up.fe.comp.jmm.ast.JmmNode;
 
 import java.util.stream.Collectors;
 
+/*
+    TODO
+    Obter tipos para as variaveis e isso
+    a[3];
+    fields
+ */
+
+
 public class OllirGenerator extends AJmmVisitor<Integer, Code> {
     private final StringBuilder code;
     private final SymbolTable mySymbolTable;
@@ -50,7 +58,8 @@ public class OllirGenerator extends AJmmVisitor<Integer, Code> {
             code.append(" extends ").append(superClass);
         }
         code.append("{\n");
-
+        code.append(OllirUtils.getConstructor(mySymbolTable.getClassName()));
+        code.append("\n");
         for (var child : classDecl.getChildren()){
             visit(child);
         }
