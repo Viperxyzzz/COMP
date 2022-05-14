@@ -12,7 +12,7 @@ import java.util.stream.Collectors;
     TODO
     Obter tipos para as variaveis e isso
     a[3];
-    fields
+    fields verify if public or not
  */
 
 
@@ -25,6 +25,7 @@ public class OllirGenerator extends AJmmVisitor<Integer, Code> {
 
         addVisit("Start",this::programVisit);
         addVisit("ClassDeclaration", this::classDeclVisit);
+        addVisit("VarDecl", this::varDeclVisit);
         addVisit("MethodDecl", this::methodDeclVisit);
         addVisit("InitStatement",this::initStatementVisit);
         addVisit("DotExp",this::dotExpressionVisit);
@@ -58,13 +59,25 @@ public class OllirGenerator extends AJmmVisitor<Integer, Code> {
             code.append(" extends ").append(superClass);
         }
         code.append("{\n");
-        code.append(OllirUtils.getConstructor(mySymbolTable.getClassName()));
         code.append("\n");
         for (var child : classDecl.getChildren()){
             visit(child);
         }
 
         code.append("}\n");
+        return null;
+    }
+
+    private Code varDeclVisit(JmmNode varDecl, Integer dummy){
+        for (var field : mySymbolTable.getFields()){
+            code.append(".field public ");
+            code.append(field.getName() + ".");
+            code.append(OllirUtils.getOllirType(field.getType().getName()));
+            code.append(";\n");
+        }
+        code.append("\n");
+        code.append(OllirUtils.getConstructor(mySymbolTable.getClassName()));
+        code.append("\n");
         return null;
     }
 
@@ -112,9 +125,6 @@ public class OllirGenerator extends AJmmVisitor<Integer, Code> {
         //2:33:00
         for(var node : jmmNode.getChildren()){
             var nodeCode = visit(node);
-            System.out.println("CODE PREFIX" + nodeCode.prefix);
-
-            System.out.println("CODE " + nodeCode.code);
             code.append(nodeCode.prefix);
 
         }
@@ -216,15 +226,29 @@ public class OllirGenerator extends AJmmVisitor<Integer, Code> {
         if(areThereParams){
             for(var arg : node.getJmmChild(1).getJmmChild(1).getChildren()){
                 Code argCode = visit(arg);
+
                 prefixCode += argCode.prefix;
-                finalCode += "," + argCode.code;
+                var returnType = mySymbolTable.getReturnType(argCode.prefix);
+                var returnTypeString = "";
+                if (returnType != null)
+                    returnTypeString = "." + OllirUtils.getCode(returnType);
+                else
+                    returnTypeString = ".V";
+                finalCode += "," + argCode.code + returnTypeString;
+                System.out.println("CODE " + argCode.code);
+                System.out.println("PREFIX " + argCode.prefix);
+                System.out.println("PREFIX CODE " + prefixCode);
             }
         }
-
-        //finalCode += ").V" + OllirUtils.getCode(mySymbolTable.getReturnType(methodName));
-        finalCode += ").V;\n"; //FIXME .V -> OllirUtils.getCode();
+        var returnType = mySymbolTable.getReturnType(methodName);
+        var returnTypeString = "";
+        if(returnType != null)
+            returnTypeString = OllirUtils.getCode(returnType);
+        else
+            returnTypeString = "V"; //FIXME .V -> OllirUtils.getCode(); (EDIT1 : Think I edited it above? XD)
+        finalCode += ")." + returnTypeString + ";\n";
         String temp = OllirUtils.createTemp();
-        prefixCode += temp + ":=" + finalCode;
+        prefixCode += temp + "." + returnTypeString + ":=." + returnTypeString + " " + finalCode;
         Code thisCode = new Code();
         thisCode.code = temp;
         thisCode.prefix = prefixCode;

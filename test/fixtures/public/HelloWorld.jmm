@@ -4,6 +4,6 @@ import ioPlus;
 class HelloWorld extends BoardBase {
     int a;
 	public static void main(String[] args) {
-		a = 1 + 2 + 3;
+		ioPlus.printHelloWorld(ioPlus.print());
 	}
 }
