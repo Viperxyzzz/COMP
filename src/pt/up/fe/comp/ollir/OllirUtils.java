@@ -23,6 +23,8 @@ public class OllirUtils {
                 return "V";
             case "int":
                 return "i32";
+            case "boolean":
+                return "bool";
             default:
                 return jmmType;
         }
@@ -31,6 +33,8 @@ public class OllirUtils {
         switch(op){
             case "add":
                 return "+";
+            case "mult":
+                return "*";
             default:
                 return "XD?";
         }
