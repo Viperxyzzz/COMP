@@ -4,6 +4,7 @@ import pt.up.fe.comp.jmm.analysis.table.Symbol;
 import pt.up.fe.comp.jmm.analysis.table.Type;
 
 public class OllirUtils {
+    private static int tempId;
     public static String getCode(Symbol symbol){
         return symbol.getName() + "." + getCode(symbol.getType());
     }
@@ -23,5 +24,18 @@ public class OllirUtils {
             default:
                 return jmmType;
         }
+    }
+    public static String assignOp(String op){
+        switch(op){
+            case "add":
+                return "+";
+            default:
+                return "XD?";
+        }
+    }
+    public static String createTemp(){
+        String temp = "temp" + Integer.toString(tempId);
+        tempId += 1;
+        return temp;
     }
 }
