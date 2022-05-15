@@ -7,10 +7,10 @@ public class AnalysisTest {
 
     @Test
     public void test(){
-        var results = TestUtils.analyse(SpecsIo.getResource("fixtures/public/HelloWorld.jmm"));
+        var results = TestUtils.analyse(SpecsIo.getResource("fixtures/public/input.jmm"));
 
-        //System.out.println("SymbolTable: " + results.getSymbolTable().print());
+        System.out.println("SymbolTable: " + results.getSymbolTable().print());
 
-        //TestUtils.noErrors(results);
+        TestUtils.noErrors(results);
     }
 }
