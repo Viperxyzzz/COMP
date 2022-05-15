@@ -3,10 +3,13 @@ package pt.up.fe.comp.ollir;
 import org.specs.comp.ollir.Ollir;
 import pt.up.fe.comp.AstUtils;
 import pt.up.fe.comp.MySymbolTable;
+import pt.up.fe.comp.jmm.analysis.table.Symbol;
 import pt.up.fe.comp.jmm.analysis.table.SymbolTable;
+import pt.up.fe.comp.jmm.analysis.table.Type;
 import pt.up.fe.comp.jmm.ast.AJmmVisitor;
 import pt.up.fe.comp.jmm.ast.JmmNode;
 
+import java.util.List;
 import java.util.stream.Collectors;
 
 /*
@@ -31,9 +34,11 @@ import java.util.stream.Collectors;
 public class OllirGenerator extends AJmmVisitor<String, Code> {
     private final StringBuilder code;
     private final SymbolTable mySymbolTable;
+    private String currentMethodname;
     public OllirGenerator(SymbolTable mySymbolTable){
         this.code = new StringBuilder();
         this.mySymbolTable = mySymbolTable;
+        this.currentMethodname = "";
 
         addVisit("Start",this::programVisit);
         addVisit("ClassDeclaration", this::classDeclVisit);
@@ -47,6 +52,7 @@ public class OllirGenerator extends AJmmVisitor<String, Code> {
         addVisit("BinOp",this::visitBinOp);
         addVisit("Assignment",this::assignmentVisit);
         addVisit("ReturnExp", this::returnExpVisit);
+        addVisit("ThisId",this::thisIdVisit);
     }
 
     public String getCode(){
@@ -104,7 +110,7 @@ public class OllirGenerator extends AJmmVisitor<String, Code> {
         if(isStatic){
             code.append("static ");
         }
-
+        this.currentMethodname = methodDecl.getJmmChild(1).get("value");
         code.append(methodDecl.getJmmChild(1).get("value") + "(");
         var params = mySymbolTable.getParameters(methodSignature);
         var paramCode = params.stream()
@@ -233,20 +239,35 @@ public class OllirGenerator extends AJmmVisitor<String, Code> {
         thisCode.code = temp;
         return thisCode;
     }*/
+    private Code thisIdVisit(JmmNode id, String dummy){
+        Code thisCode = new Code();
+        thisCode.code = "this";
+        return thisCode;
+    }
 
     private Code dotExpressionVisit(JmmNode node, String dummy){
         String prefixCode = "";
         Code target = visit(node.getJmmChild(0));
+        var lhs = node.getJmmChild(0);
         prefixCode += target.prefix;
         String methodName = node.getJmmChild(1).getJmmChild(0).get("value"); //DotExp.CallMethod.id.value
-        String finalCode = "invokestatic("+target.code+",\""+methodName + "\"";
+        Type type;
+        type = AstUtils.getVarType(lhs.get("value"),this.currentMethodname,(MySymbolTable) mySymbolTable);
+        String finalCode = "";
+        if(type != null){
+            finalCode = "invokevirtual(" + target.code + "." + OllirUtils.getOllirType(type.getName()) +",\""+methodName + "\"";
+        }
+        else{
+            finalCode = "invokestatic(" +target.code+",\""+methodName + "\"";
+        }
+
         boolean areThereParams = node.getJmmChild(1).getNumChildren() != 1;
         if(areThereParams){
             for(var arg : node.getJmmChild(1).getJmmChild(1).getChildren()){
                 Code argCode = visit(arg);
 
                 prefixCode += argCode.prefix;
-                var returnType = mySymbolTable.getReturnType(argCode.prefix);
+                var returnType = AstUtils.getVarType(argCode.code,this.currentMethodname,(MySymbolTable) mySymbolTable);
                 var returnTypeString = "";
                 if(dummy != null){
                     returnTypeString = dummy;
@@ -256,8 +277,8 @@ public class OllirGenerator extends AJmmVisitor<String, Code> {
                         returnTypeString = "." + OllirUtils.getCode(returnType);
                     else
                         returnTypeString = ".V";
-                    finalCode += "," + argCode.code + returnTypeString;
                 }
+                finalCode += "," + argCode.code + returnTypeString;
             }
         }
         var returnType = mySymbolTable.getReturnType(methodName);
@@ -286,9 +307,9 @@ public class OllirGenerator extends AJmmVisitor<String, Code> {
     private Code returnExpVisit(JmmNode jmmNode, String dummy){
         var returnType = OllirUtils.getCode(mySymbolTable.getReturnType(jmmNode.getAncestor("MethodDecl").get().getJmmChild(1).get("value")));
         var type = visit(jmmNode.getJmmChild(0),returnType);
-        System.out.println("PREFIX : " + type.prefix);
         code.append(type.prefix);
         code.append("ret." + returnType + " " + type.code + "." + returnType + ";\n");
         return null;
     }
+    
 }

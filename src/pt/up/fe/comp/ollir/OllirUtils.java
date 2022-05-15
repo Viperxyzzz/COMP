@@ -35,6 +35,10 @@ public class OllirUtils {
                 return "+";
             case "mult":
                 return "*";
+            case "div":
+                return "/";
+            case "sub":
+                return "-";
             default:
                 return "XD?";
         }
