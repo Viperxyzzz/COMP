@@ -46,6 +46,7 @@ public class OllirGenerator extends AJmmVisitor<String, Code> {
         addVisit("IdInt",this::idIntVisit); //fix this
         addVisit("BinOp",this::visitBinOp);
         addVisit("Assignment",this::assignmentVisit);
+        addVisit("ReturnExp", this::returnExpVisit);
     }
 
     public String getCode(){
@@ -207,12 +208,8 @@ public class OllirGenerator extends AJmmVisitor<String, Code> {
 
     private Code assignmentVisit(JmmNode node, String dummy){
         var lhs = visit(node.getJmmChild(0));
-        var callerType = node.getJmmChild(0).get("value");
-        System.out.println("CALLERTYPE " + callerType);
-        System.out.println(node.getAncestor("MethodDecl").get().getJmmChild(1).get("value"));
         var type = OllirUtils.getOllirType(AstUtils.getVarType(node.getJmmChild(0).get("value"),node.getAncestor("MethodDecl").get().getJmmChild(1).get("value"),(MySymbolTable) mySymbolTable).getName());
         var rhs = visit(node.getJmmChild(1),type);
-        System.out.println(lhs);
         Code thisCode = new Code();
         thisCode.prefix = lhs.prefix;
         thisCode.prefix += rhs.prefix;
@@ -284,5 +281,14 @@ public class OllirGenerator extends AJmmVisitor<String, Code> {
         thisCode.code = temp;
         thisCode.prefix = prefixCode;
         return thisCode;
+    }
+
+    private Code returnExpVisit(JmmNode jmmNode, String dummy){
+        var returnType = OllirUtils.getCode(mySymbolTable.getReturnType(jmmNode.getAncestor("MethodDecl").get().getJmmChild(1).get("value")));
+        var type = visit(jmmNode.getJmmChild(0),returnType);
+        System.out.println("PREFIX : " + type.prefix);
+        code.append(type.prefix);
+        code.append("ret." + returnType + " " + type.code + "." + returnType + ";\n");
+        return null;
     }
 }

@@ -28,6 +28,10 @@ public class JmmOptimizer implements JmmOptimization {
                 "        temp3.i32 :=.i32 temp1.i32 +.i32 temp2.i32;\n" +
                 "        a.i32 :=.i32 temp3.i32;\n" +
                 "    }" +
+                ".method public foo().i32 {\n" +
+                "a.i32 :=.i32 1.i32;\n" +
+                "temp1.V :=.V invokestatic(io,\"println\",a.V).V;\n" +
+                "}\n" +
                 "}";*/
         System.out.print("OLLIR CODE :\n" + ollirCode);
         return new OllirResult(semanticsResult,ollirCode, Collections.emptyList());
