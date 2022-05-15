@@ -203,7 +203,13 @@ public class OllirGenerator extends AJmmVisitor<String, Code> {
 
     private Code assignmentVisit(JmmNode node, String dummy){
         var lhs = visit(node.getJmmChild(0));
-        var type = OllirUtils.getOllirType(AstUtils.getVarType(node.getJmmChild(0).get("value"),node.getAncestor("MethodDecl").get().getJmmChild(1).get("value"),(MySymbolTable) mySymbolTable).getName());
+        String type;
+        if(node.getJmmChild(0).getKind().equals("ArrayExp")){
+            type = "i32";
+        }
+        else {
+            type = OllirUtils.getOllirType(AstUtils.getVarType(node.getJmmChild(0).get("value"), node.getAncestor("MethodDecl").get().getJmmChild(1).get("value"), (MySymbolTable) mySymbolTable).getName());
+        }
         var rhs = visit(node.getJmmChild(1),type);
         Code thisCode = new Code();
         thisCode.prefix = lhs.prefix;
@@ -340,13 +346,13 @@ public class OllirGenerator extends AJmmVisitor<String, Code> {
         Code thisCode = new Code();
         var lhs = visit(jmmNode.getJmmChild(0),type);
         var rhs = visit(jmmNode.getJmmChild(1),type);
+        thisCode.prefix = lhs.prefix;
         if(jmmNode.getJmmChild(1).getKind().equals("IdInt")){
             String temp2 = OllirUtils.createTemp();
             thisCode.prefix += temp2 + "." + type + " :=." + type + " " + rhs.code + "." + type + ";\n";
             rhs.code = temp2;
         }
 
-        thisCode.prefix = lhs.prefix;
         thisCode.prefix += rhs.prefix;
         String temp = OllirUtils.createTemp();
         thisCode.prefix += temp +"."+ type + " :=." + type + " " + lhs.code + "[" + rhs.code + "." + type + "]." + type + ";\n";
