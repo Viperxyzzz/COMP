@@ -53,6 +53,7 @@ public class OllirGenerator extends AJmmVisitor<String, Code> {
         addVisit("Assignment",this::assignmentVisit);
         addVisit("ReturnExp", this::returnExpVisit);
         addVisit("ThisId",this::thisIdVisit);
+        addVisit("NewExp", this::newExpVisit);
     }
 
     public String getCode(){
@@ -146,18 +147,6 @@ public class OllirGenerator extends AJmmVisitor<String, Code> {
         }
 
 
-        return null;
-    }
-
-    private Code dotExpVisit(JmmNode dotExp, String integer){
-        code.append("invokestatic(");
-        // TODO : ExprToOLlir -> codeBefore, value
-        visit(dotExp.getJmmChild(0)); // se tipo for expressão -> object reference se for classe -> estático, metodo para passar expressao generica e retornar tipo
-        code.append(", \"");
-        visit(dotExp.getJmmChild(1).getJmmChild(0));
-        code.append("\"");
-        //visit(dotExp.getJmmChild(1).getJmmChild(1)); //TODO : verificar se ParamToPass realmente existe antes de fazer isto
-        code.append(")").append(".V"); //TODO : getExprType(memberCall)
         return null;
     }
 
@@ -311,5 +300,12 @@ public class OllirGenerator extends AJmmVisitor<String, Code> {
         code.append("ret." + returnType + " " + type.code + "." + returnType + ";\n");
         return null;
     }
-    
+
+    private Code newExpVisit(JmmNode jmmNode, String dummy){
+        var id = jmmNode.getJmmChild(0);
+        Code thisCode = new Code();
+        thisCode.code = "new(" + id.get("value") +")";
+        return thisCode;
+    }
+
 }
