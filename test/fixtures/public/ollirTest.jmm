@@ -1,0 +1,36 @@
+import io;
+import foo.Bar;
+import Table;
+
+class SymbolTable extends Table {
+
+	int intField;
+	boolean boolField;
+
+	public int method1() {
+		int intLocal1;
+		boolean boolLocal1;
+		Bar barLocal1;
+		int test;
+		int[] b;
+		int a;
+		int c;
+		intField = 10 + b[3+a] * c.foo( c.anotherFunc(a) * 5 );
+
+
+		return 0;
+	}
+
+	public Bar method2(int intParam1, boolean boolParam1, Bar barParam1) {
+        int[] b;
+        int f;
+        int c;
+        c = b[5];
+        f = 10 + 20 + 30;
+		return barParam1;
+	}
+
+
+	public static void main(String[] args) {
+	}
+}

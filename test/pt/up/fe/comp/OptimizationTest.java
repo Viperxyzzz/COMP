@@ -7,7 +7,7 @@ public class OptimizationTest {
 
     @Test
     public void test(){
-        var ollirResources = TestUtils.optimize(SpecsIo.getResource("fixtures/public/HelloWorld.jmm"));
+        var ollirResources = TestUtils.optimize(SpecsIo.getResource("fixtures/public/ollirTest.jmm"));
 
         //TestUtils.noErrors(ollirResources);
     }
