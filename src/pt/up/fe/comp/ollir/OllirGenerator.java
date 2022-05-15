@@ -201,14 +201,49 @@ public class OllirGenerator extends AJmmVisitor<String, Code> {
         return thisCode;
     }
 
+    private Type getFieldType(String varName){
+        var fields = mySymbolTable.getFields();
+        for (var field : fields){
+            if (field.getName().equals(varName)){
+                //System.out.println(varName + " está nos fields\n");
+                return field.getType();
+            }
+        }
+        return null;
+    }
+
+    private Code getPutField(JmmNode node,String type, Code lhs){
+        var rhs = visit(node.getJmmChild(1),type);
+        Code thisCode = new Code();
+        thisCode.prefix = lhs.prefix;
+        thisCode.prefix += rhs.prefix;
+        String temp = OllirUtils.createTemp();
+        thisCode.prefix += "putfield(this," + lhs.code + "." + type + "," + rhs.code + "." + type +").V;\n";
+        thisCode.code = temp;
+
+        if(node.getJmmChild(1).getKind().equals("NewExp")){
+            thisCode.prefix += "invokespecial(" + lhs.code + "." + type + ",\"<init>\").V;\n";
+        }
+        return thisCode;
+    }
+
     private Code assignmentVisit(JmmNode node, String dummy){
         var lhs = visit(node.getJmmChild(0));
         String type;
+
+        //only works if localVar name is different from fieldVar name
+
+
         if(node.getJmmChild(0).getKind().equals("ArrayExp")){
-            type = "i32";
+            type = OllirUtils.getOllirType(AstUtils.getVarType(node.getJmmChild(0).getJmmChild(0).get("value"),this.currentMethodname,(MySymbolTable) mySymbolTable).getName());
         }
         else {
-            type = OllirUtils.getOllirType(AstUtils.getVarType(node.getJmmChild(0).get("value"), node.getAncestor("MethodDecl").get().getJmmChild(1).get("value"), (MySymbolTable) mySymbolTable).getName());
+            String varName = node.getJmmChild(0).get("value");
+            Type type1 = getFieldType(varName);
+            type = OllirUtils.getOllirType(AstUtils.getVarType(varName, node.getAncestor("MethodDecl").get().getJmmChild(1).get("value"), (MySymbolTable) mySymbolTable).getName());
+            if(type1 != null){
+                return getPutField(node,type,lhs);
+            }
         }
         var rhs = visit(node.getJmmChild(1),type);
         Code thisCode = new Code();
