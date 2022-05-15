@@ -54,6 +54,7 @@ public class OllirGenerator extends AJmmVisitor<String, Code> {
         addVisit("ReturnExp", this::returnExpVisit);
         addVisit("ThisId",this::thisIdVisit);
         addVisit("NewExp", this::newExpVisit);
+        addVisit("ArrayExp", this::indexingArrayVisit);
     }
 
     public String getCode(){
@@ -82,8 +83,7 @@ public class OllirGenerator extends AJmmVisitor<String, Code> {
         code.append("\n");
         for (var field : mySymbolTable.getFields()){
             code.append(".field public ");
-            code.append(field.getName() + ".");
-            code.append(OllirUtils.getOllirType(field.getType().getName()));
+            code.append(OllirUtils.getCode(field));
             code.append(";\n");
         }
         code.append("\n");
@@ -212,6 +212,10 @@ public class OllirGenerator extends AJmmVisitor<String, Code> {
         thisCode.prefix += lhs.code + "." + type  + " :=." + type +  " " + rhs.code +"." + type + ";\n"; //FIXME -> type should be get by some way?
         thisCode.code = temp;
 
+        if(node.getJmmChild(1).getKind().equals("NewExp")){
+            thisCode.prefix += "invokespecial(" + lhs.code + "." + type + ",\"<init>\").V;\n";
+        }
+
         return thisCode;
     }
     /*
@@ -259,7 +263,7 @@ public class OllirGenerator extends AJmmVisitor<String, Code> {
                 var returnType = AstUtils.getVarType(argCode.code,this.currentMethodname,(MySymbolTable) mySymbolTable);
                 var returnTypeString = "";
                 if(dummy != null){
-                    returnTypeString = dummy;
+                    returnTypeString = "." + dummy;
                 }
                 else {
                     if (returnType != null)
@@ -281,7 +285,7 @@ public class OllirGenerator extends AJmmVisitor<String, Code> {
             if (returnType != null)
                 returnTypeString = OllirUtils.getCode(returnType);
             else
-                returnTypeString = "V"; //FIXME .V -> OllirUtils.getCode(); (EDIT1 : Think I fixed it above? XD)
+                returnTypeString = "V";
         }
         System.out.println("RETURNTYPESTRING " + returnTypeString);
         finalCode += ")." + returnTypeString + ";\n";
@@ -305,6 +309,48 @@ public class OllirGenerator extends AJmmVisitor<String, Code> {
         var id = jmmNode.getJmmChild(0);
         Code thisCode = new Code();
         thisCode.code = "new(" + id.get("value") +")";
+        return thisCode;
+    }
+    /*
+    private Code visitBinOp(JmmNode node, String dummy){
+        var lhs = visit(node.getJmmChild(0),dummy);
+        var rhs = visit(node.getJmmChild(1),dummy);
+        String op = node.get("op");
+
+        Code thisCode = new Code();
+        thisCode.prefix = lhs.prefix;
+        thisCode.prefix += rhs.prefix;
+        String temp = OllirUtils.createTemp();
+        var type = "";
+        if(dummy == null){
+            type = "V";
+        }
+        else{
+            type = dummy;
+        }
+        System.out.println("TYPE " + type);
+        thisCode.prefix += temp+"." + type + " :=."+ type + " " + lhs.code +"."+ type + " " + OllirUtils.assignOp(op) + "." + type + " " + rhs.code +"."+ type + ";\n";
+        thisCode.code = temp;
+        return thisCode;
+    }*/
+
+    private Code indexingArrayVisit(JmmNode jmmNode, String dummy){
+        //b[t.i32].i32
+        var type = OllirUtils.getOllirType(AstUtils.getVarType(jmmNode.getJmmChild(0).get("value"),this.currentMethodname,(MySymbolTable) mySymbolTable).getName());
+        Code thisCode = new Code();
+        var lhs = visit(jmmNode.getJmmChild(0),type);
+        var rhs = visit(jmmNode.getJmmChild(1),type);
+        if(jmmNode.getJmmChild(1).getKind().equals("IdInt")){
+            String temp2 = OllirUtils.createTemp();
+            thisCode.prefix += temp2 + "." + type + " :=." + type + " " + rhs.code + "." + type + ";\n";
+            rhs.code = temp2;
+        }
+
+        thisCode.prefix = lhs.prefix;
+        thisCode.prefix += rhs.prefix;
+        String temp = OllirUtils.createTemp();
+        thisCode.prefix += temp +"."+ type + " :=." + type + " " + lhs.code + "[" + rhs.code + "." + type + "]." + type + ";\n";
+        thisCode.code = temp;
         return thisCode;
     }
 
