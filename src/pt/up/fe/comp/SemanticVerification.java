@@ -30,7 +30,31 @@ public class SemanticVerification extends PreorderJmmVisitor<MySymbolTable,Strin
         addVisit("NewExp", this::visitNew);
         addVisit("NewArray", this::visitNewArray);
         addVisit("Not", this::visitNot);
+        addVisit("WhileStatement", this::visitWhile);
+        addVisit("IfStatement", this::visitIf);
         //addVisit("Id", this::visitId);
+    }
+
+    private String visitIf(JmmNode jmmNode, MySymbolTable symbolTable) {
+        JmmNode conditionNode = jmmNode.getJmmChild(0);
+        String conditionType = visit(conditionNode, symbolTable);
+        if (!conditionType.equals("boolean")){
+            reports.add(new Report(ReportType.ERROR, Stage.SEMANTIC,Integer.valueOf(jmmNode.get("line")),
+                    Integer.valueOf(jmmNode.get("col")),"Expressions in conditions must return a boolean, got " + conditionType));
+        }
+
+        return "";
+    }
+
+    private String visitWhile(JmmNode jmmNode, MySymbolTable symbolTable) {
+        JmmNode conditionNode = jmmNode.getJmmChild(0);
+        String conditionType = visit(conditionNode, symbolTable);
+        if (!conditionType.equals("boolean")){
+            reports.add(new Report(ReportType.ERROR, Stage.SEMANTIC,Integer.valueOf(jmmNode.get("line")),
+                    Integer.valueOf(jmmNode.get("col")),"Expressions in conditions must return a boolean, got " + conditionType));
+        }
+
+        return "";
     }
 
     private String visitBoolean(JmmNode jmmNode, MySymbolTable symbolTable) {
@@ -161,7 +185,7 @@ public class SemanticVerification extends PreorderJmmVisitor<MySymbolTable,Strin
         checkOpExpression(leftNode, symbolTable);
         checkOpExpression(rightNode, symbolTable);
 
-        return "";
+        return "int";
     }
 
     private String visitId(JmmNode jmmNode, MySymbolTable symbolTable) {
@@ -210,13 +234,15 @@ public class SemanticVerification extends PreorderJmmVisitor<MySymbolTable,Strin
         }
 
         // Array access index is an expression of type integer
-        /*if (!arrayExp.getJmmChild(1).getKind().equals("IdInt")){ // ou expressão do tipo int
-            return reports.add(new Report(ReportType.ERROR, Stage.SEMANTIC,Integer.valueOf(arrayExp.get("line")),
-                    Integer.valueOf(arrayExp.get("col")),"Array access index should be of type Int, got " +
+        var arrayIndex = arrayExp.getJmmChild(1);
+        String indexType = visit(arrayIndex, symbolTable);
+        if (!indexType.equals("int")){
+            reports.add(new Report(ReportType.ERROR, Stage.SEMANTIC,Integer.valueOf(arrayExp.get("line")),
+                    Integer.valueOf(arrayExp.get("col")),"Array access index should be of type int, got " +
                     arrayExp.getJmmChild(1).getKind() + " instead."));
-        }*/
+        }
 
-        return "";
+        return varType.getName();
     }
 
     public List<Report> getReports(){
