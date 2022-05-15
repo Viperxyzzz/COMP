@@ -11,9 +11,15 @@ class SymbolTable extends Table {
 		int intLocal1;
 		boolean boolLocal1;
 		Bar barLocal1;
+		Bar bar;
 		int[] a;
+		int[] c;
 
-        a[0] = 1;
+        boolLocal1 = true;
+        intLocal1 = 1;
+        barLocal1 = bar;
+        a = c;
+
 		return 0;
 	}
 
@@ -23,6 +29,7 @@ class SymbolTable extends Table {
 
 
 	public static void main(String[] args) {
-	    args[0] = 1;
+
+
 	}
 }

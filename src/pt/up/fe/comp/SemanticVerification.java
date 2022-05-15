@@ -25,7 +25,8 @@ public class SemanticVerification extends PreorderJmmVisitor<MySymbolTable,Strin
         addVisit("IdInt", this::visitInt);
         addVisit("TrueId", this::visitBoolean);
         addVisit("FalseId", this::visitBoolean);
-        //addVisit("AndExp", this::visitAnd);
+
+        addVisit("AndExp", this::visitAnd);
         //addVisit("SmallerThan", this::visitSmaller);
         //addVisit("Id", this::visitId);
     }
@@ -38,6 +39,12 @@ public class SemanticVerification extends PreorderJmmVisitor<MySymbolTable,Strin
         return "int";
     }
 
+    private String visitAnd(JmmNode jmmNode, MySymbolTable symbolTable) {
+        return "";
+    }
+
+
+
     private String visitAssignment(JmmNode jmmNode, MySymbolTable symbolTable) {
         JmmNode leftNode = jmmNode.getChildren().get(0);
         JmmNode rightNode = jmmNode.getChildren().get(1);
@@ -49,6 +56,11 @@ public class SemanticVerification extends PreorderJmmVisitor<MySymbolTable,Strin
 
         String leftType = visit(leftNode, symbolTable);
         String rightType = visit(rightNode, symbolTable);
+
+        if (!leftType.equals(rightType)) {
+            reports.add(new Report(ReportType.ERROR, Stage.SEMANTIC,Integer.valueOf(jmmNode.get("line")),
+                    Integer.valueOf(jmmNode.get("col")),"Type of the assignee must be compatible with the assigned, got " + leftType + " and " + rightType));
+        }
 
         return "";
     }
@@ -98,15 +110,21 @@ public class SemanticVerification extends PreorderJmmVisitor<MySymbolTable,Strin
         // Verify if variable names used in the code have a corresponding declaration, either as a local variable, a method parameter or a field of the class (if applicable)
 
         // Check the declared type => no Type means no declaration
-        if (!jmmNode.getAncestor("DotExp").isPresent()){
+        if (!jmmNode.getAncestor("DotExp").isPresent() && !jmmNode.getAncestor("NewExp").isPresent()){
+
             Type varType = AstUtils.getVarType(jmmNode.get("value"), jmmNode.getAncestor("MethodDecl").get().getJmmChild(1).get("value"), symbolTable);
             System.out.println("var: " + jmmNode.get("value"));
             if (varType == null){
                 reports.add(new Report(ReportType.ERROR, Stage.SEMANTIC,Integer.valueOf(jmmNode.get("line")),
                         Integer.valueOf(jmmNode.get("col")),"Variable " + jmmNode.get("value") + " not declared."));
             }
+            else {
+                if (varType.isArray())
+                    return varType.getName() + "[]";
+                else
+                    return varType.getName();
+            }
         }
-
         return "";
     }
 
@@ -116,7 +134,7 @@ public class SemanticVerification extends PreorderJmmVisitor<MySymbolTable,Strin
     }
 
     private String visitReturn(JmmNode jmmNode, MySymbolTable symbolTable) {
-        addVisit("Id", this::visitId);
+        //addVisit("Id", this::visitId);
         return "";
     }
 
