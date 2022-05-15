@@ -14,8 +14,11 @@ class SymbolTable extends Table {
 		Bar bar;
 		int[] a;
 		int[] c;
+		int[] t;
 
-        boolLocal1 = true;
+        t = new int[1];
+
+        boolLocal1 = true && !boolLocal1;
         intLocal1 = 1;
         barLocal1 = bar;
         a = c;

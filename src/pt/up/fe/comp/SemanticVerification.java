@@ -25,9 +25,11 @@ public class SemanticVerification extends PreorderJmmVisitor<MySymbolTable,Strin
         addVisit("IdInt", this::visitInt);
         addVisit("TrueId", this::visitBoolean);
         addVisit("FalseId", this::visitBoolean);
-
         addVisit("AndExp", this::visitAnd);
-        //addVisit("SmallerThan", this::visitSmaller);
+        addVisit("SmallerThan", this::visitSmaller);
+        addVisit("NewExp", this::visitNew);
+        addVisit("NewArray", this::visitNewArray);
+        addVisit("Not", this::visitNot);
         //addVisit("Id", this::visitId);
     }
 
@@ -39,11 +41,67 @@ public class SemanticVerification extends PreorderJmmVisitor<MySymbolTable,Strin
         return "int";
     }
 
-    private String visitAnd(JmmNode jmmNode, MySymbolTable symbolTable) {
+    private String visitNot(JmmNode jmmNode, MySymbolTable symbolTable) {
+        JmmNode node = jmmNode.getJmmChild(0);
+        String nodeType = visit(node, symbolTable);
+
+        if (nodeType.equals("boolean")){
+            return "boolean";
+        }
+        else{
+            reports.add(new Report(ReportType.ERROR, Stage.SEMANTIC,Integer.valueOf(jmmNode.get("line")),
+                    Integer.valueOf(jmmNode.get("col")),"Negation only works for boolean expressions, got " + nodeType));
+
+        }
+
         return "";
     }
 
+    private String visitNewArray(JmmNode jmmNode, MySymbolTable symbolTable) {
+        return "int[]";
+    }
 
+    private String visitNew(JmmNode jmmNode, MySymbolTable symbolTable) {
+        JmmNode node = jmmNode.getJmmChild(0);
+
+        return node.get("value");
+    }
+
+    private String visitSmaller(JmmNode jmmNode, MySymbolTable symbolTable) {
+        JmmNode leftNode = jmmNode.getChildren().get(0);
+        JmmNode rightNode = jmmNode.getChildren().get(1);
+
+        String leftType = visit(leftNode, symbolTable);
+        String rightType = visit(rightNode, symbolTable);
+
+        if (leftType.equals("int") && rightType.equals("int")){
+            return "boolean";
+        }
+        else {
+            reports.add(new Report(ReportType.ERROR, Stage.SEMANTIC,Integer.valueOf(jmmNode.get("line")),
+                    Integer.valueOf(jmmNode.get("col")),"Operands of a comparable operation must be int, got " + leftType + " and " + rightType));
+        }
+
+        return "";
+    }
+
+    private String visitAnd(JmmNode jmmNode, MySymbolTable symbolTable) {
+        JmmNode leftNode = jmmNode.getChildren().get(0);
+        JmmNode rightNode = jmmNode.getChildren().get(1);
+
+        String leftType = visit(leftNode, symbolTable);
+        String rightType = visit(rightNode, symbolTable);
+
+        if (leftType.equals("boolean") && rightType.equals("boolean")){
+            return "boolean";
+        }
+        else {
+            reports.add(new Report(ReportType.ERROR, Stage.SEMANTIC,Integer.valueOf(jmmNode.get("line")),
+                    Integer.valueOf(jmmNode.get("col")),"Operands of a logical operation must be boolean, got " + leftType + " and " + rightType));
+        }
+
+        return "";
+    }
 
     private String visitAssignment(JmmNode jmmNode, MySymbolTable symbolTable) {
         JmmNode leftNode = jmmNode.getChildren().get(0);
