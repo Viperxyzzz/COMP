@@ -17,15 +17,39 @@ public class SemanticVerification extends PreorderJmmVisitor<MySymbolTable,Strin
     public SemanticVerification(){
         this.reports = new ArrayList<>();
 
+        addVisit("ReturnExp", this::visitReturn);
+        addVisit("InitStatement", this::visitStatement);
         addVisit("ArrayExp", this::visitArray);
         addVisit("BinOp", this::visitOperation);
         addVisit("Assignment", this::visitAssignment);
+        addVisit("IdInt", this::visitInt);
+        addVisit("TrueId", this::visitBoolean);
+        addVisit("FalseId", this::visitBoolean);
         //addVisit("AndExp", this::visitAnd);
         //addVisit("SmallerThan", this::visitSmaller);
         //addVisit("Id", this::visitId);
     }
 
+    private String visitBoolean(JmmNode jmmNode, MySymbolTable symbolTable) {
+        return "boolean";
+    }
+
+    private String visitInt(JmmNode jmmNode, MySymbolTable symbolTable) {
+        return "int";
+    }
+
     private String visitAssignment(JmmNode jmmNode, MySymbolTable symbolTable) {
+        JmmNode leftNode = jmmNode.getChildren().get(0);
+        JmmNode rightNode = jmmNode.getChildren().get(1);
+
+        if (!leftNode.getKind().equals("Id") && !leftNode.getKind().equals("ArrayExp")){
+            reports.add(new Report(ReportType.ERROR, Stage.SEMANTIC,Integer.valueOf(jmmNode.get("line")),
+                    Integer.valueOf(jmmNode.get("col")),"Can only assign to a variable"));
+        }
+
+        String leftType = visit(leftNode, symbolTable);
+        String rightType = visit(rightNode, symbolTable);
+
         return "";
     }
 
@@ -33,7 +57,7 @@ public class SemanticVerification extends PreorderJmmVisitor<MySymbolTable,Strin
 
         if (jmmNode.getKind().equals("BinOp")) {
             return;
-            // Não precisamos lidar com expressões matemáticas, porque o vistor já irá visitá-las
+            // Não precisamos lidar com expressões matemáticas, porque o visitor já irá visitá-las
         }
         else if (jmmNode.getKind().equals("Id")){
             Type varType = AstUtils.getVarType(jmmNode.get("value"), jmmNode.getAncestor("MethodDecl").get().getJmmChild(1).get("value"), symbolTable);
