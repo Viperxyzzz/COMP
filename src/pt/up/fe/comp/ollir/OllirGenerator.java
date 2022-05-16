@@ -9,6 +9,7 @@ import pt.up.fe.comp.jmm.analysis.table.Type;
 import pt.up.fe.comp.jmm.ast.AJmmVisitor;
 import pt.up.fe.comp.jmm.ast.JmmNode;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -35,10 +36,12 @@ public class OllirGenerator extends AJmmVisitor<String, Code> {
     private final StringBuilder code;
     private final SymbolTable mySymbolTable;
     private String currentMethodname;
+    private HashMap<String, String> temporaryTypeHashMap;
     public OllirGenerator(SymbolTable mySymbolTable){
         this.code = new StringBuilder();
         this.mySymbolTable = mySymbolTable;
         this.currentMethodname = "";
+        this.temporaryTypeHashMap = new HashMap<String, String>();
 
         addVisit("Start",this::programVisit);
         addVisit("ClassDeclaration", this::classDeclVisit);
@@ -128,7 +131,6 @@ public class OllirGenerator extends AJmmVisitor<String, Code> {
             }
         }
         var stmts = methodDecl.getChildren().subList(lastParamIndex+2, methodDecl.getNumChildren());
-        System.out.println(stmts);
         for (var stmt: stmts){
             visit(stmt);
         }
@@ -141,7 +143,6 @@ public class OllirGenerator extends AJmmVisitor<String, Code> {
         //2:33:00
         for(var node : jmmNode.getChildren()){
             var nodeCode = visit(node);
-            System.out.println(nodeCode.prefix);
             code.append(nodeCode.prefix);
 
         }
@@ -168,15 +169,20 @@ public class OllirGenerator extends AJmmVisitor<String, Code> {
         thisCode.prefix += rhs.prefix;
         String temp = OllirUtils.createTemp();
         var type = "";
+
+
         if(dummy == null){
-            type = "V";
+            type = "i32";
         }
         else{
             type = dummy;
         }
-        System.out.println("TYPE " + type);
+
         thisCode.prefix += temp+"." + type + " :=."+ type + " " + lhs.code +"."+ type + " " + OllirUtils.assignOp(op) + "." + type + " " + rhs.code +"."+ type + ";\n";
         thisCode.code = temp;
+
+        this.temporaryTypeHashMap.put(temp,type);
+
         return thisCode;
     }
     /*
@@ -205,7 +211,6 @@ public class OllirGenerator extends AJmmVisitor<String, Code> {
         var fields = mySymbolTable.getFields();
         for (var field : fields){
             if (field.getName().equals(varName)){
-                //System.out.println(varName + " está nos fields\n");
                 return field.getType();
             }
         }
@@ -224,11 +229,12 @@ public class OllirGenerator extends AJmmVisitor<String, Code> {
         if(node.getJmmChild(1).getKind().equals("NewExp")){
             thisCode.prefix += "invokespecial(" + lhs.code + "." + type + ",\"<init>\").V;\n";
         }
+        this.temporaryTypeHashMap.put(temp,type);
         return thisCode;
     }
 
     private Code assignmentVisit(JmmNode node, String dummy){
-        var lhs = visit(node.getJmmChild(0));
+        var lhs = visit(node.getJmmChild(0),dummy);
         String type;
 
         //only works if localVar name is different from fieldVar name
@@ -257,22 +263,11 @@ public class OllirGenerator extends AJmmVisitor<String, Code> {
             thisCode.prefix += "invokespecial(" + lhs.code + "." + type + ",\"<init>\").V;\n";
         }
 
+        this.temporaryTypeHashMap.put(temp,type);
+
         return thisCode;
     }
-    /*
-    private Code dotExpressionVisit(JmmNode node, Integer dummy){
-        var lhs = visit(node.getJmmChild(0));
-        var rhs = visit(node.getJmmChild(1));
 
-        Code thisCode = new Code();
-        thisCode.prefix = lhs.prefix;
-        thisCode.prefix += rhs.prefix;
-        String temp = OllirUtils.createTemp();
-        //this aint working w length
-        thisCode.prefix += "invokestatic(" + lhs.code + ", \"" + rhs.code + "\").V";
-        thisCode.code = temp;
-        return thisCode;
-    }*/
     private Code thisIdVisit(JmmNode id, String dummy){
         Code thisCode = new Code();
         thisCode.code = "this";
@@ -281,44 +276,48 @@ public class OllirGenerator extends AJmmVisitor<String, Code> {
 
     private Code dotExpressionVisit(JmmNode node, String dummy){
         String prefixCode = "";
-        Code target = visit(node.getJmmChild(0));
+        Code target = visit(node.getJmmChild(0),dummy);
         var lhs = node.getJmmChild(0);
         prefixCode += target.prefix;
         String methodName = node.getJmmChild(1).getJmmChild(0).get("value"); //DotExp.CallMethod.id.value
-        Type type;
-        type = AstUtils.getVarType(lhs.get("value"),this.currentMethodname,(MySymbolTable) mySymbolTable);
         String finalCode = "";
-        if(type != null){
-            finalCode = "invokevirtual(" + target.code + "." + OllirUtils.getOllirType(type.getName()) +",\""+methodName + "\"";
+        if(target.code.equals("this")){
+            finalCode = "invokevirtual(" + target.code + ",\"" + methodName +"\"";
         }
-        else{
-            finalCode = "invokestatic(" +target.code+",\""+methodName + "\"";
+        else {
+            Type type;
+            type = AstUtils.getVarType(lhs.get("value"), this.currentMethodname, (MySymbolTable) mySymbolTable);
+            if (type != null) {
+                finalCode = "invokevirtual(" + target.code + "." + OllirUtils.getOllirType(type.getName()) + ",\"" + methodName + "\"";
+
+            } else {
+                finalCode = "invokestatic(" + target.code + ",\"" + methodName + "\"";
+            }
         }
 
         boolean areThereParams = node.getJmmChild(1).getNumChildren() != 1;
         if(areThereParams){
             for(var arg : node.getJmmChild(1).getJmmChild(1).getChildren()){
-                Code argCode = visit(arg);
+                Code argCode = visit(arg,dummy);
 
                 prefixCode += argCode.prefix;
                 var returnType = AstUtils.getVarType(argCode.code,this.currentMethodname,(MySymbolTable) mySymbolTable);
                 var returnTypeString = "";
-                if(dummy != null){
-                    returnTypeString = "." + dummy;
-                }
-                else {
-                    if (returnType != null)
+               if (returnType != null)
                         returnTypeString = "." + OllirUtils.getCode(returnType);
-                    else
-                        returnTypeString = ".V";
-                }
+               else {
+                    var paramType = this.temporaryTypeHashMap.get(argCode.code);
+
+                   if(paramType == null)
+                       returnTypeString = ".V";
+                   else
+                       returnTypeString = "." + paramType;
+               }
                 finalCode += "," + argCode.code + returnTypeString;
             }
         }
         var returnType = mySymbolTable.getReturnType(methodName);
         var returnTypeString = "";
-        System.out.println(returnType);
-        System.out.println(methodName);
         if(dummy != null){
             returnTypeString = dummy;
         }
@@ -328,13 +327,13 @@ public class OllirGenerator extends AJmmVisitor<String, Code> {
             else
                 returnTypeString = "V";
         }
-        System.out.println("RETURNTYPESTRING " + returnTypeString);
         finalCode += ")." + returnTypeString + ";\n";
         String temp = OllirUtils.createTemp();
         prefixCode += temp + "." + returnTypeString + " :=." + returnTypeString + " " + finalCode;
         Code thisCode = new Code();
         thisCode.code = temp;
         thisCode.prefix = prefixCode;
+        this.temporaryTypeHashMap.put(temp,returnTypeString);
         return thisCode;
     }
 
@@ -352,28 +351,6 @@ public class OllirGenerator extends AJmmVisitor<String, Code> {
         thisCode.code = "new(" + id.get("value") +")";
         return thisCode;
     }
-    /*
-    private Code visitBinOp(JmmNode node, String dummy){
-        var lhs = visit(node.getJmmChild(0),dummy);
-        var rhs = visit(node.getJmmChild(1),dummy);
-        String op = node.get("op");
-
-        Code thisCode = new Code();
-        thisCode.prefix = lhs.prefix;
-        thisCode.prefix += rhs.prefix;
-        String temp = OllirUtils.createTemp();
-        var type = "";
-        if(dummy == null){
-            type = "V";
-        }
-        else{
-            type = dummy;
-        }
-        System.out.println("TYPE " + type);
-        thisCode.prefix += temp+"." + type + " :=."+ type + " " + lhs.code +"."+ type + " " + OllirUtils.assignOp(op) + "." + type + " " + rhs.code +"."+ type + ";\n";
-        thisCode.code = temp;
-        return thisCode;
-    }*/
 
     private Code indexingArrayVisit(JmmNode jmmNode, String dummy){
         //b[t.i32].i32
@@ -386,12 +363,14 @@ public class OllirGenerator extends AJmmVisitor<String, Code> {
             String temp2 = OllirUtils.createTemp();
             thisCode.prefix += temp2 + "." + type + " :=." + type + " " + rhs.code + "." + type + ";\n";
             rhs.code = temp2;
+            this.temporaryTypeHashMap.put(temp2,type);
         }
 
         thisCode.prefix += rhs.prefix;
         String temp = OllirUtils.createTemp();
         thisCode.prefix += temp +"."+ type + " :=." + type + " " + lhs.code + "[" + rhs.code + "." + type + "]." + type + ";\n";
         thisCode.code = temp;
+        this.temporaryTypeHashMap.put(temp,type);
         return thisCode;
     }
 
