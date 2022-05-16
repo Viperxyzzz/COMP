@@ -1,5 +1,6 @@
 package pt.up.fe.comp.ollir;
 
+import org.eclipse.jgit.patch.HunkHeader;
 import org.specs.comp.ollir.Ollir;
 import pt.up.fe.comp.AstUtils;
 import pt.up.fe.comp.MySymbolTable;
@@ -185,15 +186,6 @@ public class OllirGenerator extends AJmmVisitor<String, Code> {
 
         return thisCode;
     }
-    /*
-    private Code visitInvocation(JmmNode node, Integer dummy){
-        String prefixCode = "";
-        Code target = visit(node.getJmmChild(0));
-        prefixCode += target.prefix;
-
-        String methodSignature = node.getAttributes()
-        return thiscode;
-    }*/
 
     private Code idVisit(JmmNode id, String dummy){
         Code thisCode = new Code();
@@ -274,13 +266,29 @@ public class OllirGenerator extends AJmmVisitor<String, Code> {
         return thisCode;
     }
 
+    private Code getLengthOllir(JmmNode node,String varName){
+        String temp = OllirUtils.createTemp();
+
+        Code thisCode = new Code();
+        var returnType= OllirUtils.getOllirType(AstUtils.getVarType(varName,this.currentMethodname,(MySymbolTable) mySymbolTable).getName());
+
+        thisCode.prefix = temp + "." + returnType + " :=." + returnType + " " + "arraylength(" + varName +".array." + returnType + ").i32;\n";
+        thisCode.code = temp;
+
+        return thisCode;
+    }
+
     private Code dotExpressionVisit(JmmNode node, String dummy){
         String prefixCode = "";
         Code target = visit(node.getJmmChild(0),dummy);
         var lhs = node.getJmmChild(0);
         prefixCode += target.prefix;
+        if(node.getJmmChild(1).getKind().equals("LengthExp")){
+            return getLengthOllir(node.getJmmChild(1),target.code);
+        }
         String methodName = node.getJmmChild(1).getJmmChild(0).get("value"); //DotExp.CallMethod.id.value
         String finalCode = "";
+
         if(target.code.equals("this")){
             finalCode = "invokevirtual(" + target.code + ",\"" + methodName +"\"";
         }
@@ -294,7 +302,6 @@ public class OllirGenerator extends AJmmVisitor<String, Code> {
                 finalCode = "invokestatic(" + target.code + ",\"" + methodName + "\"";
             }
         }
-
         boolean areThereParams = node.getJmmChild(1).getNumChildren() != 1;
         if(areThereParams){
             for(var arg : node.getJmmChild(1).getJmmChild(1).getChildren()){
