@@ -36,8 +36,38 @@ public class SemanticVerification extends PreorderJmmVisitor<MySymbolTable,Strin
         //addVisit("Id", this::visitId);
     }
 
+    public boolean checkDot(JmmNode jmmNode, MySymbolTable symbolTable) {
+        if (jmmNode.get("value").equals(symbolTable.getClassName())){
+            return true;
+        }
+
+        var imports = symbolTable.getImports();
+        if(imports.contains(jmmNode.get("value"))){
+            return true;
+        }
+
+        Type varType = AstUtils.getVarType(jmmNode.get("value"), jmmNode.getAncestor("MethodDecl").get().getJmmChild(1).get("value"), symbolTable);
+        if(!(varType == null)){
+            return true;
+        }
+
+        return false;
+    }
+
     private String visitDot(JmmNode jmmNode, MySymbolTable symbolTable) {
-        return "dot";
+        JmmNode id = jmmNode.getJmmChild(0);
+        JmmNode call = jmmNode.getJmmChild(1);
+
+        if (!checkDot(id, symbolTable)){
+            reports.add(new Report(ReportType.ERROR, Stage.SEMANTIC, Integer.valueOf(jmmNode.get("line")),
+                    Integer.valueOf(jmmNode.get("col")), "Class " + id.get("value") + " not imported."));
+        }
+
+        if (call.getKind().equals("LengthExp")){
+            return "int";
+        }
+        else
+            return "dot";
     }
 
     private String visitIf(JmmNode jmmNode, MySymbolTable symbolTable) {
