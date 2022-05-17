@@ -1,5 +1,6 @@
 package pt.up.fe.comp;
 
+import jdk.swing.interop.SwingInterOpUtils;
 import pt.up.fe.comp.jmm.analysis.table.Type;
 import pt.up.fe.comp.jmm.ast.JmmNode;
 import pt.up.fe.comp.jmm.ast.PreorderJmmVisitor;
@@ -34,6 +35,16 @@ public class SemanticVerification extends PreorderJmmVisitor<MySymbolTable,Strin
         addVisit("IfStatement", this::visitIf);
         addVisit("DotExp", this::visitDot);
         //addVisit("Id", this::visitId);
+    }
+
+    public boolean isImported(JmmNode jmmNode, MySymbolTable symbolTable) {
+        Type varType = AstUtils.getVarType(jmmNode.get("value"), jmmNode.getAncestor("MethodDecl").get().getJmmChild(1).get("value"), symbolTable);
+
+        if (symbolTable.getImports().contains(varType)){
+            return true;
+        }
+
+        return false;
     }
 
     public boolean checkDot(JmmNode jmmNode, MySymbolTable symbolTable) {
@@ -174,7 +185,14 @@ public class SemanticVerification extends PreorderJmmVisitor<MySymbolTable,Strin
         String leftType = visit(leftNode, symbolTable);
         String rightType = visit(rightNode, symbolTable);
 
-        if (!(leftType.equals(rightType) || leftType.equals("dot") || rightType.equals("dot"))) {
+        if (symbolTable.getSuper() != null && ((symbolTable.getSuper().equals(rightType) && symbolTable.getClassName().equals(leftType)) || (symbolTable.getSuper().equals(leftType) && symbolTable.getClassName().equals(rightType)))){
+            System.out.println(leftType + " e " + rightType + " são iguais.");
+        }
+
+
+        if ((!(leftType.equals(rightType) || leftType.equals("dot") || rightType.equals("dot"))) &&
+                !(symbolTable.getSuper() != null && ((symbolTable.getSuper().equals(rightType) && symbolTable.getClassName().equals(leftType)) ||
+                        (symbolTable.getSuper().equals(leftType) && symbolTable.getClassName().equals(rightType))))) {
             reports.add(new Report(ReportType.ERROR, Stage.SEMANTIC,Integer.valueOf(jmmNode.get("line")),
                     Integer.valueOf(jmmNode.get("col")),"Type of the assignee must be compatible with the assigned, got " + leftType + " and " + rightType));
         }
@@ -233,7 +251,7 @@ public class SemanticVerification extends PreorderJmmVisitor<MySymbolTable,Strin
         if (!jmmNode.getAncestor("DotExp").isPresent() && !jmmNode.getAncestor("NewExp").isPresent()){
 
             Type varType = AstUtils.getVarType(jmmNode.get("value"), jmmNode.getAncestor("MethodDecl").get().getJmmChild(1).get("value"), symbolTable);
-            System.out.println("var: " + jmmNode.get("value"));
+            //System.out.println("var: " + jmmNode.get("value"));
             if (varType == null){
                 reports.add(new Report(ReportType.ERROR, Stage.SEMANTIC,Integer.valueOf(jmmNode.get("line")),
                         Integer.valueOf(jmmNode.get("col")),"Variable " + jmmNode.get("value") + " not declared."));
@@ -277,7 +295,7 @@ public class SemanticVerification extends PreorderJmmVisitor<MySymbolTable,Strin
         if (!(indexType.equals("int") || indexType.equals("dot"))){
             reports.add(new Report(ReportType.ERROR, Stage.SEMANTIC,Integer.valueOf(arrayExp.get("line")),
                     Integer.valueOf(arrayExp.get("col")),"Array access index should be of type int, got " +
-                    arrayExp.getJmmChild(1).getKind() + " instead."));
+                    indexType + " instead."));
         }
 
         return varType.getName();
