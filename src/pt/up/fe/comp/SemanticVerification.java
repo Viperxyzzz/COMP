@@ -32,13 +32,18 @@ public class SemanticVerification extends PreorderJmmVisitor<MySymbolTable,Strin
         addVisit("Not", this::visitNot);
         addVisit("WhileStatement", this::visitWhile);
         addVisit("IfStatement", this::visitIf);
+        addVisit("DotExp", this::visitDot);
         //addVisit("Id", this::visitId);
+    }
+
+    private String visitDot(JmmNode jmmNode, MySymbolTable symbolTable) {
+        return "dot";
     }
 
     private String visitIf(JmmNode jmmNode, MySymbolTable symbolTable) {
         JmmNode conditionNode = jmmNode.getJmmChild(0);
         String conditionType = visit(conditionNode, symbolTable);
-        if (!conditionType.equals("boolean")){
+        if (!(conditionType.equals("boolean") || conditionType.equals("dot"))){
             reports.add(new Report(ReportType.ERROR, Stage.SEMANTIC,Integer.valueOf(jmmNode.get("line")),
                     Integer.valueOf(jmmNode.get("col")),"Expressions in conditions must return a boolean, got " + conditionType));
         }
@@ -49,7 +54,7 @@ public class SemanticVerification extends PreorderJmmVisitor<MySymbolTable,Strin
     private String visitWhile(JmmNode jmmNode, MySymbolTable symbolTable) {
         JmmNode conditionNode = jmmNode.getJmmChild(0);
         String conditionType = visit(conditionNode, symbolTable);
-        if (!conditionType.equals("boolean")){
+        if (!(conditionType.equals("boolean") || conditionType.equals("dot"))){
             reports.add(new Report(ReportType.ERROR, Stage.SEMANTIC,Integer.valueOf(jmmNode.get("line")),
                     Integer.valueOf(jmmNode.get("col")),"Expressions in conditions must return a boolean, got " + conditionType));
         }
@@ -69,7 +74,7 @@ public class SemanticVerification extends PreorderJmmVisitor<MySymbolTable,Strin
         JmmNode node = jmmNode.getJmmChild(0);
         String nodeType = visit(node, symbolTable);
 
-        if (nodeType.equals("boolean")){
+        if (nodeType.equals("boolean") || nodeType.equals("dot")){
             return "boolean";
         }
         else{
@@ -98,7 +103,7 @@ public class SemanticVerification extends PreorderJmmVisitor<MySymbolTable,Strin
         String leftType = visit(leftNode, symbolTable);
         String rightType = visit(rightNode, symbolTable);
 
-        if (leftType.equals("int") && rightType.equals("int")){
+        if ((leftType.equals("int") || leftType.equals("dot")) && (rightType.equals("int") || rightType.equals("dot"))){
             return "boolean";
         }
         else {
@@ -116,7 +121,7 @@ public class SemanticVerification extends PreorderJmmVisitor<MySymbolTable,Strin
         String leftType = visit(leftNode, symbolTable);
         String rightType = visit(rightNode, symbolTable);
 
-        if (leftType.equals("boolean") && rightType.equals("boolean")){
+        if ((leftType.equals("boolean") || leftType.equals("dot")) && (rightType.equals("boolean") || rightType.equals("dot"))){
             return "boolean";
         }
         else {
@@ -139,7 +144,7 @@ public class SemanticVerification extends PreorderJmmVisitor<MySymbolTable,Strin
         String leftType = visit(leftNode, symbolTable);
         String rightType = visit(rightNode, symbolTable);
 
-        if (!leftType.equals(rightType)) {
+        if (!(leftType.equals(rightType) || leftType.equals("dot") || rightType.equals("dot"))) {
             reports.add(new Report(ReportType.ERROR, Stage.SEMANTIC,Integer.valueOf(jmmNode.get("line")),
                     Integer.valueOf(jmmNode.get("col")),"Type of the assignee must be compatible with the assigned, got " + leftType + " and " + rightType));
         }
@@ -166,6 +171,9 @@ public class SemanticVerification extends PreorderJmmVisitor<MySymbolTable,Strin
                         Integer.valueOf(jmmNode.get("col")),"Array cannot be used in arithmetic operations."));
                 return;
             }
+        }
+        else if (jmmNode.getKind().equals("dot")){
+            return;
         }
 
 
@@ -236,7 +244,7 @@ public class SemanticVerification extends PreorderJmmVisitor<MySymbolTable,Strin
         // Array access index is an expression of type integer
         var arrayIndex = arrayExp.getJmmChild(1);
         String indexType = visit(arrayIndex, symbolTable);
-        if (!indexType.equals("int")){
+        if (!(indexType.equals("int") || indexType.equals("dot"))){
             reports.add(new Report(ReportType.ERROR, Stage.SEMANTIC,Integer.valueOf(arrayExp.get("line")),
                     Integer.valueOf(arrayExp.get("col")),"Array access index should be of type int, got " +
                     arrayExp.getJmmChild(1).getKind() + " instead."));
