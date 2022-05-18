@@ -18,24 +18,24 @@ public class SemanticVerification extends PreorderJmmVisitor<MySymbolTable,Strin
     public SemanticVerification(){
         this.reports = new ArrayList<>();
 
-        addVisit("ReturnExp", this::visitReturn);
         addVisit("InitStatement", this::visitStatement);
-        addVisit("ArrayExp", this::visitArray);
-        addVisit("BinOp", this::visitOperation);
+        addVisit("ReturnExp", this::visitReturn);
+        addVisit("IfStatement", this::visitIf);
+        addVisit("WhileStatement", this::visitWhile);
         addVisit("Assignment", this::visitAssignment);
+        addVisit("AndExp", this::visitAnd);
+        addVisit("SmallerThan", this::visitSmaller);
+        addVisit("BinOp", this::visitOperation);
+        addVisit("ArrayExp", this::visitArray);
+        addVisit("Not", this::visitNot);
+        addVisit("DotExp", this::visitDot);
         addVisit("IdInt", this::visitInt);
         addVisit("TrueId", this::visitBoolean);
         addVisit("FalseId", this::visitBoolean);
-        addVisit("AndExp", this::visitAnd);
-        addVisit("SmallerThan", this::visitSmaller);
-        addVisit("NewExp", this::visitNew);
         addVisit("NewArray", this::visitNewArray);
-        addVisit("Not", this::visitNot);
-        addVisit("WhileStatement", this::visitWhile);
-        addVisit("IfStatement", this::visitIf);
-        addVisit("DotExp", this::visitDot);
-        //addVisit("Id", this::visitId);
+        addVisit("NewExp", this::visitNew);
     }
+
 
     public boolean isImported(JmmNode jmmNode, MySymbolTable symbolTable) {
 
@@ -94,6 +94,43 @@ public class SemanticVerification extends PreorderJmmVisitor<MySymbolTable,Strin
 
         // check for calls to undeclared methods
         Type varType = AstUtils.getVarType(id.get("value"), id.getAncestor("MethodDecl").get().getJmmChild(1).get("value"), symbolTable);
+
+        // verificar parâmetros
+        if (call.getNumChildren() > 1 &&
+                (symbolTable.hasMethod(methodName) && varType.getName().equals(symbolTable.getClassName()))){ // existem parâmetros e o método está declarado na classe
+            var params = call.getJmmChild(1);
+
+            // verificar se numero de params está correto
+            if (symbolTable.getParameters(methodName).size() == params.getNumChildren()) {
+                // verificar se tipo dos params está correto
+                var paramsInMethod = symbolTable.getParameters(methodName);
+                for (int i = 0; i < params.getNumChildren(); i++){
+                    var param = params.getJmmChild(i);
+
+                    if (!param.getKind().equals("Id")) {
+                        var paramType = visit(param, symbolTable);
+                        if (!paramsInMethod.get(i).getType().getName().equals(paramType)) {
+                            reports.add(new Report(ReportType.ERROR, Stage.SEMANTIC, Integer.valueOf(jmmNode.get("line")),
+                                    Integer.valueOf(jmmNode.get("col")), "Got incompatible arguments for call on method " + methodName));
+                        }
+                    }
+                    else {
+                        Type idType = AstUtils.getVarType(param.get("value"), param.getAncestor("MethodDecl").get().getJmmChild(1).get("value"), symbolTable);
+                        if (!paramsInMethod.get(i).getType().getName().equals(idType.getName())) {
+                            reports.add(new Report(ReportType.ERROR, Stage.SEMANTIC, Integer.valueOf(jmmNode.get("line")),
+                                    Integer.valueOf(jmmNode.get("col")), "Got incompatible arguments for call on method " + methodName));
+                        }
+                    }
+                }
+            }
+            else {
+                reports.add(new Report(ReportType.ERROR, Stage.SEMANTIC, Integer.valueOf(jmmNode.get("line")),
+                        Integer.valueOf(jmmNode.get("col")), "Got wrong number of parameters for call on method " + methodName));
+            }
+        }
+
+        // falta tratar this.
+
 
         if (varType != null && varType.getName().equals(symbolTable.getClassName())) { // é do tipo da classe principal
             if (!symbolTable.hasMethod(methodName) && symbolTable.getSuper() == null){
@@ -274,14 +311,6 @@ public class SemanticVerification extends PreorderJmmVisitor<MySymbolTable,Strin
                     Integer.valueOf(jmmNode.get("col")),"Operand of operation must be of type Int, got: " + visited));
             return;
         }
-
-
-        /* else if (node é dot expression){
-            // verificar valor de retorno da função chamada
-        } else if (node é um array) {
-            // Verificar tipo do array.
-        }*/
-        // AND, SMALLER, NOTEXP, DOTEXP
     }
 
     private String visitOperation(JmmNode jmmNode, MySymbolTable symbolTable) {
@@ -330,7 +359,10 @@ public class SemanticVerification extends PreorderJmmVisitor<MySymbolTable,Strin
 
         //System.out.println("Expected return type: " + methodReturnType + "; Actual return type: " + actualReturnType);
 
-        if (!((methodReturnType.isArray() && actualReturnType.equals("int[]")) ||
+        if (actualReturnType.equals("dot")){
+            System.out.println("Return pode ser válido");
+        }
+        else if (!((methodReturnType.isArray() && actualReturnType.equals("int[]")) ||
                 (!methodReturnType.isArray() && methodReturnType.getName().equals(actualReturnType)))){
             reports.add(new Report(ReportType.ERROR, Stage.SEMANTIC,Integer.valueOf(jmmNode.get("line")),
                     Integer.valueOf(jmmNode.get("col")),"Incompatible return type, expected " + methodReturnType + " but got " + actualReturnType));

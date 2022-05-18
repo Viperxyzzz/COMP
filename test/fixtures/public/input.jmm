@@ -1,21 +1,19 @@
+import A;
 
-class A {
+class Test {
 
 	public static void main(String[] args) {
 
 	}
 
-	public int foo(int a) {
-		return a + 1;
-	}
-
-	public boolean bar() {
+	public int bar(int c) {
 		A a;
-		int b;
+		boolean b;
+		int d;
 
 		a = new A();
-		b = 0;
+		b = a.bo();
 
-		return a.foo(b);
+		return a.bar(10);
 	}
 }
