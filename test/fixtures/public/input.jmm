@@ -1,22 +1,18 @@
 import A;
-import B;
 
-class Test {
+class Test extends A {
 
 	public static void main(String[] args) {
 
 	}
 
-	public A foo() {
+	public int foo() {
 		A a;
-		B b;
-
 		a = new A();
-		b = new B();
 
-		// A and B imported, assume it is correct
-		a = b;
+		// Assume bar() is in A
+		a.bar();
 
-		return a;
+		return 0;
 	}
 }

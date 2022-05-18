@@ -38,16 +38,24 @@ public class SemanticVerification extends PreorderJmmVisitor<MySymbolTable,Strin
     }
 
     public boolean isImported(JmmNode jmmNode, MySymbolTable symbolTable) {
-        Type varType = AstUtils.getVarType(jmmNode.get("value"), jmmNode.getAncestor("MethodDecl").get().getJmmChild(1).get("value"), symbolTable);
 
-        if (symbolTable.getImports().contains(varType)){
-            return true;
+        if (jmmNode.getKind().equals("Id")) {
+
+            Type varType = AstUtils.getVarType(jmmNode.get("value"), jmmNode.getAncestor("MethodDecl").get().getJmmChild(1).get("value"), symbolTable);
+
+            if (symbolTable.getImports().contains(varType.getName())) {
+                return true;
+            }
         }
 
         return false;
     }
 
     public boolean checkDot(JmmNode jmmNode, MySymbolTable symbolTable) {
+        if (jmmNode.getKind().equals("ThisId")) {
+            return true;
+        }
+
         if (jmmNode.get("value").equals(symbolTable.getClassName())){
             return true;
         }
@@ -69,16 +77,31 @@ public class SemanticVerification extends PreorderJmmVisitor<MySymbolTable,Strin
         JmmNode id = jmmNode.getJmmChild(0);
         JmmNode call = jmmNode.getJmmChild(1);
 
-        if (!checkDot(id, symbolTable)){
+        if (!checkDot(id, symbolTable)) {
             reports.add(new Report(ReportType.ERROR, Stage.SEMANTIC, Integer.valueOf(jmmNode.get("line")),
                     Integer.valueOf(jmmNode.get("col")), "Class " + id.get("value") + " not imported."));
         }
 
-        if (call.getKind().equals("LengthExp")){
-            return "int";
+        if (call.getKind().equals("LengthExp")) {
+            if (id.getKind().equals("ThisId")) {
+                reports.add(new Report(ReportType.ERROR, Stage.SEMANTIC, Integer.valueOf(jmmNode.get("line")),
+                        Integer.valueOf(jmmNode.get("col")), "this.length is not valid."));
+            } else {
+                return "int";
+            }
         }
-        else
-            return "dot";
+
+        // check for calls to undeclared methods
+        Type varType = AstUtils.getVarType(id.get("value"), id.getAncestor("MethodDecl").get().getJmmChild(1).get("value"), symbolTable);
+
+        if (varType != null && varType.getName().equals(symbolTable.getClassName())) { // é do tipo da classe principal
+            if (!symbolTable.hasMethod(call.getJmmChild(0).get("value")) && symbolTable.getSuper() == null){
+                reports.add(new Report(ReportType.ERROR, Stage.SEMANTIC, Integer.valueOf(jmmNode.get("line")),
+                        Integer.valueOf(jmmNode.get("col")), "Call to undeclared method: " + call.getJmmChild(0).get("value")));
+            }
+        }
+
+        return "dot";
     }
 
     private String visitIf(JmmNode jmmNode, MySymbolTable symbolTable) {
@@ -186,11 +209,14 @@ public class SemanticVerification extends PreorderJmmVisitor<MySymbolTable,Strin
         String rightType = visit(rightNode, symbolTable);
 
         if (symbolTable.getSuper() != null && ((symbolTable.getSuper().equals(rightType) && symbolTable.getClassName().equals(leftType)) || (symbolTable.getSuper().equals(leftType) && symbolTable.getClassName().equals(rightType)))){
-            System.out.println(leftType + " e " + rightType + " são iguais.");
+            System.out.println(leftType + " and " + rightType + " can be assigned because one extends the other.");
         }
 
+        if (isImported(leftNode, symbolTable) && isImported(rightNode,symbolTable)){
+            System.out.println("Both imported with types " + leftType + " and " + rightType);
+        }
 
-        if ((!(leftType.equals(rightType) || leftType.equals("dot") || rightType.equals("dot"))) &&
+        if ((!(leftType.equals(rightType) || leftType.equals("dot") || rightType.equals("dot") || (isImported(leftNode, symbolTable) && isImported(rightNode,symbolTable)))) &&
                 !(symbolTable.getSuper() != null && ((symbolTable.getSuper().equals(rightType) && symbolTable.getClassName().equals(leftType)) ||
                         (symbolTable.getSuper().equals(leftType) && symbolTable.getClassName().equals(rightType))))) {
             reports.add(new Report(ReportType.ERROR, Stage.SEMANTIC,Integer.valueOf(jmmNode.get("line")),
@@ -292,6 +318,13 @@ public class SemanticVerification extends PreorderJmmVisitor<MySymbolTable,Strin
         // Array access index is an expression of type integer
         var arrayIndex = arrayExp.getJmmChild(1);
         String indexType = visit(arrayIndex, symbolTable);
+
+        if (indexType == null){
+            System.out.println("null");
+        }
+        else
+            System.out.println(indexType);
+
         if (!(indexType.equals("int") || indexType.equals("dot"))){
             reports.add(new Report(ReportType.ERROR, Stage.SEMANTIC,Integer.valueOf(arrayExp.get("line")),
                     Integer.valueOf(arrayExp.get("col")),"Array access index should be of type int, got " +
