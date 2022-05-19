@@ -1,4 +1,4 @@
-import A;
+import C;
 
 class Test {
 
@@ -6,14 +6,15 @@ class Test {
 
 	}
 
-	public int bar(int c) {
-		A a;
-		boolean b;
-		int d;
+	public int foo() {
+	    C c;
 
-		a = new A();
-		b = a.bo();
+	    int a;
+	    int[] b;
+	    int idk;
 
-		return a.bar(10);
+	    a = b.length;
+
+		return 0;
 	}
 }

@@ -51,7 +51,7 @@ public class SemanticVerification extends PreorderJmmVisitor<MySymbolTable,Strin
         return false;
     }
 
-    public boolean checkDot(JmmNode jmmNode, MySymbolTable symbolTable) {
+    public boolean checkDotClass(JmmNode jmmNode, MySymbolTable symbolTable) {
         if (jmmNode.getKind().equals("ThisId")) {
             return true;
         }
@@ -73,12 +73,69 @@ public class SemanticVerification extends PreorderJmmVisitor<MySymbolTable,Strin
         return false;
     }
 
+    private String checkDotParams(JmmNode call, String varType, MySymbolTable symbolTable){
+        var methodName = call.getJmmChild(0).get("value");
+
+        // check for calls to undeclared methods
+
+        // verificar parâmetros
+        if (call.getNumChildren() > 1 &&
+                (symbolTable.hasMethod(methodName) && varType.equals(symbolTable.getClassName()))) { // existem parâmetros e o método está declarado na classe
+            var params = call.getJmmChild(1);
+
+            // verificar se numero de params está correto
+            if (symbolTable.getParameters(methodName).size() == params.getNumChildren()) {
+                // verificar se tipo dos params está correto
+                var paramsInMethod = symbolTable.getParameters(methodName);
+                for (int i = 0; i < params.getNumChildren(); i++) {
+                    var param = params.getJmmChild(i);
+
+                    if (!param.getKind().equals("Id")) {
+                        var paramType = visit(param, symbolTable);
+                        if (!paramsInMethod.get(i).getType().getName().equals(paramType)) {
+                            reports.add(new Report(ReportType.ERROR, Stage.SEMANTIC, Integer.valueOf(call.get("line")),
+                                    Integer.valueOf(call.get("col")), "Got incompatible arguments for call on method " + methodName));
+                        }
+                    } else {
+                        Type idType = AstUtils.getVarType(param.get("value"), param.getAncestor("MethodDecl").get().getJmmChild(1).get("value"), symbolTable);
+                        if (!paramsInMethod.get(i).getType().getName().equals(idType.getName())) {
+                            reports.add(new Report(ReportType.ERROR, Stage.SEMANTIC, Integer.valueOf(call.get("line")),
+                                    Integer.valueOf(call.get("col")), "Got incompatible arguments for call on method " + methodName));
+                        }
+                    }
+                }
+            } else {
+                reports.add(new Report(ReportType.ERROR, Stage.SEMANTIC, Integer.valueOf(call.get("line")),
+                        Integer.valueOf(call.get("col")), "Got wrong number of parameters for call on method " + methodName));
+            }
+        }
+        else if (symbolTable.getParameters(methodName).size() != 0) {
+            reports.add(new Report(ReportType.ERROR, Stage.SEMANTIC, Integer.valueOf(call.get("line")),
+                    Integer.valueOf(call.get("col")), "Got wrong number of parameters for call on method " + methodName));
+        }
+
+        if (varType != null && varType.equals(symbolTable.getClassName())) { // é do tipo da classe principal
+            if (!symbolTable.hasMethod(methodName) && symbolTable.getSuper() == null) {
+                reports.add(new Report(ReportType.ERROR, Stage.SEMANTIC, Integer.valueOf(call.get("line")),
+                        Integer.valueOf(call.get("col")), "Call to undeclared method: " + methodName));
+            }
+            if (symbolTable.hasMethod(methodName)) {
+                Type returnType = symbolTable.getReturnType(methodName);
+                if (returnType.isArray())
+                    return returnType.getName() + "[]";
+                else
+                    return returnType.getName();
+            }
+        }
+
+        return "dot";
+    }
+
     private String visitDot(JmmNode jmmNode, MySymbolTable symbolTable) {
         JmmNode id = jmmNode.getJmmChild(0);
         JmmNode call = jmmNode.getJmmChild(1);
-        var methodName = call.getJmmChild(0).get("value");
 
-        if (!checkDot(id, symbolTable)) {
+        if (!checkDotClass(id, symbolTable)) {
             reports.add(new Report(ReportType.ERROR, Stage.SEMANTIC, Integer.valueOf(jmmNode.get("line")),
                     Integer.valueOf(jmmNode.get("col")), "Class " + id.get("value") + " not imported."));
         }
@@ -92,62 +149,66 @@ public class SemanticVerification extends PreorderJmmVisitor<MySymbolTable,Strin
             }
         }
 
-        // check for calls to undeclared methods
-        Type varType = AstUtils.getVarType(id.get("value"), id.getAncestor("MethodDecl").get().getJmmChild(1).get("value"), symbolTable);
+        var methodName = call.getJmmChild(0).get("value");
 
-        // verificar parâmetros
-        if (call.getNumChildren() > 1 &&
-                (symbolTable.hasMethod(methodName) && varType.getName().equals(symbolTable.getClassName()))){ // existem parâmetros e o método está declarado na classe
-            var params = call.getJmmChild(1);
+        if (!id.getKind().equals("ThisId")) {
 
-            // verificar se numero de params está correto
-            if (symbolTable.getParameters(methodName).size() == params.getNumChildren()) {
-                // verificar se tipo dos params está correto
-                var paramsInMethod = symbolTable.getParameters(methodName);
-                for (int i = 0; i < params.getNumChildren(); i++){
-                    var param = params.getJmmChild(i);
+            // check for calls to undeclared methods
+            Type varType = AstUtils.getVarType(id.get("value"), id.getAncestor("MethodDecl").get().getJmmChild(1).get("value"), symbolTable);
 
-                    if (!param.getKind().equals("Id")) {
-                        var paramType = visit(param, symbolTable);
-                        if (!paramsInMethod.get(i).getType().getName().equals(paramType)) {
-                            reports.add(new Report(ReportType.ERROR, Stage.SEMANTIC, Integer.valueOf(jmmNode.get("line")),
-                                    Integer.valueOf(jmmNode.get("col")), "Got incompatible arguments for call on method " + methodName));
+            // verificar parâmetros
+            if (call.getNumChildren() > 1 &&
+                    (symbolTable.hasMethod(methodName) && varType.getName().equals(symbolTable.getClassName()))) { // existem parâmetros e o método está declarado na classe
+                var params = call.getJmmChild(1);
+
+                // verificar se numero de params está correto
+                if (symbolTable.getParameters(methodName).size() == params.getNumChildren()) {
+                    // verificar se tipo dos params está correto
+                    var paramsInMethod = symbolTable.getParameters(methodName);
+                    for (int i = 0; i < params.getNumChildren(); i++) {
+                        var param = params.getJmmChild(i);
+
+                        if (!param.getKind().equals("Id")) {
+                            var paramType = visit(param, symbolTable);
+                            if (!paramsInMethod.get(i).getType().getName().equals(paramType)) {
+                                reports.add(new Report(ReportType.ERROR, Stage.SEMANTIC, Integer.valueOf(jmmNode.get("line")),
+                                        Integer.valueOf(jmmNode.get("col")), "Got incompatible arguments for call on method " + methodName));
+                            }
+                        } else {
+                            Type idType = AstUtils.getVarType(param.get("value"), param.getAncestor("MethodDecl").get().getJmmChild(1).get("value"), symbolTable);
+                            if (!paramsInMethod.get(i).getType().getName().equals(idType.getName())) {
+                                reports.add(new Report(ReportType.ERROR, Stage.SEMANTIC, Integer.valueOf(jmmNode.get("line")),
+                                        Integer.valueOf(jmmNode.get("col")), "Got incompatible arguments for call on method " + methodName));
+                            }
                         }
                     }
-                    else {
-                        Type idType = AstUtils.getVarType(param.get("value"), param.getAncestor("MethodDecl").get().getJmmChild(1).get("value"), symbolTable);
-                        if (!paramsInMethod.get(i).getType().getName().equals(idType.getName())) {
-                            reports.add(new Report(ReportType.ERROR, Stage.SEMANTIC, Integer.valueOf(jmmNode.get("line")),
-                                    Integer.valueOf(jmmNode.get("col")), "Got incompatible arguments for call on method " + methodName));
-                        }
-                    }
+                } else {
+                    reports.add(new Report(ReportType.ERROR, Stage.SEMANTIC, Integer.valueOf(jmmNode.get("line")),
+                            Integer.valueOf(jmmNode.get("col")), "Got wrong number of parameters for call on method " + methodName));
                 }
             }
-            else {
-                reports.add(new Report(ReportType.ERROR, Stage.SEMANTIC, Integer.valueOf(jmmNode.get("line")),
-                        Integer.valueOf(jmmNode.get("col")), "Got wrong number of parameters for call on method " + methodName));
+
+            if (varType != null && varType.getName().equals(symbolTable.getClassName())) { // é do tipo da classe principal
+                if (!symbolTable.hasMethod(methodName) && symbolTable.getSuper() == null) {
+                    reports.add(new Report(ReportType.ERROR, Stage.SEMANTIC, Integer.valueOf(jmmNode.get("line")),
+                            Integer.valueOf(jmmNode.get("col")), "Call to undeclared method: " + methodName));
+                }
+                if (symbolTable.hasMethod(methodName)) {
+                    Type returnType = symbolTable.getReturnType(methodName);
+                    if (returnType.isArray())
+                        return returnType.getName() + "[]";
+                    else
+                        return returnType.getName();
+                }
             }
+
+            if (varType != null && symbolTable.getImports().contains(varType.getName())) { // é de um tipo importado
+                System.out.println("Method " + methodName + " could be imported in: " + id.get("value") + " of type " + varType.getName());
+            }
+
         }
-
-        // falta tratar this.
-
-
-        if (varType != null && varType.getName().equals(symbolTable.getClassName())) { // é do tipo da classe principal
-            if (!symbolTable.hasMethod(methodName) && symbolTable.getSuper() == null){
-                reports.add(new Report(ReportType.ERROR, Stage.SEMANTIC, Integer.valueOf(jmmNode.get("line")),
-                        Integer.valueOf(jmmNode.get("col")), "Call to undeclared method: " + methodName));
-            }
-            if (symbolTable.hasMethod(methodName)){
-                Type returnType = symbolTable.getReturnType(methodName);
-                if (returnType.isArray())
-                    return returnType.getName() + "[]";
-                else
-                    return returnType.getName();
-            }
-        }
-
-        if (varType != null && symbolTable.getImports().contains(varType.getName())) { // é de um tipo importado
-            System.out.println("Method " + methodName + " could be imported in: " + id.get("value") + " of type " + varType.getName());
+        else {
+            return checkDotParams(call, symbolTable.getClassName(), symbolTable);
         }
 
         return "dot";
@@ -400,7 +461,7 @@ public class SemanticVerification extends PreorderJmmVisitor<MySymbolTable,Strin
                     indexType + " instead."));
         }
 
-        return varType.getName() + "[]";
+        return varType.getName();
     }
 
     public List<Report> getReports(){
