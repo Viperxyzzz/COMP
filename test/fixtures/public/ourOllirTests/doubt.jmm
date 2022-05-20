@@ -1,0 +1,21 @@
+import io;
+import foo.Bar;
+import Table;
+import Class;
+
+class SymbolTable extends Table {
+
+	BigChungus intField;
+	boolean boolField;
+	Class a;
+
+    public int owo(int index){
+      Class b;
+      int test;
+      b.test(); //invokevirtual($2.b.class,"test",$1.index.i32).V;
+      return 0;
+    }
+
+	public static void main(String[] args) {
+	}
+}

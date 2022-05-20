@@ -1,0 +1,29 @@
+import io;
+class Test{
+    io c;
+    public static void main(String[] args){
+        io.printHelloWorld();
+    }
+
+    public int another(){
+        io.printTest(io.owo());
+        return 1;
+    }
+
+    public int owo(int[] b){
+        int idk;
+        int a;
+        int d;
+        a = 5;
+        //idk =  10 + b[5 + a] * c.foo( c.anotherFunc() * 5 );
+        return 0;
+    }
+
+    public int lol(){
+        int a;
+        int b;
+        int c;
+        c = a + b;
+        return c;
+    }
+}

@@ -1,0 +1,66 @@
+import io;
+import foo.Bar;
+import Table;
+import Class;
+import Test;
+import BigChungus;
+
+class SymbolTable extends Table {
+
+	BigChungus intField;
+	boolean boolField;
+	Class a;
+
+    public int owo(int index){
+      int a;
+      int b;
+      io.println(intField,b);
+      return 0;
+    }
+
+	public int method1(bool a) {
+		int test;
+		int a;
+		int b;
+		int d;
+		Class c;
+		d = b;
+		a = b + this.test5(c);
+		return 0;
+	}
+
+	public Bar method2(int[] intParam1, boolean boolParam1, Bar barParam1,int index3) {
+        int[] b;
+        int f;
+        boolean c;
+        Bar test;
+        test = barParam1;
+
+		return barParam1;
+
+	}
+
+	public int test5(Class a){
+	    Test test2;
+	    test2 = new Test();
+	    return 0;
+	}
+
+
+	public static void main(String[] args) {
+	    int[] sus;
+	    int crewmate1;
+	    int crewmate2;
+        int idk;
+        int[] b;
+        Test c;
+        int a;
+        int[] xd;
+        BigChungus bigChungus;
+
+
+	    bigChungus = new BigChungus();
+	    idk =  10 + b[3+a] * c.foo( c.anotherFunc(a) * 5 );
+	    io.println(bigChungus.amongUs(xd.length + 10 + c.test()));
+	}
+}

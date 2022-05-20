@@ -1,0 +1,31 @@
+import io;
+import foo.Bar;
+import Table;
+import Class;
+
+class SymbolTable extends Table {
+
+    int BigChungus;
+    boolean uwu;
+    int a;
+    Class bruh;
+    public int owo(int index){
+      int test;
+      test = BigChungus + 10;
+      return BigChungus;
+    }
+
+    public bool owo2(boolean nya){
+      uwu = 1;
+      nya = 0;
+      return nya;
+    }
+
+    public int idk(){
+        a = 2 + 3 + 5 + bruh.getWidth();
+        return a;
+    }
+
+	public static void main(String[] args) {
+	}
+}

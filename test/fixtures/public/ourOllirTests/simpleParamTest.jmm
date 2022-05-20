@@ -1,0 +1,12 @@
+import io;
+import Class;
+class Test{
+    public static void main(String[] args){
+        io.printHelloWorld();
+    }
+    public int owo(int index,Class b){
+      b.test(index);
+      return 0;
+    }
+
+}

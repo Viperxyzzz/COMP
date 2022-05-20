@@ -1,0 +1,18 @@
+import io;
+import foo.Bar;
+import Table;
+import Class;
+
+class SymbolTable extends Table {
+
+    int BigChungus;
+    int nyaaa;
+
+    public int owo(){
+
+      return 0;
+    }
+
+	public static void main(String[] args) {
+	}
+}

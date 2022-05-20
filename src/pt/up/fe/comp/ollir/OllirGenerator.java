@@ -59,6 +59,10 @@ public class OllirGenerator extends AJmmVisitor<String, Code> {
         addVisit("ThisId",this::thisIdVisit);
         addVisit("NewExp", this::newExpVisit);
         addVisit("ArrayExp", this::indexingArrayVisit);
+        addVisit("FalseId",this::falseIdVisit);
+        addVisit("TrueId",this::trueIdVisit);
+        addVisit("SmallerThan",this::smallerThanVisit);
+        addVisit("AndExp",this::andExpVisit);
     }
 
     public String getCode(){
@@ -195,7 +199,15 @@ public class OllirGenerator extends AJmmVisitor<String, Code> {
 
     private Code idIntVisit(JmmNode id, String dummy){
         Code thisCode = new Code();
-        thisCode.code = id.get("value");
+        String temp = OllirUtils.createTemp();
+
+        if(isField(id.get("value"),this.currentMethodname, (MySymbolTable) mySymbolTable)){
+            String type = OllirUtils.getOllirType(AstUtils.getVarType(id.get("value"),this.currentMethodname,(MySymbolTable) mySymbolTable).getName());
+            thisCode.prefix += temp + "." + type + " :=." + type + " getfield(this, " + id.get("value") + "." + type + ")." + type + ";\n"; //FIXME -> must be class name
+            thisCode.code = temp;
+        }
+        else
+            thisCode.code = id.get("value");
         return thisCode;
     }
 
@@ -266,7 +278,7 @@ public class OllirGenerator extends AJmmVisitor<String, Code> {
         return thisCode;
     }
 
-    private Code getLengthOllir(JmmNode node,String varName){
+    private Code getLengthOllir(String varName){
         String temp = OllirUtils.createTemp();
 
         Code thisCode = new Code();
@@ -283,8 +295,9 @@ public class OllirGenerator extends AJmmVisitor<String, Code> {
         Code target = visit(node.getJmmChild(0),dummy);
         var lhs = node.getJmmChild(0);
         prefixCode += target.prefix;
+
         if(node.getJmmChild(1).getKind().equals("LengthExp")){
-            return getLengthOllir(node.getJmmChild(1),target.code);
+            return getLengthOllir(target.code);
         }
         String methodName = node.getJmmChild(1).getJmmChild(0).get("value"); //DotExp.CallMethod.id.value
         String finalCode = "";
@@ -379,6 +392,128 @@ public class OllirGenerator extends AJmmVisitor<String, Code> {
         thisCode.code = temp;
         this.temporaryTypeHashMap.put(temp,type);
         return thisCode;
+    }
+    private Code falseIdVisit(JmmNode node, String dummy){
+        Code thisCode = new Code();
+        thisCode.code = "0";
+        return thisCode;
+
+    }
+
+    private Code trueIdVisit(JmmNode node, String dummy){
+        Code thisCode = new Code();
+        thisCode.code = "1";
+        return thisCode;
+    }
+
+    private Code smallerThanVisit(JmmNode node, String dummy){
+        var lhs = visit(node.getJmmChild(0),dummy);
+        var rhs = visit(node.getJmmChild(1),dummy);
+
+        Code thisCode = new Code();
+        thisCode.prefix = lhs.prefix;
+        thisCode.prefix += rhs.prefix;
+        String temp = OllirUtils.createTemp();
+        var type = "";
+
+        if(dummy == null){
+            type = "bool";
+        }
+        else{
+            type = dummy;
+        }
+
+        thisCode.prefix += temp+"." + type + " :=."+ type + " " + lhs.code +"."+ type + " " + "<" + "." + type + " " + rhs.code +"."+ type + ";\n";
+        thisCode.code = temp;
+
+        this.temporaryTypeHashMap.put(temp,type);
+
+        return thisCode;
+    }
+
+    private Code andExpVisit(JmmNode node, String dummy){
+        var lhs = visit(node.getJmmChild(0),dummy);
+        var rhs = visit(node.getJmmChild(1),dummy);
+
+        Code thisCode = new Code();
+        thisCode.prefix = lhs.prefix;
+        thisCode.prefix += rhs.prefix;
+        String temp = OllirUtils.createTemp();
+        var type = "";
+
+        if(dummy == null){
+            type = "bool";
+        }
+        else{
+            type = dummy;
+        }
+
+        thisCode.prefix += temp+"." + type + " :=."+ type + " " + lhs.code +"."+ type + " " + "&" + "." + type + " " + rhs.code +"."+ type + ";\n";
+        thisCode.code = temp;
+
+        this.temporaryTypeHashMap.put(temp,type);
+
+        return thisCode;
+    }
+
+    private boolean isField(String varName, String methodName, MySymbolTable symbolTable){
+        var localVars = symbolTable.getLocalVariables(methodName);
+        for(var localVar : localVars){
+            if(localVar.getName().equals(varName)){
+                return false;
+            }
+        }
+        var methodParams = symbolTable.getParameters(methodName);
+        for(var param: methodParams){
+            if(param.getName().equals(varName)){
+                return false;
+            }
+        }
+        var fields = symbolTable.getFields();
+        for (var field : fields){
+            if (field.getName().equals(varName)){
+                //System.out.println(varName + " está nos fields\n");
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private boolean isParameter(String varName, String methodName, MySymbolTable symbolTable){
+        var localVars = symbolTable.getLocalVariables(methodName);
+        for(var localVar : localVars){
+            if(localVar.getName().equals(varName)){
+                return false;
+            }
+        }
+        var methodParams = symbolTable.getParameters(methodName);
+        for(var param: methodParams){
+            if(param.getName().equals(varName)){
+                return true;
+            }
+        }
+        return false;
+    }
+
+    //assumes we pass a valid parameter
+    private int getParamPosition(String var,String methodName){
+        var methodParams = mySymbolTable.getParameters(methodName);
+        for(int i = 0; i < methodParams.size(); i++){
+            if(methodParams.get(i).getName().equals(var)){
+                return i;
+            }
+        }
+        //this won't happen, inshallah
+        return -1;
+    }
+
+    private String varToParam(String var){
+        if(!isParameter(var,this.currentMethodname,(MySymbolTable) mySymbolTable)){
+            return var;
+        }
+        int index = getParamPosition(var,this.currentMethodname);
+        return "$" + index + "." + var;
+
     }
 
 }

@@ -1,0 +1,22 @@
+import io;
+import foo.Bar;
+import Table;
+import Class;
+
+class SymbolTable extends Table {
+
+    int BigChungus;
+    int nyaaa;
+
+    public int owo(int index){
+      int test;
+      int nyaaa;
+      test = 10;
+      BigChungus = 10;
+      nyaaa = 10;
+      return 0;
+    }
+
+	public static void main(String[] args) {
+	}
+}

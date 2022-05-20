@@ -1,0 +1,30 @@
+import io;
+import foo.Bar;
+import Table;
+import Class;
+
+class SymbolTable extends Table {
+
+    int BigChungus;
+    int nyaaa;
+
+    public boolean owo(int index){
+        boolean a;
+        boolean b;
+        a = false;
+        b = 0;
+        return a < b;
+    }
+    public boolean owo(){
+        boolean a;
+        boolean b;
+        boolean c;
+        c = false;
+        a = true;
+        b = 1;
+        return a && b < a;
+    }
+
+	public static void main(String[] args) {
+	}
+}
