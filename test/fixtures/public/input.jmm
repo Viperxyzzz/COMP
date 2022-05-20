@@ -1,4 +1,5 @@
-import C;
+import d4;
+import A;
 
 class Test {
 
@@ -6,15 +7,13 @@ class Test {
 
 	}
 
-	public int foo() {
-	    C c;
-
+	public int foo(int int1) {
 	    int a;
-	    int[] b;
-	    int idk;
+	    int c;
+	    int b;
 
-	    a = b.length;
+	    b = Test.foo(1,2);
 
-		return 0;
+		return 1;
 	}
 }

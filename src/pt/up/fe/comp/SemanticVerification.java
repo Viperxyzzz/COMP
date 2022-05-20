@@ -56,20 +56,30 @@ public class SemanticVerification extends PreorderJmmVisitor<MySymbolTable,Strin
             return true;
         }
 
-        if (jmmNode.get("value").equals(symbolTable.getClassName())){
-            return true;
-        }
+        if (jmmNode.getAttributes().contains("value")){
 
-        var imports = symbolTable.getImports();
-        if(imports.contains(jmmNode.get("value"))){
-            return true;
-        }
+            var varName = jmmNode.get("value");
 
-        Type varType = AstUtils.getVarType(jmmNode.get("value"), jmmNode.getAncestor("MethodDecl").get().getJmmChild(1).get("value"), symbolTable);
-        if(!(varType == null)){
-            return true;
-        }
+            if (varName.equals(symbolTable.getClassName())){
+                return true;
+            }
 
+            var imports = symbolTable.getImports();
+            if(imports.contains(varName)){
+                return true;
+            }
+
+
+            Type varType = AstUtils.getVarType(varName, jmmNode.getAncestor("MethodDecl").get().getJmmChild(1).get("value"), symbolTable);
+            /*if(varType != null && (extends || imports || className)){
+                return true;
+            }*/
+            if(!(varType == null)){
+                return true;
+            }
+
+
+        }
         return false;
     }
 
@@ -135,7 +145,7 @@ public class SemanticVerification extends PreorderJmmVisitor<MySymbolTable,Strin
         JmmNode id = jmmNode.getJmmChild(0);
         JmmNode call = jmmNode.getJmmChild(1);
 
-        if (!checkDotClass(id, symbolTable)) {
+        if (/*!id.getKind().equals("DotExp") && */!checkDotClass(id, symbolTable)) {
             reports.add(new Report(ReportType.ERROR, Stage.SEMANTIC, Integer.valueOf(jmmNode.get("line")),
                     Integer.valueOf(jmmNode.get("col")), "Class " + id.get("value") + " not imported."));
         }
@@ -144,14 +154,34 @@ public class SemanticVerification extends PreorderJmmVisitor<MySymbolTable,Strin
             if (id.getKind().equals("ThisId")) {
                 reports.add(new Report(ReportType.ERROR, Stage.SEMANTIC, Integer.valueOf(jmmNode.get("line")),
                         Integer.valueOf(jmmNode.get("col")), "this.length is not valid."));
-            } else {
+            }
+            else {
+                if (id.getKind().equals("Id")){
+                    var type = visitId(id, symbolTable);
+                    System.out.println("Este tipo fica À esquerda de length " + type);
+                }
+                else {
+                    var type = visit(id, symbolTable);
+                    System.out.println("Este tipo fica À esquerda de length " + type);
+                }
+
+                /*if (id não é int array && id não é importado && id não é extendido){
+                    reports.add(new Report(ReportType.ERROR, Stage.SEMANTIC, Integer.valueOf(jmmNode.get("line")),
+                            Integer.valueOf(jmmNode.get("col")), "Length can´t be applied on "));
+                }*/
+
                 return "int";
             }
+
         }
 
         var methodName = call.getJmmChild(0).get("value");
 
         if (!id.getKind().equals("ThisId")) {
+
+            if (id.get("value").equals(symbolTable.getClassName())){ // Classe.etc()
+                return checkDotParams(call, symbolTable.getClassName(), symbolTable);
+            }
 
             // check for calls to undeclared methods
             Type varType = AstUtils.getVarType(id.get("value"), id.getAncestor("MethodDecl").get().getJmmChild(1).get("value"), symbolTable);
@@ -201,9 +231,15 @@ public class SemanticVerification extends PreorderJmmVisitor<MySymbolTable,Strin
                         return returnType.getName();
                 }
             }
-
-            if (varType != null && symbolTable.getImports().contains(varType.getName())) { // é de um tipo importado
+            else if (varType != null && (symbolTable.getImports().contains(varType.getName()))) { // é de um tipo importado
                 System.out.println("Method " + methodName + " could be imported in: " + id.get("value") + " of type " + varType.getName());
+            }
+            else if(symbolTable.getImports().contains(id.get("value"))) { // é igual ao import
+                System.out.println("Method " + methodName + " could be imported, extended or is the class");
+            }
+            else {
+                reports.add(new Report(ReportType.ERROR, Stage.SEMANTIC, Integer.valueOf(jmmNode.get("line")),
+                        Integer.valueOf(jmmNode.get("col")), id.get("value") + " does not have methods."));
             }
 
         }
