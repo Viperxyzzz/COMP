@@ -226,6 +226,8 @@ public class OllirGenerator extends AJmmVisitor<String, Code> {
         Code thisCode = new Code();
         thisCode.prefix = lhs.prefix;
         thisCode.prefix += rhs.prefix;
+        System.out.println("RHS PREFIX " + rhs.prefix);
+        System.out.println("RHS CODE " + rhs.code);
         String temp = OllirUtils.createTemp();
         thisCode.prefix += "putfield(this," + lhs.code + "." + type + "," + rhs.code + "." + type +").V;\n";
         thisCode.code = temp;
@@ -367,8 +369,12 @@ public class OllirGenerator extends AJmmVisitor<String, Code> {
 
     private Code newExpVisit(JmmNode jmmNode, String dummy){
         var id = jmmNode.getJmmChild(0);
+        String className = id.get("value");
+        String temp = OllirUtils.createTemp();
         Code thisCode = new Code();
-        thisCode.code = "new(" + id.get("value") +")";
+        thisCode.prefix = temp + "." + className + " :=." + className + " new(" + className + ")." + className + ";\n";
+        thisCode.code = temp;
+        this.temporaryTypeHashMap.put(temp,className);
         return thisCode;
     }
 

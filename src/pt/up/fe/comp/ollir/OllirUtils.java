@@ -1,7 +1,11 @@
 package pt.up.fe.comp.ollir;
 
+import pt.up.fe.comp.AstUtils;
+import pt.up.fe.comp.MySymbolTable;
 import pt.up.fe.comp.jmm.analysis.table.Symbol;
+import pt.up.fe.comp.jmm.analysis.table.SymbolTable;
 import pt.up.fe.comp.jmm.analysis.table.Type;
+import pt.up.fe.comp.jmm.ast.JmmNode;
 
 public class OllirUtils {
     private static int tempId;
@@ -15,6 +19,10 @@ public class OllirUtils {
         }
         code.append(getOllirType(type.getName()));
         return code.toString();
+    }
+
+    public static String getType(JmmNode jmmNode, String currentMethodname, SymbolTable mySymbolTable){
+        return OllirUtils.getOllirType(AstUtils.getVarType(jmmNode.getJmmChild(0).get("value"),currentMethodname,(MySymbolTable) mySymbolTable).getName());
     }
 
     public static String getOllirType(String jmmType){
