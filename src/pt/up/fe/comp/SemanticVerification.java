@@ -145,7 +145,7 @@ public class SemanticVerification extends PreorderJmmVisitor<MySymbolTable,Strin
         JmmNode id = jmmNode.getJmmChild(0);
         JmmNode call = jmmNode.getJmmChild(1);
 
-        if (/*!id.getKind().equals("DotExp") && */!checkDotClass(id, symbolTable)) {
+        if (!id.getKind().equals("DotExp") && !checkDotClass(id, symbolTable)) {
             reports.add(new Report(ReportType.ERROR, Stage.SEMANTIC, Integer.valueOf(jmmNode.get("line")),
                     Integer.valueOf(jmmNode.get("col")), "Class " + id.get("value") + " not imported."));
         }
@@ -157,18 +157,28 @@ public class SemanticVerification extends PreorderJmmVisitor<MySymbolTable,Strin
             }
             else {
                 if (id.getKind().equals("Id")){
-                    var type = visitId(id, symbolTable);
-                    System.out.println("Este tipo fica À esquerda de length " + type);
+                    Type varType = AstUtils.getVarType(id.get("value"), id.getAncestor("MethodDecl").get().getJmmChild(1).get("value"), symbolTable);
+
+                    if (varType != null) {
+                        if (!varType.isArray() && (varType.getName().equals("int") || varType.getName().equals("boolean"))) {
+                            reports.add(new Report(ReportType.ERROR, Stage.SEMANTIC, Integer.valueOf(jmmNode.get("line")),
+                                    Integer.valueOf(jmmNode.get("col")), varType.getName() + " cannot be used with length."));
+                        }
+                        else if (symbolTable.getImports().contains(varType.getName()) || symbolTable.getClassName().equals(varType.getName()) || symbolTable.getImports().contains(id.get("value"))){
+                            System.out.println(id.get("value") + " pode ser importado.");
+                        }
+                        else if (!varType.isArray()){
+                            reports.add(new Report(ReportType.ERROR, Stage.SEMANTIC, Integer.valueOf(jmmNode.get("line")),
+                                    Integer.valueOf(jmmNode.get("col")), varType.getName() + " cannot be used with length."));
+                        }
+                    }
+
                 }
                 else {
                     var type = visit(id, symbolTable);
                     System.out.println("Este tipo fica À esquerda de length " + type);
                 }
 
-                /*if (id não é int array && id não é importado && id não é extendido){
-                    reports.add(new Report(ReportType.ERROR, Stage.SEMANTIC, Integer.valueOf(jmmNode.get("line")),
-                            Integer.valueOf(jmmNode.get("col")), "Length can´t be applied on "));
-                }*/
 
                 return "int";
             }
