@@ -193,7 +193,15 @@ public class OllirGenerator extends AJmmVisitor<String, Code> {
 
     private Code idVisit(JmmNode id, String dummy){
         Code thisCode = new Code();
+        String temp = OllirUtils.createTemp();
         thisCode.code = varToParam(id.get("value"));
+        if(isField(id.get("value"),this.currentMethodname, (MySymbolTable) mySymbolTable)){
+            String type = OllirUtils.getOllirType(AstUtils.getVarType(id.get("value"),this.currentMethodname,(MySymbolTable) mySymbolTable).getName());
+            thisCode.prefix += temp + "." + type + " :=." + type + " getfield(this, " + id.get("value") + "." + type + ")." + type + ";\n"; //FIXME -> must be class name
+            thisCode.code = temp;
+        }
+        else
+            thisCode.code = id.get("value");
         return thisCode;
     }
 
