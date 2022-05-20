@@ -15,12 +15,17 @@ public class OllirToJasmin {
 
     private final ClassUnit classUnit;
     private final FunctionClassMap<Instruction, String> instructionMap;
+    private Method currentMethod;
 
     public OllirToJasmin (ClassUnit classUnit){
         this.classUnit = classUnit;
+        this.currentMethod = null;
 
         instructionMap = new FunctionClassMap<>();
         instructionMap.put(CallInstruction.class, this::getCode);
+        instructionMap.put(AssignInstruction.class, this::getCode);
+        instructionMap.put(ReturnInstruction.class, this::getCode);
+        instructionMap.put(SingleOpInstruction.class, this::getCode);
     }
 
     public String getFullyQualifiedName(String className){
@@ -43,6 +48,15 @@ public class OllirToJasmin {
         throw new RuntimeException("Could not find import for class " + className);
     }
 
+    private String getConstructor(String superName){
+
+        return ".method public <init>()V\n" +
+                "  aload_0\n" +
+                "  invokenonvirtual "+ superName + "/<init>()V\n" +
+                "  return\n" +
+                ".end method";
+    }
+
     public String getCode(){
         var code = new StringBuilder();
 
@@ -51,8 +65,11 @@ public class OllirToJasmin {
         var superQualifiedName = getFullyQualifiedName(classUnit.getSuperClass());
         code.append(".super ").append(superQualifiedName).append("\n");
 
-        code.append(SpecsIo.getResource("pt/up/fe/comp/jasminContructor.template").replace("${SUPER_NAME}",
-                superQualifiedName)).append("\n");
+        code.append(getConstructor(superQualifiedName)).append("\n");
+
+        for (var field : classUnit.getFields()) {
+            code.append(getFieldCode(field));
+        }
 
         for (var method : classUnit.getMethods()){
             code.append(getCode(method));
@@ -61,8 +78,41 @@ public class OllirToJasmin {
         return code.toString();
     }
 
-    public String getCode(Method method){
+    public String getFieldCode(Field field){
         var code = new StringBuilder();
+
+        code.append(".field ");
+
+        if (field.getFieldAccessModifier() == AccessModifiers.PUBLIC) {
+            code.append("public ");
+        }
+        else if (field.getFieldAccessModifier() == AccessModifiers.PRIVATE) {
+            code.append("private ");
+        }
+        else if (field.getFieldAccessModifier() == AccessModifiers.PROTECTED) {
+            code.append("protected ");
+        }
+
+        if (field.isStaticField())
+            code.append("static ");
+        if (field.isFinalField())
+            code.append("final ");
+
+        code.append(field.getFieldName() + " ");
+
+        code.append(getJasminType(field.getFieldType()) + "\n");
+
+        return code.toString();
+    }
+
+    public String getCode(Method method){
+
+        if (method.isConstructMethod()){
+            return "";
+        }
+
+        var code = new StringBuilder();
+        this.currentMethod = method;
 
         code.append(".method public "); //hard coded
 
@@ -86,13 +136,15 @@ public class OllirToJasmin {
 
         code.append(methodParamTypes).append(")").append(getJasminType(method.getReturnType())).append("\n");
         code.append(".limit stack 99\n");
-        code.append(".limit locals 99\n ");
+        code.append(".limit locals 99\n");
+
+        //registodenomedavar = method.getVarTable().get("nome da var").getVirtualReg();
 
         for (var inst : method.getInstructions()){
             code.append(getCode(inst));
         }
 
-        code.append("return\n.end method\n\n");
+        code.append(".end method\n\n");
 
         return code.toString();
     }
@@ -101,10 +153,95 @@ public class OllirToJasmin {
         return instructionMap.apply(inst);
     }
 
+    public String getCode(SingleOpInstruction inst) {
+        var code = new StringBuilder();
+
+        code.append(generateLoadInstruction(inst.getSingleOperand()));
+
+        /*else {
+            switch (inst.getSingleOperand().getType().getTypeOfElement()) {
+                case INT32:
+                    code.append(value);
+            }
+        }*/
+
+        inst.getSingleOperand().getType();
+
+        return code.toString();
+    }
+
+    public String getCode(AssignInstruction inst){
+        var code = new StringBuilder();
+
+        int lhsCurrent = currentMethod.getVarTable().get(((Operand)inst.getDest()).getName()).getVirtualReg();
+
+        code.append(instructionMap.apply(inst.getRhs()));
+
+        switch (inst.getTypeOfAssign().getTypeOfElement()) {
+            case INT32:
+            case BOOLEAN:
+                code.append("iload " + lhsCurrent + "\n");
+                break;
+            default:
+                throw new NotImplementedException("Assign Type not implemented");
+        }
+
+
+        return code.toString();
+    }
+
+    public String generateLoadInstruction(Element element){
+        var code = new StringBuilder();
+
+        if (element.isLiteral()) {
+            String value = ((LiteralElement) element).getLiteral();
+            code.append("ldc " + value + "\n");
+        }
+
+        else {
+            int currentLocation = currentMethod.getVarTable().get(((Operand) element).getName()).getVirtualReg();
+
+            switch (element.getType().getTypeOfElement()) {
+                case INT32:
+                case BOOLEAN:
+                    code.append("iload " + currentLocation + "\n");
+                    break;
+                default:
+                    throw new NotImplementedException("Load Type not implemented");
+            }
+        }
+
+        return code.toString();
+    }
+
+    public String getCode(ReturnInstruction inst){
+        var code = new StringBuilder();
+        var element = inst.getOperand();
+
+        if (inst.hasReturnValue()) {
+            code.append(generateLoadInstruction(element));
+            switch (element.getType().getTypeOfElement()) {
+                case INT32:
+                case BOOLEAN:
+                    code.append("ireturn \n");
+                    break;
+                default:
+                    throw new NotImplementedException("Return Type not implemented");
+            }
+        }
+
+        else { code.append("return\n"); }
+
+        return code.toString();
+    }
+
+
     public String getCode(CallInstruction inst){
         switch (inst.getInvocationType()){
             case invokestatic:
                 return getCodeInvokeStatic(inst);
+            case invokespecial:
+                return getCodeInvokeSpecial(inst);
             default:
                 throw new NotImplementedException(inst.getInvocationType());
         }
@@ -112,8 +249,34 @@ public class OllirToJasmin {
 
     private String getCodeInvokeStatic(CallInstruction inst){
         var code = new StringBuilder();
-
         code.append("invokestatic ");
+
+        var methodClass = ((Operand) inst.getFirstArg()).getName();
+        code.append(getFullyQualifiedName(methodClass));
+        code.append("/");
+
+        // rever esta parte
+        var calledMethod = ((LiteralElement) inst.getSecondArg()).getLiteral();
+        code.append(calledMethod.substring(1, calledMethod.length() - 1));
+        //code.append(calledMethod);
+
+        code.append("(");
+
+        for(var operand : inst.getListOfOperands()){
+            getArgumentCode(operand);
+        }
+
+        code.append(")");
+        code.append(getJasminType(inst.getReturnType()));
+        code.append("\n");
+
+        return code.toString();
+    }
+
+    private String getCodeInvokeSpecial(CallInstruction inst) {
+        var code = new StringBuilder();
+
+        code.append("invokespecial ");
 
         var methodClass = ((Operand) inst.getFirstArg()).getName();
         code.append(getFullyQualifiedName(methodClass));
@@ -153,6 +316,12 @@ public class OllirToJasmin {
         switch (type){
             case STRING:
                 return "Ljava/lang/String;";
+            case INT32:
+                return "I";
+            case BOOLEAN:
+                return "Z";
+            case OBJECTREF:
+                return "a";
             case VOID:
                 return "V";
             default:
