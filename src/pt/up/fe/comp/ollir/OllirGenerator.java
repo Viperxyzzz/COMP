@@ -193,7 +193,7 @@ public class OllirGenerator extends AJmmVisitor<String, Code> {
 
     private Code idVisit(JmmNode id, String dummy){
         Code thisCode = new Code();
-        thisCode.code = id.get("value");
+        thisCode.code = varToParam(id.get("value"));
         return thisCode;
     }
 
@@ -517,7 +517,7 @@ public class OllirGenerator extends AJmmVisitor<String, Code> {
         if(!isParameter(var,this.currentMethodname,(MySymbolTable) mySymbolTable)){
             return var;
         }
-        int index = getParamPosition(var,this.currentMethodname);
+        int index = getParamPosition(var,this.currentMethodname) + 1;
         return "$" + index + "." + var;
 
     }

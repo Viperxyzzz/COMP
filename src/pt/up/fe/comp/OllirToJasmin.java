@@ -277,6 +277,10 @@ public class OllirToJasmin {
                     break;
                 case VOID:
                     return code.toString();
+                case ARRAYREF:
+                    System.out.println("CURRENTLOCATION + " + currentLocation);
+                    code.append("aload " + currentLocation +"\n");
+                    break;
                 default:
                     throw new NotImplementedException("Load Type not implemented" + element.getType().getTypeOfElement());
             }
@@ -317,6 +321,8 @@ public class OllirToJasmin {
                 return getCodeInvokeVirtual(inst);
             case NEW:
                 return getCodeNew(inst);
+            case arraylength:
+                return getArrayLength(inst);
             default:
                 throw new NotImplementedException(inst.getInvocationType());
         }
@@ -357,6 +363,15 @@ public class OllirToJasmin {
         code.append("new " + className + "\n");
 
         return code.toString();
+    }
+
+    private String getArrayLength(CallInstruction inst){
+        var code = new StringBuilder();
+        Element element = inst.getFirstArg();
+        int location = currentMethod.getVarTable().get(((Operand) element).getName()).getVirtualReg();
+        code.append("aload " + location + "\n");
+        return code.toString();
+
     }
 
     private String getCodeInvokeStatic(CallInstruction inst){
