@@ -26,6 +26,8 @@ public class OllirToJasmin {
         instructionMap.put(AssignInstruction.class, this::getCode);
         instructionMap.put(ReturnInstruction.class, this::getCode);
         instructionMap.put(SingleOpInstruction.class, this::getCode);
+        instructionMap.put(BinaryOpInstruction.class, this::getCode);
+        instructionMap.put(PutFieldInstruction.class, this::getCode);
     }
 
     public String getFullyQualifiedName(String className){
@@ -45,7 +47,8 @@ public class OllirToJasmin {
                 return importString.replace('.', '/');
             }
         }
-        throw new RuntimeException("Could not find import for class " + className);
+
+        return "java/lang/Object";
     }
 
     private String getConstructor(String superName){
@@ -153,6 +156,14 @@ public class OllirToJasmin {
         return instructionMap.apply(inst);
     }
 
+    public String getCode(PutFieldInstruction inst){
+        var code = new StringBuilder();
+
+        
+
+        return code.toString();
+    }
+
     public String getCode(SingleOpInstruction inst) {
         var code = new StringBuilder();
 
@@ -170,6 +181,25 @@ public class OllirToJasmin {
         return code.toString();
     }
 
+    public String getCode(BinaryOpInstruction inst){
+        var code = new StringBuilder();
+
+        code.append(generateLoadInstruction(inst.getLeftOperand()));
+        code.append(generateLoadInstruction(inst.getRightOperand()));
+
+        switch (inst.getLeftOperand().getType().getTypeOfElement()){
+            case INT32:
+                code.append("i");
+                break;
+            default:
+                throw new RuntimeException("BinaryOpInstruction Type not implemented");
+        }
+
+        code.append(inst.getOperation().getOpType().toString().toLowerCase()).append("\n");
+
+        return code.toString();
+    }
+
     public String getCode(AssignInstruction inst){
         var code = new StringBuilder();
 
@@ -180,7 +210,7 @@ public class OllirToJasmin {
         switch (inst.getTypeOfAssign().getTypeOfElement()) {
             case INT32:
             case BOOLEAN:
-                code.append("iload " + lhsCurrent + "\n");
+                code.append("istore " + lhsCurrent + "\n");
                 break;
             default:
                 throw new NotImplementedException("Assign Type not implemented");

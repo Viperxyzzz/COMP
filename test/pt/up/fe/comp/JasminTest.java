@@ -38,4 +38,17 @@ public class JasminTest {
         var jasminResult = TestUtils.backend(ollirResult);
 
     }
+
+    @Test
+    public void test5(){
+        var ollirResult = new OllirResult(SpecsIo.getResource("fixtures/public/cp2/OllirToJasminArithmetics.ollir"), Collections.emptyMap());
+        var jasminResult = TestUtils.backend(ollirResult);
+
+    }
+
+    @Test
+    public void test6(){
+        var ollirResult = new OllirResult(SpecsIo.getResource("fixtures/public/cp2/OllirToJasminFields.ollir"), Collections.emptyMap());
+        var jasminResult = TestUtils.backend(ollirResult);
+    }
 }
