@@ -1,36 +1,30 @@
-    .class public HelloWorld
-    .super java/lang/Object
+.class public Account
+.super java/lang/Object
 
-    ;
-    ; standard initializer (calls java.lang.Object's initializer)
-    ;
-    .method public <init>()V
-       aload_0
-       invokenonvirtual java/lang/Object/<init>()V
-       return
-    .end method
+.field private balance D = 0.0
 
-    ;
-    ; main() - prints out Hello World
-    ;
-    .method public static main([Ljava/lang/String;)V
-       .limit stack 2   ; up to two items can be pushed
+; default constructor
+.method public <init>()V
+   aload_0
+   invokespecial java/lang/Object/<init>()V
+   return
+.end method
 
-       ; push System.out onto the stack
-       getstatic java/lang/System/out Ljava/io/PrintStream;
+.method public getBalance()D
+   .limit stack 2
+   aload_0 ; push this
+   getfield Account/balance D
+   dreturn
+.end method
 
-       ; push a string onto the stack
-       ldc "Hello World!"
-
-       ; call the PrintStream.println() method.
-       invokevirtual java/io/PrintStream/println(Ljava/lang/String;)V
-
-       ; push another string onto the stack
-       ldc "Hello World Again!"
-
-       ; call the io.println() method.
-       invokestatic io/println(Ljava/lang/String;)V
-
-       ; done
-       return
-    .end method
+.method public deposit(D)V
+   .limit stack 6   ; ???
+   .limit locals 4  ; ???
+   aload_0 ; push this
+   aload_0                      ; stack = this, this
+   getfield Account/balance D   ; stack = this, this.balance
+   dload_1                      ; stack = this, this.balance, amt
+   dadd                         ; stack = this, this.balance + amt
+   putfield Account/balance D
+   return
+.end method
