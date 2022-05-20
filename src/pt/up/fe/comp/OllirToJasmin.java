@@ -49,6 +49,8 @@ public class OllirToJasmin {
             }
         }
 
+        System.out.println("STRING BUGGY: " + className);
+
         return "java/lang/Object";
     }
 
@@ -69,11 +71,13 @@ public class OllirToJasmin {
         var superQualifiedName = getFullyQualifiedName(classUnit.getSuperClass());
         code.append(".super ").append(superQualifiedName).append("\n");
 
-        code.append(getConstructor(superQualifiedName)).append("\n");
+
 
         for (var field : classUnit.getFields()) {
             code.append(getFieldCode(field));
         }
+
+        code.append(getConstructor(superQualifiedName)).append("\n");
 
         for (var method : classUnit.getMethods()){
             code.append(getCode(method));
@@ -236,8 +240,13 @@ public class OllirToJasmin {
             case BOOLEAN:
                 code.append("istore " + lhsCurrent + "\n");
                 break;
+            case OBJECTREF:
+                code.append("astore " + lhsCurrent + "\n");
+                break;
+            case VOID:
+                return code.toString();
             default:
-                throw new NotImplementedException("Assign Type not implemented");
+                throw new NotImplementedException("Assign Type not implemented" + inst.getTypeOfAssign().getTypeOfElement());
         }
 
 
@@ -266,8 +275,10 @@ public class OllirToJasmin {
                 case OBJECTREF:
                     code.append("aload " + currentLocation + "\n");
                     break;
+                case VOID:
+                    return code.toString();
                 default:
-                    throw new NotImplementedException("Load Type not implemented");
+                    throw new NotImplementedException("Load Type not implemented" + element.getType().getTypeOfElement());
             }
         }
 
@@ -302,29 +313,71 @@ public class OllirToJasmin {
                 return getCodeInvokeStatic(inst);
             case invokespecial:
                 return getCodeInvokeSpecial(inst);
+            case invokevirtual:
+                return getCodeInvokeVirtual(inst);
+            case NEW:
+                return getCodeNew(inst);
             default:
                 throw new NotImplementedException(inst.getInvocationType());
         }
     }
 
+    private String getCodeInvokeVirtual(CallInstruction inst){
+        var code = new StringBuilder();
+
+        code.append(generateLoadInstruction(inst.getFirstArg()));
+
+        for (Element e : inst.getListOfOperands())
+            code.append(generateLoadInstruction(e));
+
+        var className = ((ClassType)inst.getFirstArg().getType()).getName();
+        var methodCall = ((LiteralElement)inst.getSecondArg()).getLiteral().replace("\"", "");
+
+        code.append("invokevirtual ")
+                .append(className)
+                .append("/")
+                .append(methodCall)
+                .append("(");
+
+        for (Element e : inst.getListOfOperands())
+            code.append(getJasminType(e.getType()));
+
+
+        code.append(")")
+                .append(getJasminType(inst.getReturnType())).append("\n");
+
+        return code.toString();
+    }
+
+    private String getCodeNew(CallInstruction inst){
+        var code = new StringBuilder();
+
+        var className = getJasminType(inst.getReturnType());
+
+        code.append("new " + className + "\n");
+
+        return code.toString();
+    }
+
     private String getCodeInvokeStatic(CallInstruction inst){
         var code = new StringBuilder();
+
+        for (Element e : inst.getListOfOperands())
+            code.append(generateLoadInstruction(e));
+
         code.append("invokestatic ");
 
         var methodClass = ((Operand) inst.getFirstArg()).getName();
         code.append(getFullyQualifiedName(methodClass));
         code.append("/");
 
-        // rever esta parte
         var calledMethod = ((LiteralElement) inst.getSecondArg()).getLiteral();
         code.append(calledMethod.substring(1, calledMethod.length() - 1));
-        //code.append(calledMethod);
 
         code.append("(");
 
-        for(var operand : inst.getListOfOperands()){
-            getArgumentCode(operand);
-        }
+        for (Element e : inst.getListOfOperands())
+            code.append(getJasminType(e.getType()));
 
         code.append(")");
         code.append(getJasminType(inst.getReturnType()));
@@ -336,18 +389,13 @@ public class OllirToJasmin {
     private String getCodeInvokeSpecial(CallInstruction inst) {
         var code = new StringBuilder();
 
-        code.append("invokespecial ");
+        code.append(generateLoadInstruction(inst.getFirstArg()));
 
-        var methodClass = ((Operand) inst.getFirstArg()).getName();
-        code.append(getFullyQualifiedName(methodClass));
-        code.append("/");
 
-        // rever esta parte
-        var calledMethod = ((LiteralElement) inst.getSecondArg()).getLiteral();
-        //code.append(calledMethod.substring(1, calledMethod.length()-1));
-        code.append(calledMethod);
-
-        code.append("(");
+        code.append("invokespecial ").append(inst.getFirstArg().getType()
+                .getTypeOfElement() == ElementType.THIS
+                        ? classUnit.getSuperClass() : ((ClassType) inst.getFirstArg().getType()).getName())
+                .append("/<init>(");
 
         for(var operand : inst.getListOfOperands()){
             getArgumentCode(operand);
@@ -360,8 +408,12 @@ public class OllirToJasmin {
         return code.toString();
     }
 
-    private void getArgumentCode(Element operand){
-        throw new NotImplementedException(this);
+    private String getArgumentCode(Element operand){
+        var code = new StringBuilder();
+
+        code.append(getJasminType(operand.getType()));
+
+        return code.toString();
     }
 
     public String getJasminType(Type type){

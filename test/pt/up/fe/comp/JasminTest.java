@@ -51,4 +51,10 @@ public class JasminTest {
         var ollirResult = new OllirResult(SpecsIo.getResource("fixtures/public/cp2/OllirToJasminFields.ollir"), Collections.emptyMap());
         var jasminResult = TestUtils.backend(ollirResult);
     }
+
+    @Test
+    public void test7(){
+        var ollirResult = new OllirResult(SpecsIo.getResource("fixtures/public/cp2/OllirToJasminInvoke.ollir"), Collections.emptyMap());
+        var jasminResult = TestUtils.backend(ollirResult);
+    }
 }
