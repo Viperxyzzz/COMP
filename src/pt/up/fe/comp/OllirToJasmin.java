@@ -28,6 +28,7 @@ public class OllirToJasmin {
         instructionMap.put(SingleOpInstruction.class, this::getCode);
         instructionMap.put(BinaryOpInstruction.class, this::getCode);
         instructionMap.put(PutFieldInstruction.class, this::getCode);
+        instructionMap.put(GetFieldInstruction.class, this::getCode);
     }
 
     public String getFullyQualifiedName(String className){
@@ -156,10 +157,40 @@ public class OllirToJasmin {
         return instructionMap.apply(inst);
     }
 
+    public String getCode(GetFieldInstruction inst){
+        var code = new StringBuilder();
+
+        var firstElement = inst.getFirstOperand();
+        var secondElement = inst.getSecondOperand();
+
+        code.append(generateLoadInstruction(firstElement));
+
+        var className = getJasminType(firstElement.getType());
+
+        String fieldName = ((Operand) secondElement).getName();
+
+        code.append("getfield ").append(className).append("/").append(fieldName).append(" ")
+                .append(getJasminType(secondElement.getType())).append("\n");
+
+        return code.toString();
+    }
+
     public String getCode(PutFieldInstruction inst){
         var code = new StringBuilder();
 
-        
+        var firstElement = inst.getFirstOperand();
+        var secondElement = inst.getSecondOperand();
+        var thirdElement = inst.getThirdOperand();
+
+        code.append(generateLoadInstruction(firstElement));
+        code.append(generateLoadInstruction(thirdElement));
+
+        var className = getJasminType(firstElement.getType());
+
+        String fieldName = ((Operand) secondElement).getName();
+
+        code.append("putfield ").append(className).append("/").append(fieldName).append(" ")
+                .append(getJasminType(secondElement.getType())).append("\n");
 
         return code.toString();
     }
@@ -168,13 +199,6 @@ public class OllirToJasmin {
         var code = new StringBuilder();
 
         code.append(generateLoadInstruction(inst.getSingleOperand()));
-
-        /*else {
-            switch (inst.getSingleOperand().getType().getTypeOfElement()) {
-                case INT32:
-                    code.append(value);
-            }
-        }*/
 
         inst.getSingleOperand().getType();
 
@@ -235,6 +259,12 @@ public class OllirToJasmin {
                 case INT32:
                 case BOOLEAN:
                     code.append("iload " + currentLocation + "\n");
+                    break;
+                case THIS:
+                    code.append("aload_0" + "\n");
+                    break;
+                case OBJECTREF:
+                    code.append("aload " + currentLocation + "\n");
                     break;
                 default:
                     throw new NotImplementedException("Load Type not implemented");
@@ -338,6 +368,15 @@ public class OllirToJasmin {
         if (type instanceof ArrayType){
             return "[" + getJasminType(((ArrayType) type).getTypeOfElements());
         }
+        switch (type.getTypeOfElement()){
+            case THIS:
+                return classUnit.getClassName();
+            case OBJECTREF:
+                return ((ClassType) type).getName();
+            default:
+                getJasminType(type.getTypeOfElement());
+                break;
+        }
 
         return getJasminType(type.getTypeOfElement());
     }
@@ -350,8 +389,6 @@ public class OllirToJasmin {
                 return "I";
             case BOOLEAN:
                 return "Z";
-            case OBJECTREF:
-                return "a";
             case VOID:
                 return "V";
             default:
