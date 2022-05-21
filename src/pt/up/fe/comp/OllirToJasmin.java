@@ -361,6 +361,7 @@ public class OllirToJasmin {
         var className = getJasminType(inst.getReturnType());
 
         code.append("new " + className + "\n");
+        code.append("dup\n");
 
         return code.toString();
     }
