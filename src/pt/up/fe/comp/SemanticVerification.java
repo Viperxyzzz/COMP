@@ -433,15 +433,25 @@ public class SemanticVerification extends PreorderJmmVisitor<MySymbolTable,Strin
 
     private String visitId(JmmNode jmmNode, MySymbolTable symbolTable) {
         // Verify if variable names used in the code have a corresponding declaration, either as a local variable, a method parameter or a field of the class (if applicable)
+        var varName = jmmNode.get("value");
+        if (jmmNode.getAncestor("MethodDecl").isPresent()){
+            var methodType = jmmNode.getAncestor("MethodDecl").get().getJmmChild(0);
+            if (methodType.getAttributes().contains("isStatic")){
+                if (AstUtils.varIsField(varName, jmmNode.getAncestor("MethodDecl").get().getJmmChild(1).get("value"), symbolTable)){
+                    reports.add(new Report(ReportType.ERROR, Stage.SEMANTIC, Integer.valueOf(jmmNode.get("line")),
+                            Integer.valueOf(jmmNode.get("col")), "Fields cannot be accessed from static methods"));
+                }
+            }
+        }
 
         // Check the declared type => no Type means no declaration
         if (!jmmNode.getAncestor("DotExp").isPresent() && !jmmNode.getAncestor("NewExp").isPresent()){
 
-            Type varType = AstUtils.getVarType(jmmNode.get("value"), jmmNode.getAncestor("MethodDecl").get().getJmmChild(1).get("value"), symbolTable);
+            Type varType = AstUtils.getVarType(varName, jmmNode.getAncestor("MethodDecl").get().getJmmChild(1).get("value"), symbolTable);
             //System.out.println("var: " + jmmNode.get("value"));
             if (varType == null){
                 reports.add(new Report(ReportType.ERROR, Stage.SEMANTIC,Integer.valueOf(jmmNode.get("line")),
-                        Integer.valueOf(jmmNode.get("col")),"Variable " + jmmNode.get("value") + " not declared."));
+                        Integer.valueOf(jmmNode.get("col")),"Variable " + varName + " not declared."));
             }
             else {
                 if (varType.isArray())

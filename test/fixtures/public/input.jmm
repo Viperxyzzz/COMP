@@ -1,20 +1,15 @@
-import d4;
-import A;
-
-class Test {
+class While_If_Array_AccessArrayNotInteger {
 
 	public static void main(String[] args) {
-	    int b;
-        b = args.length;
-	}
+        int[] arr;
+        int i;
+        boolean j;
 
-	public A foo(int int1) {
-	    A a1;
-	    int a;
-	    int[] b;
+        i = 1;
+        j = false;
+        arr = new int[3];
 
-        a = Test.foo(1).length;
-
-		return a1;
+		arr[j] = 20;
+		arr[i] = 0 - arr[j];
 	}
 }
