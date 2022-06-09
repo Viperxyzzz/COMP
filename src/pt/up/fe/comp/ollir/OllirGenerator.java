@@ -36,6 +36,7 @@ import java.util.stream.Collectors;
 public class OllirGenerator extends AJmmVisitor<String, Code> {
     private final StringBuilder code;
     private final SymbolTable mySymbolTable;
+    private int ifIndex;
     private String currentMethodname;
     private HashMap<String, String> temporaryTypeHashMap;
     public OllirGenerator(SymbolTable mySymbolTable){
@@ -43,6 +44,7 @@ public class OllirGenerator extends AJmmVisitor<String, Code> {
         this.mySymbolTable = mySymbolTable;
         this.currentMethodname = "";
         this.temporaryTypeHashMap = new HashMap<String, String>();
+        this.ifIndex = 0;
 
         addVisit("Start",this::programVisit);
         addVisit("ClassDeclaration", this::classDeclVisit);
@@ -536,8 +538,17 @@ public class OllirGenerator extends AJmmVisitor<String, Code> {
 
     private Code ifStatementVisit(JmmNode node, String dummy){
         var lhs = visit(node.getJmmChild(0),dummy);
+        this.ifIndex += 1;
         code.append(lhs.prefix);
-        code.append("if (" + lhs.code + "." + this.temporaryTypeHashMap.get(lhs.code) + ") goto else;\n");
+        var type = this.temporaryTypeHashMap.get(lhs.code);
+        //var type  = OllirUtils.getOllirType(AstUtils.getVarType(lhs.code,this.currentMethodname,(MySymbolTable) mySymbolTable).getName());
+        if(type == null){
+            type = OllirUtils.getOllirType(AstUtils.getVarType(lhs.code,this.currentMethodname,(MySymbolTable) mySymbolTable).getName());
+            if(type == null){
+                type = "V";
+            }
+        }
+        code.append("if (" + lhs.code + "." + type + ") goto else_"+ ifIndex + ";\n");
         var nodeList = node.getChildren();
         for(int i = 1; i < node.getNumChildren(); i++){
             var nodeCode = visit(nodeList.get(i));
@@ -550,13 +561,14 @@ public class OllirGenerator extends AJmmVisitor<String, Code> {
         return thisCode;
     }
     private Code elseStatementVisit(JmmNode node, String dummy){
-        code.append("goto endif;\n"); //this is really dumb but makes some sense
-        code.append("else: \n");
+        code.append("goto endif_"+ ifIndex + ";\n"); //this is really dumb but makes some sense
+        code.append("else_"+ifIndex+": \n");
         for(var jmmNode : node.getChildren()){
             var nodeCode = visit(jmmNode);
             code.append(nodeCode.prefix);
         }
-        code.append("endif: \n");
+        code.append("endif_"+ifIndex+": \n");
+        this.ifIndex-=1;
 
         Code thisCode = new Code();
         thisCode.prefix = "";
