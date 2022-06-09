@@ -63,6 +63,8 @@ public class OllirGenerator extends AJmmVisitor<String, Code> {
         addVisit("TrueId",this::trueIdVisit);
         addVisit("SmallerThan",this::smallerThanVisit);
         addVisit("AndExp",this::andExpVisit);
+        addVisit("IfStatement",this::ifStatementVisit);
+        addVisit("ElseStatement",this::elseStatementVisit);
     }
 
     public String getCode(){
@@ -199,9 +201,11 @@ public class OllirGenerator extends AJmmVisitor<String, Code> {
             String type = OllirUtils.getOllirType(AstUtils.getVarType(id.get("value"),this.currentMethodname,(MySymbolTable) mySymbolTable).getName());
             thisCode.prefix += temp + "." + type + " :=." + type + " getfield(this, " + id.get("value") + "." + type + ")." + type + ";\n"; //FIXME -> must be class name
             thisCode.code = temp;
+            this.temporaryTypeHashMap.put(temp,type);
         }
         else
             thisCode.code = id.get("value");
+
         return thisCode;
     }
 
@@ -528,6 +532,36 @@ public class OllirGenerator extends AJmmVisitor<String, Code> {
         int index = getParamPosition(var,this.currentMethodname) + 1;
         return "$" + index + "." + var;
 
+    }
+
+    private Code ifStatementVisit(JmmNode node, String dummy){
+        var lhs = visit(node.getJmmChild(0),dummy);
+        code.append(lhs.prefix);
+        code.append("if (" + lhs.code + "." + this.temporaryTypeHashMap.get(lhs.code) + ") goto else;\n");
+        var nodeList = node.getChildren();
+        for(int i = 1; i < node.getNumChildren(); i++){
+            var nodeCode = visit(nodeList.get(i));
+            code.append(nodeCode.prefix);
+        }
+        Code thisCode = new Code();
+        thisCode.prefix = "";
+
+
+        return thisCode;
+    }
+    private Code elseStatementVisit(JmmNode node, String dummy){
+        code.append("goto endif;\n"); //this is really dumb but makes some sense
+        code.append("else: \n");
+        for(var jmmNode : node.getChildren()){
+            var nodeCode = visit(jmmNode);
+            code.append(nodeCode.prefix);
+        }
+        code.append("endif: \n");
+
+        Code thisCode = new Code();
+        thisCode.prefix = "";
+
+        return thisCode;
     }
 
 }
