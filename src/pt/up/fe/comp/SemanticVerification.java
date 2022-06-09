@@ -43,8 +43,10 @@ public class SemanticVerification extends PreorderJmmVisitor<MySymbolTable,Strin
 
             Type varType = AstUtils.getVarType(jmmNode.get("value"), jmmNode.getAncestor("MethodDecl").get().getJmmChild(1).get("value"), symbolTable);
 
-            if (symbolTable.getImports().contains(varType.getName())) {
-                return true;
+            if(!(varType == null)){
+                if (symbolTable.getImports().contains(varType.getName())) {
+                    return true;
+                }
             }
         }
 
