@@ -67,6 +67,7 @@ public class OllirGenerator extends AJmmVisitor<String, Code> {
         addVisit("AndExp",this::andExpVisit);
         addVisit("IfStatement",this::ifStatementVisit);
         addVisit("ElseStatement",this::elseStatementVisit);
+        addVisit("NewArray",this::newArrayVisit);
     }
 
     public String getCode(){
@@ -261,7 +262,8 @@ public class OllirGenerator extends AJmmVisitor<String, Code> {
 
 
         if(node.getJmmChild(0).getKind().equals("ArrayExp")){
-            type = OllirUtils.getOllirType(AstUtils.getVarType(node.getJmmChild(0).getJmmChild(0).get("value"),this.currentMethodname,(MySymbolTable) mySymbolTable).getName());
+            var typeTest = AstUtils.getVarType(node.getJmmChild(0).getJmmChild(0).get("value"),this.currentMethodname,(MySymbolTable) mySymbolTable);
+            type = OllirUtils.getOllirType(typeTest.getName());
         }
         else {
             String varName = node.getJmmChild(0).get("value");
@@ -354,18 +356,25 @@ public class OllirGenerator extends AJmmVisitor<String, Code> {
         }
         var returnType = mySymbolTable.getReturnType(methodName);
         var returnTypeString = "";
+        boolean thatOneCaseThatFailsThatTest = false;
         if(dummy != null){
             returnTypeString = dummy;
         }
         else {
             if (returnType != null)
                 returnTypeString = OllirUtils.getCode(returnType);
-            else
+            else {
                 returnTypeString = "V";
+                thatOneCaseThatFailsThatTest = true;
+            }
         }
         finalCode += ")." + returnTypeString + ";\n";
         String temp = OllirUtils.createTemp();
-        prefixCode += temp + "." + returnTypeString + " :=." + returnTypeString + " " + finalCode;
+        if(thatOneCaseThatFailsThatTest){
+            prefixCode += finalCode;
+        }
+        else
+            prefixCode += temp + "." + returnTypeString + " :=." + returnTypeString + " " + finalCode;
         Code thisCode = new Code();
         thisCode.code = temp;
         thisCode.prefix = prefixCode;
@@ -468,7 +477,7 @@ public class OllirGenerator extends AJmmVisitor<String, Code> {
             type = dummy;
         }
 
-        thisCode.prefix += temp+"." + type + " :=."+ type + " " + lhs.code +"."+ type + " " + "&" + "." + type + " " + rhs.code +"."+ type + ";\n";
+        thisCode.prefix += temp+"." + type + " :=."+ type + " " + lhs.code +"."+ type + " " + "&&" + "." + type + " " + rhs.code +"."+ type + ";\n";
         thisCode.code = temp;
 
         this.temporaryTypeHashMap.put(temp,type);
@@ -567,12 +576,48 @@ public class OllirGenerator extends AJmmVisitor<String, Code> {
             var nodeCode = visit(jmmNode);
             code.append(nodeCode.prefix);
         }
-        code.append("endif_"+ifIndex+": \n");
+
+        //now we're going to check if there's more code to see if endif is something valid here or no
+        int nMethods = node.getJmmParent().getJmmParent().getNumChildren();
+
+
+        if(nMethods - 1 != node.getJmmParent().getIndexOfSelf())
+            code.append("endif_"+ifIndex+": \n");
         this.ifIndex-=1;
 
         Code thisCode = new Code();
         thisCode.prefix = "";
 
+        return thisCode;
+    }
+
+    private Code newArrayVisit(JmmNode node, String dummy){
+        Code thisCode = new Code();
+        String temp = OllirUtils.createTemp();
+        var rhs = visit(node.getJmmChild(0));
+        thisCode.prefix = rhs.prefix;
+
+        temp += ".array";
+        String type = this.temporaryTypeHashMap.get(rhs.code);
+        if(type == null){
+            var typeTest = AstUtils.getVarType(rhs.code,this.currentMethodname,(MySymbolTable) mySymbolTable);
+            if(typeTest != null){
+                type = OllirUtils.getOllirType(typeTest.getName());
+            }
+            else{
+                if(dummy != null){
+                    type = dummy;
+                }
+                else{
+                    type = "V";
+                }
+            }
+        }
+        if(type == null){
+            type = this.temporaryTypeHashMap.get(rhs.code);
+        }
+        thisCode.prefix += temp + "." + type + " :=.array." + type + " new(array," + rhs.code + "." + type + ").array." + type +";\n";
+        thisCode.code = temp;
         return thisCode;
     }
 
