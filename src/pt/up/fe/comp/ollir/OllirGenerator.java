@@ -15,21 +15,9 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 /*
-    TODO
-    Obter tipos para as variaveis e isso
-    a[3];
-    fields verify if public or not
 
 
-    REFACTOR
-    fieldVisit, mudar o nó para fieldDecl em vez de VarDecl
-
-    Basic Class Structure? Done
-    Class Fields? Verify if public or private
-    Method Structure? Not sure what this means ask professor
-    Assignments? Working maaaas aquela duvida de a = temp1 + temp2 :(
-    Arithmetic Operation? Deve estar, tenho que reverificar
-    Method Invocation?  Not sure what this means UWU
+ollir desuu~
  */
 
 
@@ -68,6 +56,7 @@ public class OllirGenerator extends AJmmVisitor<String, Code> {
         addVisit("IfStatement",this::ifStatementVisit);
         addVisit("ElseStatement",this::elseStatementVisit);
         addVisit("NewArray",this::newArrayVisit);
+        addVisit("WhileStatement",this::whileStatementVisit);
     }
 
     public String getCode(){
@@ -275,6 +264,9 @@ public class OllirGenerator extends AJmmVisitor<String, Code> {
         }
         var rhs = visit(node.getJmmChild(1),type);
         Code thisCode = new Code();
+        if(node.getJmmChild(0).getKind().equals("ArrayExp")){
+
+        }
         thisCode.prefix = lhs.prefix;
         thisCode.prefix += rhs.prefix;
         String temp = OllirUtils.createTemp();
@@ -351,6 +343,14 @@ public class OllirGenerator extends AJmmVisitor<String, Code> {
                    else
                        returnTypeString = "." + paramType;
                }
+
+               if(arg.getKind().equals("ArrayExp")){
+                   var temp = OllirUtils.createTemp();
+                   prefixCode += temp + returnTypeString + " :=" + returnTypeString + " " + argCode.code + returnTypeString + ";\n";
+                   this.temporaryTypeHashMap.put(temp,returnTypeString.substring(1));
+                   finalCode += "," + temp + returnTypeString;
+               }
+               else
                 finalCode += "," + argCode.code + returnTypeString;
             }
         }
@@ -416,9 +416,17 @@ public class OllirGenerator extends AJmmVisitor<String, Code> {
         }
 
         thisCode.prefix += rhs.prefix;
+        if(jmmNode.getJmmChild(1).getKind().equals("ArrayExp")){
+            String temp2 = OllirUtils.createTemp();
+            thisCode.prefix += temp2 + "." + type + " :=." + type + " " + rhs.code + "." + type + ";\n";
+            System.out.println("temp3.i32 :=.i32 3.i32; + " + thisCode.prefix);
+            rhs.code = temp2;
+            this.temporaryTypeHashMap.put(temp2,type);
+        }
         String temp = OllirUtils.createTemp();
-        thisCode.prefix += temp +"."+ type + " :=." + type + " " + lhs.code + "[" + rhs.code + "." + type + "]." + type + ";\n";
-        thisCode.code = temp;
+        //thisCode.prefix += temp +"."+ type + " :=." + type + " " + lhs.code + "[" + rhs.code + "." + type + "]." + type + ";\n";
+        //System.out.println("HIHIHIHI  " + lhs.code + "[" + rhs.code + "." + type + "]." + type + ";\n");
+        thisCode.code = lhs.code + "[" + rhs.code + "." + type + "]";
         this.temporaryTypeHashMap.put(temp,type);
         return thisCode;
     }
@@ -452,7 +460,7 @@ public class OllirGenerator extends AJmmVisitor<String, Code> {
             type = dummy;
         }
 
-        thisCode.prefix += temp+"." + type + " :=."+ type + " " + lhs.code +"."+ type + " " + "<" + "." + type + " " + rhs.code +"."+ type + ";\n";
+        thisCode.prefix += temp+"." + type + " :=."+ type + " " + lhs.code +".i32" + " " + "<" + "." + type + " " + rhs.code +".i32" + ";\n";
         thisCode.code = temp;
 
         this.temporaryTypeHashMap.put(temp,type);
@@ -618,6 +626,31 @@ public class OllirGenerator extends AJmmVisitor<String, Code> {
         }
         thisCode.prefix += temp + "." + type + " :=.array." + type + " new(array," + rhs.code + "." + type + ").array." + type +";\n";
         thisCode.code = temp;
+        return thisCode;
+    }
+
+    private Code whileStatementVisit(JmmNode node, String dummy){
+        var loop = visit(node.getJmmChild(0));
+        Code thisCode = new Code();
+
+        //Loop
+        thisCode.prefix = "Loop:\n";
+        thisCode.prefix += loop.prefix;
+
+
+
+        thisCode.prefix += "if ( " + loop.code +".bool" + " ) goto Body;\n";
+        thisCode.prefix += "goto EndLoop;\n";
+
+        //Body
+        thisCode.prefix += "Body:\n";
+        var nodeList = node.getChildren();
+        for(int i = 1; i < node.getNumChildren(); i++){
+            var nodeCode = visit(nodeList.get(i));
+            thisCode.prefix += nodeCode.prefix;
+        }
+        thisCode.prefix += "goto Loop;\n";
+        thisCode.prefix += "EndLoop:\n";
         return thisCode;
     }
 
