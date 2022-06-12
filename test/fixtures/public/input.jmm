@@ -1,15 +1,10 @@
-class While_If_Array_AccessArrayNotInteger {
+import ioPlus;
+class ComplexArrayAccess {
 
 	public static void main(String[] args) {
-        int[] arr;
+	    int[] a;
         int i;
-        boolean j;
+        ioPlus.printResult(a[i]);
 
-        i = 1;
-        j = false;
-        arr = new int[3];
-
-		arr[j] = 20;
-		arr[i] = 0 - arr[j];
 	}
 }

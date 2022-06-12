@@ -1,6 +1,5 @@
 package pt.up.fe.comp;
 
-import jdk.swing.interop.SwingInterOpUtils;
 import pt.up.fe.comp.jmm.analysis.table.Type;
 import pt.up.fe.comp.jmm.ast.JmmNode;
 import pt.up.fe.comp.jmm.ast.PreorderJmmVisitor;
@@ -34,6 +33,15 @@ public class SemanticVerification extends PreorderJmmVisitor<MySymbolTable,Strin
         addVisit("FalseId", this::visitBoolean);
         addVisit("NewArray", this::visitNewArray);
         addVisit("NewExp", this::visitNew);
+        addVisit("ThisId", this::visitThis);
+    }
+
+    private String visitThis(JmmNode jmmNode, MySymbolTable symbolTable) {
+        if (jmmNode.getAncestor("MethodDecl").get().getJmmChild(1).get("value").equals("main")){
+            reports.add(new Report(ReportType.ERROR, Stage.SEMANTIC, Integer.valueOf(jmmNode.get("line")),
+                    Integer.valueOf(jmmNode.get("col")), "Cannot use this in static methods"));
+        }
+        return "";
     }
 
 
@@ -103,10 +111,19 @@ public class SemanticVerification extends PreorderJmmVisitor<MySymbolTable,Strin
                     var param = params.getJmmChild(i);
 
                     if (!param.getKind().equals("Id")) {
-                        var paramType = visit(param, symbolTable);
-                        if (!paramsInMethod.get(i).getType().getName().equals(paramType)) {
-                            reports.add(new Report(ReportType.ERROR, Stage.SEMANTIC, Integer.valueOf(call.get("line")),
-                                    Integer.valueOf(call.get("col")), "Got incompatible arguments for call on method " + methodName));
+                        if (param.getKind().equals("ThisId")){ // This as arg
+                            if (!paramsInMethod.get(i).getType().getName().equals(symbolTable.getClassName())) {
+                                reports.add(new Report(ReportType.ERROR, Stage.SEMANTIC, Integer.valueOf(call.get("line")),
+                                        Integer.valueOf(call.get("col")), "Got incompatible arguments for call on method " + methodName));
+                            }
+                        }
+                        else{
+                            var paramType = visit(param, symbolTable);
+
+                            if (!paramsInMethod.get(i).getType().getName().equals(paramType)) {
+                                reports.add(new Report(ReportType.ERROR, Stage.SEMANTIC, Integer.valueOf(call.get("line")),
+                                        Integer.valueOf(call.get("col")), "Got incompatible arguments for call on method " + methodName));
+                            }
                         }
                     } else {
                         Type idType = AstUtils.getVarType(param.get("value"), param.getAncestor("MethodDecl").get().getJmmChild(1).get("value"), symbolTable);
@@ -211,10 +228,19 @@ public class SemanticVerification extends PreorderJmmVisitor<MySymbolTable,Strin
                         var param = params.getJmmChild(i);
 
                         if (!param.getKind().equals("Id")) {
-                            var paramType = visit(param, symbolTable);
-                            if (!paramsInMethod.get(i).getType().getName().equals(paramType)) {
-                                reports.add(new Report(ReportType.ERROR, Stage.SEMANTIC, Integer.valueOf(jmmNode.get("line")),
-                                        Integer.valueOf(jmmNode.get("col")), "Got incompatible arguments for call on method " + methodName));
+                            if (param.getKind().equals("ThisId")){ // This as arg
+                                if (!paramsInMethod.get(i).getType().getName().equals(symbolTable.getClassName())) {
+                                    reports.add(new Report(ReportType.ERROR, Stage.SEMANTIC, Integer.valueOf(call.get("line")),
+                                            Integer.valueOf(call.get("col")), "Got incompatible arguments for call on method " + methodName));
+                                }
+                            }
+                            else{
+                                var paramType = visit(param, symbolTable);
+
+                                if (!paramsInMethod.get(i).getType().getName().equals(paramType)) {
+                                    reports.add(new Report(ReportType.ERROR, Stage.SEMANTIC, Integer.valueOf(call.get("line")),
+                                            Integer.valueOf(call.get("col")), "Got incompatible arguments for call on method " + methodName));
+                                }
                             }
                         } else {
                             Type idType = AstUtils.getVarType(param.get("value"), param.getAncestor("MethodDecl").get().getJmmChild(1).get("value"), symbolTable);
@@ -505,6 +531,7 @@ public class SemanticVerification extends PreorderJmmVisitor<MySymbolTable,Strin
 
         // Array access index is an expression of type integer
         var arrayIndex = arrayExp.getJmmChild(1);
+
         String indexType = visit(arrayIndex, symbolTable);
 
         if (indexType == null){
