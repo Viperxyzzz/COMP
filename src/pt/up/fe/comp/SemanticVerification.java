@@ -226,7 +226,7 @@ public class SemanticVerification extends PreorderJmmVisitor<MySymbolTable,Strin
             }
 
             if (symbolTable.getImports().contains(id.get("value"))){
-                System.out.println(id.get("value") + " could be imported xdxd");
+                System.out.println(id.get("value") + " could be imported.");
                 return "dot";
             }
 
@@ -507,6 +507,18 @@ public class SemanticVerification extends PreorderJmmVisitor<MySymbolTable,Strin
                     return varType.getName();
             }
         }
+
+        if (jmmNode.getAncestor("DotExp").isPresent()){
+            Type varType = AstUtils.getVarType(varName, jmmNode.getAncestor("MethodDecl").get().getJmmChild(1).get("value"), symbolTable);
+
+            if (varType != null){
+                if (varType.isArray())
+                    return varType.getName() + "[]";
+                else
+                    return varType.getName();
+            }
+        }
+
         return "";
     }
 
