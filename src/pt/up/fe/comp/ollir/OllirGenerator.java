@@ -14,12 +14,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.stream.Collectors;
 
-/*
-
-
-ollir desuu~
- */
-
 
 public class OllirGenerator extends AJmmVisitor<String, Code> {
     private final StringBuilder code;
@@ -57,6 +51,7 @@ public class OllirGenerator extends AJmmVisitor<String, Code> {
         addVisit("ElseStatement",this::elseStatementVisit);
         addVisit("NewArray",this::newArrayVisit);
         addVisit("WhileStatement",this::whileStatementVisit);
+        addVisit("Not",this::notVisit);
     }
 
     public String getCode(){
@@ -432,14 +427,14 @@ public class OllirGenerator extends AJmmVisitor<String, Code> {
     }
     private Code falseIdVisit(JmmNode node, String dummy){
         Code thisCode = new Code();
-        thisCode.code = "0";
+        thisCode.code = "false";
         return thisCode;
 
     }
 
     private Code trueIdVisit(JmmNode node, String dummy){
         Code thisCode = new Code();
-        thisCode.code = "1";
+        thisCode.code = "true";
         return thisCode;
     }
 
@@ -558,13 +553,21 @@ public class OllirGenerator extends AJmmVisitor<String, Code> {
         this.ifIndex += 1;
         code.append(lhs.prefix);
         var type = this.temporaryTypeHashMap.get(lhs.code);
+        type = "bool";
         //var type  = OllirUtils.getOllirType(AstUtils.getVarType(lhs.code,this.currentMethodname,(MySymbolTable) mySymbolTable).getName());
-        if(type == null){
-            type = OllirUtils.getOllirType(AstUtils.getVarType(lhs.code,this.currentMethodname,(MySymbolTable) mySymbolTable).getName());
-            if(type == null){
-                type = "V";
+        /*if(type == null){
+            var varType = AstUtils.getVarType(lhs.code,this.currentMethodname,(MySymbolTable) mySymbolTable);
+            if(varType != null) {
+                type = OllirUtils.getOllirType(varType.getName());
+                if (type == null) {
+                    type = "V";
+                }
             }
-        }
+            else{
+                type = "bool";
+            }
+
+        }*/
         code.append("if (" + lhs.code + "." + type + ") goto else_"+ ifIndex + ";\n");
         var nodeList = node.getChildren();
         for(int i = 1; i < node.getNumChildren(); i++){
@@ -650,7 +653,20 @@ public class OllirGenerator extends AJmmVisitor<String, Code> {
             thisCode.prefix += nodeCode.prefix;
         }
         thisCode.prefix += "goto Loop;\n";
-        thisCode.prefix += "EndLoop:\n";
+        int nMethods = node.getJmmParent().getJmmParent().getNumChildren();
+        if(nMethods - 1 != node.getJmmParent().getIndexOfSelf())
+            thisCode.prefix += "EndLoop:\n";
+        return thisCode;
+    }
+
+    private Code notVisit(JmmNode node, String dummy){
+        Code thisCode = new Code();
+        var temp = OllirUtils.createTemp();
+        var lhs = visit(node.getJmmChild(0));
+        var type = "bool";
+        thisCode.prefix = lhs.prefix;
+        thisCode.prefix += temp + "." + type + " :=.bool !.bool " + lhs.code + "." + type +";\n";
+        thisCode.code = temp;
         return thisCode;
     }
 
