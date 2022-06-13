@@ -179,6 +179,7 @@ public class SemanticVerification extends PreorderJmmVisitor<MySymbolTable,Strin
         if (!id.getKind().equals("DotExp") && !checkDotClass(id, symbolTable)) {
             reports.add(new Report(ReportType.ERROR, Stage.SEMANTIC, Integer.valueOf(jmmNode.get("line")),
                     Integer.valueOf(jmmNode.get("col")), "Class " + id.get("value") + " not imported."));
+            return "";
         }
 
         if (call.getKind().equals("LengthExp")) {
@@ -224,12 +225,18 @@ public class SemanticVerification extends PreorderJmmVisitor<MySymbolTable,Strin
                 return checkDotParams(call, symbolTable.getClassName(), symbolTable);
             }
 
+            if (symbolTable.getImports().contains(id.get("value"))){
+                System.out.println(id.get("value") + " could be imported xdxd");
+                return "dot";
+            }
+
             // check for calls to undeclared methods
             Type varType = AstUtils.getVarType(id.get("value"), id.getAncestor("MethodDecl").get().getJmmChild(1).get("value"), symbolTable);
 
             // verificar parâmetros
             if (call.getNumChildren() > 1 &&
-                    (symbolTable.hasMethod(methodName) && varType.getName().equals(symbolTable.getClassName()))) { // existem parâmetros e o método está declarado na classe
+                    (symbolTable.hasMethod(methodName) &&
+                            varType.getName().equals(symbolTable.getClassName()))) { // existem parâmetros e o método está declarado na classe
                 var params = call.getJmmChild(1);
 
                 // verificar se numero de params está correto

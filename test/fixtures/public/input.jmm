@@ -1,19 +1,27 @@
-import List;
+import ioPlus;
+class ComplexArrayAccess {
 
-class Inherited_Method_Call_Simple extends List {
-    public static void main(String[] a) {
-        int k;
-        Inherited_Method_Call_Simple mc;
-
-        mc = new Inherited_Method_Call_Simple();
-
-		k = mc.add(10);
-        mc.foo();
-
+    public int func(int a) {
+        return a;
     }
 
-    public int foo(){
-        return this.add(20);
-    }
+	public static void main(String[] args) {
+	    int[] a;
+        int i;
+        ComplexArrayAccess d;
+        d = new ComplexArrayAccess();
+        a = new int[5];
+        a[0] = 1;
+		a[1] = 2;
+		a[2] = 3;
+		a[3] = 4;
+		a[4] = 5;
+        i = 1;
+        ioPlus.printResult(a[d.func(0)]);
+        ioPlus.printResult(a[i]);
+        ioPlus.printResult(a[4/2]);
+        ioPlus.printResult(a[a[2]]);
+        ioPlus.printResult(a[a.length -1 ]);
 
+	}
 }
