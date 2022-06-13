@@ -2,6 +2,33 @@
 
 For this project, you need to install [Java](https://jdk.java.net/), [Gradle](https://gradle.org/install/), and [Git](https://git-scm.com/downloads/) (and optionally, a [Git GUI client](https://git-scm.com/downloads/guis), such as TortoiseGit or GitHub Desktop). Please check the [compatibility matrix](https://docs.gradle.org/current/userguide/compatibility.html) for Java and Gradle versions.
 
+## GROUP: <identifier of the group>
+
+(Names, numbers, self assessment, and contribution of the members of the group to the project according to:)
+NAME1: <name>, NR1: <student number>, GRADE1: <0 to 20 value>, CONTRIBUTION1: <0 to 100 %>
+NAME2: <name>, NR2: < student number >, GRADE2: <0 to 20 value>, CONTRIBUTION2: <0 to 100 %>
+...
+(Note that the sum of the CONTRIBUTION? values must be 100 %)
+
+
+GLOBAL Grade of the project: <0 to 20>
+
+
+## SUMMARY: (Describe what your tool does and its main features.)
+
+
+## SEMANTIC ANALYSIS: (Refer the semantic rules implemented by your tool.)
+
+
+## CODE GENERATION: (describe how the code generation of your tool works and identify the possible problems your tool has regarding code generation.)
+
+
+## PROS: (Identify the most positive aspects of your tool)
+
+
+## CONS: (Identify the most negative aspects of your tool)
+
+
 ## Project setup
 
 There are three important subfolders inside the main folder. First, inside the subfolder named ``javacc`` you will find the initial grammar definition. Then, inside the subfolder named ``src`` you will find the entry point of the application. Finally, the subfolder named ``tutorial`` contains code solutions for each step of the tutorial. JavaCC21 will generate code inside the subfolder ``generated``.
@@ -52,10 +79,3 @@ The testing framework, which uses the class TestUtils located in ``src-lib/pt/up
 In order for the test class to find your implementations for the stages, it uses the file ``config.properties`` that is in root of your repository. It has four fields, one for each stage (i.e. ``ParserClass``, ``AnalysisClass``, ``OptimizationClass``, ``BackendClass``), and initially it only has one value, ``pt.up.fe.comp.SimpleParser``, associated with the first stage.
 
 During the development of your compiler you will update this file in order to setup the classes that implement each of the compilation stages.
-
-
-### Extra operators
-
-*Bigger than ">"
-*Equal equal "=="
-*Logical OR "||"

@@ -1,21 +1,19 @@
-import ioPlus;
-class ArithmeticArgsFuncCall {
+import List;
 
-    public int func(int a, int b, int c){
-        ioPlus.printResult(a);
-        ioPlus.printResult(b);
-        ioPlus.printResult(c);
-        return 1;
+class Inherited_Method_Call_Simple extends List {
+    public static void main(String[] a) {
+        int k;
+        Inherited_Method_Call_Simple mc;
+
+        mc = new Inherited_Method_Call_Simple();
+
+		k = mc.add(10);
+        mc.foo();
+
     }
 
-	public static void main(String[] args) {
-        int a;
-        int b;
-        ArithmeticArgsFuncCall d;
-        d = new ArithmeticArgsFuncCall();
-        a = 10;
-        b = 5;
-		a = d.func(100 / 10 + 10 - 10 * 2, a + b, a - b);
+    public int foo(){
+        return this.add(20);
+    }
 
-	}
 }

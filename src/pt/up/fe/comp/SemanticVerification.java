@@ -98,10 +98,16 @@ public class SemanticVerification extends PreorderJmmVisitor<MySymbolTable,Strin
 
         // check for calls to undeclared methods
         if (!symbolTable.getMethods().contains(methodName)){
-            reports.add(new Report(ReportType.ERROR, Stage.SEMANTIC, Integer.valueOf(call.get("line")),
-                    Integer.valueOf(call.get("col")), "Method '" + methodName + "' does not exist."));
+            if (symbolTable.getSuper() != null){
+                System.out.println("Method '" + methodName + "' could be in super class.");
+                return "dot";
+            }
+            else {
+                reports.add(new Report(ReportType.ERROR, Stage.SEMANTIC, Integer.valueOf(call.get("line")),
+                        Integer.valueOf(call.get("col")), "Method '" + methodName + "' does not exist."));
 
-            return "";
+                return "";
+            }
         }
 
         // verificar parâmetros
