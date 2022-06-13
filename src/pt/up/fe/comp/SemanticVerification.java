@@ -97,6 +97,12 @@ public class SemanticVerification extends PreorderJmmVisitor<MySymbolTable,Strin
         var methodName = call.getJmmChild(0).get("value");
 
         // check for calls to undeclared methods
+        if (!symbolTable.getMethods().contains(methodName)){
+            reports.add(new Report(ReportType.ERROR, Stage.SEMANTIC, Integer.valueOf(call.get("line")),
+                    Integer.valueOf(call.get("col")), "Method '" + methodName + "' does not exist."));
+
+            return "";
+        }
 
         // verificar parâmetros
         if (call.getNumChildren() > 1 &&
