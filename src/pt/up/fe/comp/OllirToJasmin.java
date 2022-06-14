@@ -82,10 +82,11 @@ public class OllirToJasmin {
             code.append(getFieldCode(field));
         }
 
-        code.append(getConstructor(superQualifiedName)).append("\n");
+        code.append(getConstructor(superQualifiedName)).append("\n\n");
 
         for (var method : classUnit.getMethods()){
-            code.append(getCode(method));
+            code.append(getCode(method) + "\n");
+            System.out.println("\nMethod is:" + method.getMethodName() + "\n");
         }
 
         return code.toString();
@@ -129,14 +130,6 @@ public class OllirToJasmin {
 
         code.append(".method public "); //hard coded
 
-        /* //se AccessModifier for DEFAULT não mostrar nada - 3:43:21
-        if (method.getMethodAccessModifier() == DEFAULT){
-            code.append(".method ");
-        }
-        else{
-            code.append(".method ").append(method.getMethodAccessModifier().name().toLowerCase()).append(" ");
-        }*/
-
         if (method.isStaticMethod()){
             code.append("static ");
         }
@@ -151,7 +144,6 @@ public class OllirToJasmin {
         code.append(".limit stack 99\n");
         code.append(".limit locals 99\n");
 
-        //registodenomedavar = method.getVarTable().get("nome da var").getVirtualReg();
 
         for (var inst : method.getInstructions()){
             code.append(getCode(inst));
@@ -160,6 +152,8 @@ public class OllirToJasmin {
                     code.append(label + ":\n");
                 }
             }
+
+            System.out.println("\nCode for inst " + inst.getInstType().toString() + " is:\n" + getCode(inst) + "\n");
         }
 
         code.append(".end method\n\n");
@@ -287,35 +281,28 @@ public class OllirToJasmin {
 
         else {
             int currentLocation = currentMethod.getVarTable().get(((Operand) element).getName()).getVirtualReg();
-
             switch (element.getType().getTypeOfElement()) {
                 case INT32:
                 case BOOLEAN:
                     code.append("iload");
-                    if (currentLocation <= 3) {
-                        code.append("_");
-                    }
-                    else {
-                        code.append(" ");
-                    }
-                    code.append(currentLocation + "\n");
                     break;
                 case THIS:
                     code.append("aload_0" + "\n");
-                    break;
+                    return code.toString();
                 case OBJECTREF:
                 case ARRAYREF:
-                    if (currentLocation <= 3) {
-                        code.append("aload " + currentLocation + "\n");
-                    }
-
+                    code.append("aload");
                     break;
                 case VOID:
                     return code.toString();
                 default:
                     throw new NotImplementedException("Load Type not implemented" + element.getType().getTypeOfElement());
             }
+
+            code.append((currentLocation <= 3) ? "_" : " ").append(currentLocation).append("\n");
         }
+
+
 
         return code.toString();
     }
