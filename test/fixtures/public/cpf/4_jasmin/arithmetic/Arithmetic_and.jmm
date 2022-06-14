@@ -5,11 +5,11 @@ class Arithmetic_and {
 		boolean a;
 
 		a = true && false;
-		
+
 		if(a) {
 			io.print(1);
 		} else {
-			io.print(0);		
+			io.print(0);
 		}
 
 	}

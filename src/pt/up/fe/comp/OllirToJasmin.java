@@ -17,9 +17,11 @@ public class OllirToJasmin {
     private final FunctionClassMap<Instruction, String> instructionMap;
     private Method currentMethod;
 
+    private int ifIndex;
     public OllirToJasmin (ClassUnit classUnit){
         this.classUnit = classUnit;
         this.currentMethod = null;
+        this.ifIndex = 0;
 
         instructionMap = new FunctionClassMap<>();
         instructionMap.put(CallInstruction.class, this::getCode);
@@ -29,6 +31,9 @@ public class OllirToJasmin {
         instructionMap.put(BinaryOpInstruction.class, this::getCode);
         instructionMap.put(PutFieldInstruction.class, this::getCode);
         instructionMap.put(GetFieldInstruction.class, this::getCode);
+        instructionMap.put(SingleOpCondInstruction.class, this::getCode);
+        instructionMap.put(CondBranchInstruction.class, this::getCode);
+        instructionMap.put(GotoInstruction.class, this::getCode);
     }
 
     public String getFullyQualifiedName(String className){
@@ -150,6 +155,11 @@ public class OllirToJasmin {
 
         for (var inst : method.getInstructions()){
             code.append(getCode(inst));
+            for (var label : method.getLabels().keySet()) {
+                if (method.getLabels().get(label) == inst) {
+                    code.append(label + ":\n");
+                }
+            }
         }
 
         code.append(".end method\n\n");
@@ -212,18 +222,25 @@ public class OllirToJasmin {
     public String getCode(BinaryOpInstruction inst){
         var code = new StringBuilder();
 
-        code.append(generateLoadInstruction(inst.getLeftOperand()));
-        code.append(generateLoadInstruction(inst.getRightOperand()));
+        ifIndex++;
 
-        switch (inst.getLeftOperand().getType().getTypeOfElement()){
-            case INT32:
-                code.append("i");
+        switch (inst.getOperation().getOpType()) {
+            case ANDB:
+                code.append(generateLoadInstruction(inst.getLeftOperand()));
+                code.append("ifeq FALSE_" + ifIndex + "\n");
+                code.append(generateLoadInstruction(inst.getRightOperand()));
+                code.append("ifeq FALSE_" + ifIndex + "\n");
+                code.append("iconst_1" + "\n");
+                code.append("goto STORE_" + ifIndex + "\n");
+                code.append("FALSE_" + ifIndex + ":\n");
+                code.append("iconst_0" + "\n");
+                code.append("STORE_" + ifIndex + ":\n");
                 break;
             default:
-                throw new RuntimeException("BinaryOpInstruction Type not implemented");
+                code.append(generateLoadInstruction(inst.getLeftOperand()));
+                code.append(generateLoadInstruction(inst.getRightOperand()));
+                return code.toString();
         }
-
-        code.append(inst.getOperation().getOpType().toString().toLowerCase()).append("\n");
 
         return code.toString();
     }
@@ -238,16 +255,23 @@ public class OllirToJasmin {
         switch (inst.getTypeOfAssign().getTypeOfElement()) {
             case INT32:
             case BOOLEAN:
-                code.append("istore " + lhsCurrent + "\n");
+                code.append("istore");
                 break;
             case OBJECTREF:
-                code.append("astore " + lhsCurrent + "\n");
+                code.append("astore");
                 break;
             case VOID:
-                return code.toString();
+                break;
+            case ARRAYREF:
+                code.append("iastore");
+
+                break;
+
             default:
                 throw new NotImplementedException("Assign Type not implemented" + inst.getTypeOfAssign().getTypeOfElement());
         }
+
+        code.append((lhsCurrent <= 3) ? "_" : " ").append(lhsCurrent).append("\n");
 
 
         return code.toString();
@@ -267,20 +291,27 @@ public class OllirToJasmin {
             switch (element.getType().getTypeOfElement()) {
                 case INT32:
                 case BOOLEAN:
-                    code.append("iload " + currentLocation + "\n");
+                    code.append("iload");
+                    if (currentLocation <= 3) {
+                        code.append("_");
+                    }
+                    else {
+                        code.append(" ");
+                    }
+                    code.append(currentLocation + "\n");
                     break;
                 case THIS:
                     code.append("aload_0" + "\n");
                     break;
                 case OBJECTREF:
-                    code.append("aload " + currentLocation + "\n");
+                case ARRAYREF:
+                    if (currentLocation <= 3) {
+                        code.append("aload " + currentLocation + "\n");
+                    }
+
                     break;
                 case VOID:
                     return code.toString();
-                case ARRAYREF:
-                    System.out.println("CURRENTLOCATION + " + currentLocation);
-                    code.append("aload " + currentLocation +"\n");
-                    break;
                 default:
                     throw new NotImplementedException("Load Type not implemented" + element.getType().getTypeOfElement());
             }
@@ -300,8 +331,16 @@ public class OllirToJasmin {
                 case BOOLEAN:
                     code.append("ireturn \n");
                     break;
+                case OBJECTREF:
+                    code.append("areturn \n");
+                    break;
+                case ARRAYREF:
+                    code.append("areturn \n");
+                    break;
                 default:
-                    throw new NotImplementedException("Return Type not implemented");
+                    System.out.println(element.getType().getTypeOfElement());
+                    throw new NotImplementedException("Return Type not implemented: ");
+
             }
         }
 
@@ -326,6 +365,42 @@ public class OllirToJasmin {
             default:
                 throw new NotImplementedException(inst.getInvocationType());
         }
+    }
+
+
+    private String getCode(CondBranchInstruction inst){
+        var code = new StringBuilder();
+
+        ifIndex++;
+
+        code.append(instructionMap.apply(inst.getCondition()));
+        code.append("ifne THEN_" + ifIndex + "\n");
+
+        return code.toString();
+    }
+
+
+    private String getCode(GotoInstruction inst){
+        var code = new StringBuilder();
+
+        code.append("goto ");
+
+        var label = new StringBuilder();
+        label.append(inst.getLabel());
+        label.deleteCharAt(label.length() - 1);
+
+        switch (label.toString()) {
+            case "endif_":
+                code.append("else_" + inst.getLabel().toString().substring(inst.getLabel().toString().length() - 1) + "\n");
+                break;
+            default:
+                throw new NotImplementedException("Label Not Implemented:" + inst.getLabel());
+
+        }
+
+        code.append("THEN_" + ifIndex + ":\n");
+
+        return code.toString();
     }
 
     private String getCodeInvokeVirtual(CallInstruction inst){
@@ -392,8 +467,9 @@ public class OllirToJasmin {
 
         code.append("(");
 
-        for (Element e : inst.getListOfOperands())
+        for (Element e : inst.getListOfOperands()) {
             code.append(getJasminType(e.getType()));
+        }
 
         code.append(")");
         code.append(getJasminType(inst.getReturnType()));
