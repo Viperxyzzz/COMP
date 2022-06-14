@@ -126,7 +126,11 @@ public class OllirGenerator extends AJmmVisitor<String, Code> {
         }
         var stmts = methodDecl.getChildren().subList(lastParamIndex+2, methodDecl.getNumChildren());
         for (var stmt: stmts){
+            System.out.println(stmt.getKind());
             visit(stmt);
+        }
+        if(stmts.get(stmts.size()-1).getKind().equals("InitStatement")){
+            code.append("ret.V;\n");
         }
         code.append("}\n");
 
@@ -339,7 +343,7 @@ public class OllirGenerator extends AJmmVisitor<String, Code> {
                            case "FalseId":
                                returnTypeString = ".bool";
                                break;
-                           case "IntId":
+                           case "IdInt":
                                returnTypeString = ".i32";
                                break;
                            default:
@@ -600,10 +604,10 @@ public class OllirGenerator extends AJmmVisitor<String, Code> {
         }
 
         //now we're going to check if there's more code to see if endif is something valid here or no
-        int nMethods = node.getJmmParent().getJmmParent().getNumChildren();
+        /*int nMethods = node.getJmmParent().getJmmParent().getNumChildren();
 
 
-        if(nMethods - 1 != node.getJmmParent().getIndexOfSelf())
+        if(nMethods - 1 != node.getJmmParent().getIndexOfSelf())*/
             code.append("endif_"+ifIndex+": \n");
         this.ifIndex-=1;
 
