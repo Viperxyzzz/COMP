@@ -12,9 +12,10 @@ import java.util.Collections;
 public class JasminTest {
     @Test
     public void test(){
-        var jasminResult = TestUtils.backend(SpecsIo.getResource("fixtures/public/HelloWorld.jmm"));
+        var jasminResult = TestUtils.backend(SpecsIo.getResource("fixtures/public/Simple.jmm"));
         TestUtils.noErrors(jasminResult);
 
+        jasminResult.compile();
         String result = jasminResult.run();
         System.out.println("JASMIN CODE: " + result);
     }

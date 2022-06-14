@@ -32,6 +32,8 @@ public class OllirToJasmin {
         instructionMap.put(PutFieldInstruction.class, this::getCode);
         instructionMap.put(GetFieldInstruction.class, this::getCode);
         instructionMap.put(SingleOpCondInstruction.class, this::getCode);
+        instructionMap.put(CondBranchInstruction.class, this::getCode);
+        instructionMap.put(GotoInstruction.class, this::getCode);
     }
 
     public String getFullyQualifiedName(String className){
@@ -153,6 +155,11 @@ public class OllirToJasmin {
 
         for (var inst : method.getInstructions()){
             code.append(getCode(inst));
+            for (var label : method.getLabels().keySet()) {
+                if (method.getLabels().get(label) == inst) {
+                    code.append(label + ":\n");
+                }
+            }
         }
 
         code.append(".end method\n\n");
@@ -360,14 +367,40 @@ public class OllirToJasmin {
         }
     }
 
-    private String getCode(SingleOpCondInstruction inst){
+
+    private String getCode(CondBranchInstruction inst){
         var code = new StringBuilder();
 
-        System.out.println(inst.getCondition(). + "   ole   " + inst.getLabel() + "\n");
+        ifIndex++;
+
+        code.append(instructionMap.apply(inst.getCondition()));
+        code.append("ifne THEN_" + ifIndex + "\n");
 
         return code.toString();
+    }
 
 
+    private String getCode(GotoInstruction inst){
+        var code = new StringBuilder();
+
+        code.append("goto ");
+
+        var label = new StringBuilder();
+        label.append(inst.getLabel());
+        label.deleteCharAt(label.length() - 1);
+
+        switch (label.toString()) {
+            case "endif_":
+                code.append("else_" + inst.getLabel().toString().substring(inst.getLabel().toString().length() - 1) + "\n");
+                break;
+            default:
+                throw new NotImplementedException("Label Not Implemented:" + inst.getLabel());
+
+        }
+
+        code.append("THEN_" + ifIndex + ":\n");
+
+        return code.toString();
     }
 
     private String getCodeInvokeVirtual(CallInstruction inst){
@@ -434,8 +467,9 @@ public class OllirToJasmin {
 
         code.append("(");
 
-        for (Element e : inst.getListOfOperands())
+        for (Element e : inst.getListOfOperands()) {
             code.append(getJasminType(e.getType()));
+        }
 
         code.append(")");
         code.append(getJasminType(inst.getReturnType()));
