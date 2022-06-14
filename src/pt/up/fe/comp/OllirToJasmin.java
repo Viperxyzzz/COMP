@@ -280,6 +280,13 @@ public class OllirToJasmin {
         }
 
         else {
+            if(currentMethod.getVarTable().isEmpty()){
+                code.append("");
+                return code.toString();
+            }
+            if(currentMethod.getVarTable().get(((Operand) element).getName()) == null){
+                code.append("");
+            }
             int currentLocation = currentMethod.getVarTable().get(((Operand) element).getName()).getVirtualReg();
             switch (element.getType().getTypeOfElement()) {
                 case INT32:
@@ -424,7 +431,6 @@ public class OllirToJasmin {
 
         code.append("new " + className + "\n");
         code.append("dup\n");
-
         return code.toString();
     }
 

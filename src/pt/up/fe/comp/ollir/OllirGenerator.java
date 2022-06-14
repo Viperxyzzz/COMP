@@ -333,8 +333,19 @@ public class OllirGenerator extends AJmmVisitor<String, Code> {
                else {
                     var paramType = this.temporaryTypeHashMap.get(argCode.code);
 
-                   if(paramType == null)
-                       returnTypeString = ".i32";
+                   if(paramType == null) {
+                       switch(arg.getKind()){
+                           case "TrueId":
+                           case "FalseId":
+                               returnTypeString = ".bool";
+                               break;
+                           case "IntId":
+                               returnTypeString = ".i32";
+                               break;
+                           default:
+                               returnTypeString =".V";
+                       }
+                   }
                    else
                        returnTypeString = "." + paramType;
                }
