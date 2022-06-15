@@ -11,8 +11,13 @@ public class JasminEmitter implements JasminBackend {
     @Override
     public JasminResult toJasmin(OllirResult ollirResult) {
 
-        String jasminCode = new OllirToJasmin(ollirResult.getOllirClass()).getCode();;
-        System.out.println("JASMIN CODE:\n" + jasminCode);
+        String jasminCode = new OllirToJasmin(ollirResult.getOllirClass()).getCode();
+
+        if (ollirResult.getConfig().get("debug") == "true")
+            System.out.println("JASMIN CODE:\n" + jasminCode);
+        else
+            System.out.println("Generating jasmin");
+
         return new JasminResult(ollirResult, jasminCode, Collections.EMPTY_LIST);
     }
 }

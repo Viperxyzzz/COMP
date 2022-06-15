@@ -29,9 +29,6 @@ public class JmmAnalyser implements JmmAnalysis {
 
 
         List<SemanticAnalyser> analysers = Arrays.asList(new ExtendsValidImportCheck(symbolTable));
-        /*ValidDotExpressionCheck validDotExpressionCheck = new ValidDotExpressionCheck(symbolTable);
-        validDotExpressionCheck.visit(parserResult.getRootNode());
-        reports.addAll(validDotExpressionCheck.getReports());*/
 
         for(var analyzer : analysers){
             reports.addAll(analyzer.getReports());
