@@ -72,7 +72,6 @@ For jasmin we use OLLIR code. The main Jasmin generator is OllirToJasmin and wit
 * Class Declarations
 * Call Instructions
 * Return Instructions
-* Methods
 * Conditional Instructions
 * Arithmentic Instructions
 * Assignment Instructions
