@@ -315,7 +315,7 @@ public class OllirToJasmin {
             case VOID:
                 break;
             case ARRAYREF:
-                code.append("iastore");
+                code.append("iastore\n");
 
 
                 break;
@@ -323,8 +323,8 @@ public class OllirToJasmin {
             default:
                 throw new NotImplementedException("Assign Type not implemented" + inst.getTypeOfAssign().getTypeOfElement());
         }
-
-        code.append((lhsCurrent <= 3) ? "_" : " ").append(lhsCurrent).append("\n");
+        if(inst.getTypeOfAssign().getTypeOfElement() != ElementType.ARRAYREF)
+            code.append((lhsCurrent <= 3) ? "_" : " ").append(lhsCurrent).append("\n");
 
 
         return code.toString();
@@ -332,7 +332,6 @@ public class OllirToJasmin {
 
     public String generateLoadInstruction(Element element) {
         var code = new StringBuilder();
-
         if (element.isLiteral()) {
             String value = ((LiteralElement) element).getLiteral();
             code.append("ldc " + value + "\n");
@@ -366,7 +365,6 @@ public class OllirToJasmin {
                 default:
                     throw new NotImplementedException("Load Type not implemented" + element.getType().getTypeOfElement());
             }
-
             code.append((currentLocation <= 3) ? "_" : " ").append(currentLocation).append("\n");
         }
 
@@ -581,7 +579,7 @@ public class OllirToJasmin {
         code.append("invokespecial ")
                 .append(inst.getFirstArg().getType().getTypeOfElement() == ElementType.THIS
                         ? classUnit.getSuperClass() : className )
-                .append(".<init>(");
+                .append("/<init>(");
 
         for(var operand : inst.getListOfOperands()){
             getArgumentCode(operand);

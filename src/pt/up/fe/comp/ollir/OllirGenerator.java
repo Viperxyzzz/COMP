@@ -20,6 +20,8 @@ public class OllirGenerator extends AJmmVisitor<String, Code> {
     private final SymbolTable mySymbolTable;
     private int ifIndex;
     private int maxIf;
+    private int whileIndex;
+    private int maxWhileIndex;
     private String currentMethodname;
     private HashMap<String, String> temporaryTypeHashMap;
     public OllirGenerator(SymbolTable mySymbolTable){
@@ -28,7 +30,9 @@ public class OllirGenerator extends AJmmVisitor<String, Code> {
         this.currentMethodname = "";
         this.temporaryTypeHashMap = new HashMap<String, String>();
         this.ifIndex = 0;
+        this.whileIndex = 0;
         this.maxIf = 0;
+        this.maxWhileIndex = 0;
 
         addVisit("Start",this::programVisit);
         addVisit("ClassDeclaration", this::classDeclVisit);
@@ -679,25 +683,32 @@ public class OllirGenerator extends AJmmVisitor<String, Code> {
     private Code whileStatementVisit(JmmNode node, String dummy){
         var loop = visit(node.getJmmChild(0));
         Code thisCode = new Code();
-
+        whileIndex++;
+        if(this.whileIndex <= this.maxWhileIndex){
+            this.whileIndex = maxWhileIndex + 1;
+        }
+        if(this.whileIndex > this.maxWhileIndex){
+            maxWhileIndex = whileIndex;
+        }
         //Loop
-        thisCode.prefix = "Loop:\n";
+        thisCode.prefix = "Loop_" + whileIndex + ":\n";
         thisCode.prefix += loop.prefix;
 
 
 
-        thisCode.prefix += "if ( " + loop.code +".bool" + " ) goto Body;\n";
-        thisCode.prefix += "goto EndLoop;\n";
+        thisCode.prefix += "if ( " + loop.code +".bool" + " ) goto THEN_" + whileIndex + ";\n";
+        thisCode.prefix += "goto EndLoop_" + whileIndex + ";\n";
 
         //Body
-        thisCode.prefix += "Body:\n";
+        thisCode.prefix += "THEN_" + whileIndex + ":\n";
         var nodeList = node.getChildren();
         for(int i = 1; i < node.getNumChildren(); i++){
             var nodeCode = visit(nodeList.get(i));
             thisCode.prefix += nodeCode.prefix;
         }
-        thisCode.prefix += "goto Loop;\n";
-        thisCode.prefix += "EndLoop:\n";
+        thisCode.prefix += "goto Loop_" + whileIndex +";\n";
+        thisCode.prefix += "EndLoop_" + whileIndex + ":\n";
+        whileIndex--;
         return thisCode;
     }
 
