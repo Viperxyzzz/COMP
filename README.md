@@ -4,14 +4,14 @@ For this project, you need to install [Java](https://jdk.java.net/), [Gradle](ht
 
 ## GROUP: <identifier of the group>
 
-(Names, numbers, self assessment, and contribution of the members of the group to the project according to:)
-NAME1: <name>, NR1: <student number>, GRADE1: <0 to 20 value>, CONTRIBUTION1: <0 to 100 %>
-NAME2: <name>, NR2: < student number >, GRADE2: <0 to 20 value>, CONTRIBUTION2: <0 to 100 %>
+NAME1: Guilherme Garrido, NR1: 201905407, GRADE1: 18, CONTRIBUTION1: 25%
+NAME2: Luís Lucas, NR2: 201904624, GRADE2: 17, CONTRIBUTION2: 25%
+NAME3: Óscar Esteves, NR3: 201906834, GRADE3: 18, CONTRIBUTION3: 25%
+NAME4: Pedro Nunes, NR4: 201905396, GRADE4: 18, CONTRIBUTION4: 25%
 ...
-(Note that the sum of the CONTRIBUTION? values must be 100 %)
 
 
-GLOBAL Grade of the project: <0 to 20>
+GLOBAL Grade of the project: 17
 
 
 ## SUMMARY: (Describe what your tool does and its main features.)
