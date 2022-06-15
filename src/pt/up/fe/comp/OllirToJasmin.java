@@ -282,6 +282,19 @@ public class OllirToJasmin {
                 code.append("iconst_1\n");
                 code.append("STORE_" + conditionals + ":\n");
                 break;
+            case NOTB:
+                conditionals++;
+
+                code.append(generateLoadInstruction(inst.getLeftOperand()));
+                if (((Operand) inst.getRightOperand()).getName()
+                        .equals(((Operand) inst.getLeftOperand()).getName())
+                ) {
+                    code.append("ifeq");
+                }
+                else {
+                    code.append(generateLoadInstruction(inst.getRightOperand()));
+                    code.append(getComparison(inst.getOperation()));
+                }
             default:
                 //code.append("binaryOpInst default load left: ");
                 code.append(generateLoadInstruction(inst.getLeftOperand()));
@@ -338,6 +351,7 @@ public class OllirToJasmin {
         }
 
         else {
+
             //code.append("var " + element.getType() + " isn't literal\n");
             if(currentMethod.getVarTable().isEmpty()){
                 code.append("");
@@ -350,9 +364,19 @@ public class OllirToJasmin {
             int currentLocation = currentMethod.getVarTable().get(((Operand) element).getName()).getVirtualReg();
             switch (element.getType().getTypeOfElement()) {
                 case INT32:
-                case BOOLEAN:
                     code.append("iload");
                     break;
+                case BOOLEAN:
+                    if (((Operand) element).getName().equals("true") || ((Operand) element).getName().equals("false")) {
+                        code.append("iconst_" +
+                                (((Operand) element).getName().equals("false")  ? 0 : 1 ) + "\n")  ;
+                        return code.toString();
+                    }
+                    else {
+                        code.append("iload");
+                        break;
+                    }
+
                 case THIS:
                     code.append("aload_0" + "\n");
                     return code.toString();
@@ -372,6 +396,7 @@ public class OllirToJasmin {
 
         return code.toString();
     }
+
 
     public String getCode(ReturnInstruction inst){
         var code = new StringBuilder();
@@ -443,12 +468,25 @@ public class OllirToJasmin {
     private String getCode(UnaryOpInstruction inst) {
         var code = new StringBuilder();
 
-        //code.append("unaryOpInst load right: ");
-        code.append(generateLoadInstruction(inst.getOperand()));
-        code.append("\n");
-        code.append("i");
-        code.append(inst.getOperation().getOpType().toString().toLowerCase());
-        code.append("\n");
+        code.append(generateLoadInstruction(inst.getOperand()) + "\n");
+
+        //code.append("inst operation is: " + inst.getOperation().getOpType() + " ");
+
+        if (inst.getOperation().getOpType() == OperationType.NOTB) {
+            code.append("ifeq TRUELABEL_" + conditionals + "\n");
+            code.append("iconst_0\n");
+            code.append("goto STOPLABEL_" + conditionals + "\n");
+            code.append("TRUELABEL_" + conditionals + ":\n");
+            code.append("iconst_1\n");
+            code.append("STOPLABEL_" + conditionals + ":\n");
+        }
+        else {
+            code.append("i");
+            code.append(inst.getOperation().getOpType().toString().toLowerCase());
+            code.append("\n");
+        }
+
+
 
         return code.toString();
     }
@@ -456,10 +494,10 @@ public class OllirToJasmin {
     private String getCodeUnaryOpInstruction (BinaryOpInstruction inst) {
         var code = new StringBuilder();
 
-        //code.append("unaryOpInst load right: ");
         code.append(generateLoadInstruction(inst.getRightOperand()));
         code.append("\n");
         code.append("i");
+        //code.append("insta operation is: " + inst.getOperation().getOpType() + " ");
         code.append(inst.getOperation().getOpType().toString().toLowerCase());
         code.append("\n");
 
@@ -639,6 +677,22 @@ public class OllirToJasmin {
         }
     }
 
+    private String getComparison(Operation operation) {
+        switch (operation.getOpType()) {
+            case GTE:
+                return "if_icmpge";
+            case LTH:
+                return "if_icmplt";
+            case EQ:
+                return "if_icmpeq";
+            case NOTB:
+            case NEQ:
+                return "if_icmpne";
+            default:
+                System.out.println(operation.getOpType());
+                return "ERROR comparison not implemented yet";
+        }
+    }
 
 }
 

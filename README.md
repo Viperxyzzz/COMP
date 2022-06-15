@@ -12,8 +12,6 @@ NAME3: Óscar Esteves, NR3: 201906834, GRADE3: 18, CONTRIBUTION3: 25%
 
 NAME4: Pedro Nunes, NR4: 201905396, GRADE4: 18, CONTRIBUTION4: 25%
 
-...
-
 GLOBAL Grade of the project: 17
 
 
@@ -44,7 +42,7 @@ Semantic rules implemented:
 * Calling undeclared methods from other class can only be done if the class is imported
 
 
-## CODE GENERATION: (describe how the code generation of your tool works and identify the possible problems your tool has regarding code generation.)
+## CODE GENERATION:
 
 ### Abstract Syntax Tree - AST
 
@@ -67,9 +65,7 @@ Using both the symbol table and the AST we generate OLLIR code. The main OLLIR g
 
 Regarding the creation of temporary variables, they are always created whereas they're needed or not.
 
-
 ### Jasmin
-
 
 
 
@@ -87,7 +83,9 @@ The ollir is well functional, three adresses parsing works well and every other 
 
 OLLIR Code could be more modular, it was scalable but we repeat code, specially in the types identification. Other negative aspect is the creation of a temporary variable without deciding if it's really needed or not.
 
-**Falar sobre o q n funciona no jasmin
+**Falar sobre o q n funciona no jasmin**
+
+The tool has no optimizations or register allocation.
 
 ## Project setup
 
