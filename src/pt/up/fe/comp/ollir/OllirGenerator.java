@@ -235,9 +235,9 @@ public class OllirGenerator extends AJmmVisitor<String, Code> {
         thisCode.prefix += "putfield(this," + lhs.code + "." + type + "," + rhs.code + "." + type +").V;\n";
         thisCode.code = temp;
 
-        if(node.getJmmChild(1).getKind().equals("NewExp")){
+        /*if(node.getJmmChild(1).getKind().equals("NewExp")){
             thisCode.prefix += "invokespecial(" + lhs.code + "." + type + ",\"<init>\").V;\n";
-        }
+        }*/
         this.temporaryTypeHashMap.put(temp,type);
         return thisCode;
     }
@@ -272,9 +272,9 @@ public class OllirGenerator extends AJmmVisitor<String, Code> {
         thisCode.prefix += lhs.code + "." + type  + " :=." + type +  " " + rhs.code +"." + type + ";\n"; //FIXME -> type should be get by some way?
         thisCode.code = temp;
 
-        if(node.getJmmChild(1).getKind().equals("NewExp")){
+        /*if(node.getJmmChild(1).getKind().equals("NewExp")){
             thisCode.prefix += "invokespecial(" + lhs.code + "." + type + ",\"<init>\").V;\n";
-        }
+        }*/
 
         this.temporaryTypeHashMap.put(temp,type);
 
@@ -406,6 +406,7 @@ public class OllirGenerator extends AJmmVisitor<String, Code> {
         String temp = OllirUtils.createTemp();
         Code thisCode = new Code();
         thisCode.prefix = temp + "." + className + " :=." + className + " new(" + className + ")." + className + ";\n";
+        thisCode.prefix += "invokespecial(" + temp + "." + className + ",\"<init>\").V;\n";
         thisCode.code = temp;
         this.temporaryTypeHashMap.put(temp,className);
         return thisCode;

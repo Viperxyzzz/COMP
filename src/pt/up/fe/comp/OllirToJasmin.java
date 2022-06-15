@@ -2,14 +2,10 @@ package pt.up.fe.comp;
 
 import org.specs.comp.ollir.*;
 import org.specs.comp.ollir.Type;
-import pt.up.fe.specs.util.SpecsIo;
 import pt.up.fe.specs.util.classmap.FunctionClassMap;
 import pt.up.fe.specs.util.exceptions.NotImplementedException;
 
-import java.util.Locale;
 import java.util.stream.Collectors;
-
-import static org.specs.comp.ollir.AccessModifiers.DEFAULT;
 
 public class OllirToJasmin {
 
@@ -17,11 +13,15 @@ public class OllirToJasmin {
     private final FunctionClassMap<Instruction, String> instructionMap;
     private Method currentMethod;
 
+    private boolean ignoreNextCall;
+
+    private String className;
     private int ifIndex;
     public OllirToJasmin (ClassUnit classUnit){
         this.classUnit = classUnit;
         this.currentMethod = null;
         this.ifIndex = 0;
+        this.ignoreNextCall = false;
 
         instructionMap = new FunctionClassMap<>();
         instructionMap.put(CallInstruction.class, this::getCode);
@@ -34,6 +34,7 @@ public class OllirToJasmin {
         instructionMap.put(SingleOpCondInstruction.class, this::getCode);
         instructionMap.put(CondBranchInstruction.class, this::getCode);
         instructionMap.put(GotoInstruction.class, this::getCode);
+        instructionMap.put(UnaryOpInstruction.class, this::getCode);
     }
 
     public String getFullyQualifiedName(String className){
@@ -63,7 +64,7 @@ public class OllirToJasmin {
 
         return ".method public <init>()V\n" +
                 "  aload_0\n" +
-                "  invokenonvirtual "+ superName + "/<init>()V\n" +
+                "  invokespecial "+ superName + "/<init>()V\n" +
                 "  return\n" +
                 ".end method";
     }
@@ -76,6 +77,7 @@ public class OllirToJasmin {
         var superQualifiedName = getFullyQualifiedName(classUnit.getSuperClass());
         code.append(".super ").append(superQualifiedName).append("\n");
 
+        className =classUnit.getClassName();
 
 
         for (var field : classUnit.getFields()) {
@@ -86,7 +88,7 @@ public class OllirToJasmin {
 
         for (var method : classUnit.getMethods()){
             code.append(getCode(method) + "\n");
-            System.out.println("\nMethod is:" + method.getMethodName() + "\n");
+            //System.out.println("\nMethod is:" + method.getMethodName() + "\n");
         }
 
         return code.toString();
@@ -140,12 +142,22 @@ public class OllirToJasmin {
                 .map(element -> getJasminType(element.getType()))
                 .collect(Collectors.joining());
 
-        code.append(methodParamTypes).append(")").append(getJasminType(method.getReturnType())).append("\n");
+        code.append(methodParamTypes).append(")");
+        code.append(getJasminType(method.getReturnType()));
+        code.append("\n");
+
+
+
         code.append(".limit stack 99\n");
         code.append(".limit locals 99\n");
 
 
         for (var inst : method.getInstructions()){
+            if (ignoreNextCall) {
+                ignoreNextCall = false;
+                continue;
+            }
+
             code.append(getCode(inst));
             for (var label : method.getLabels().keySet()) {
                 if (method.getLabels().get(label) == inst) {
@@ -153,7 +165,7 @@ public class OllirToJasmin {
                 }
             }
 
-            System.out.println("\nCode for inst " + inst.getInstType().toString() + " is:\n" + getCode(inst) + "\n");
+            //System.out.println("\nCode for inst " + inst.getInstType().toString() + " is:\n" + getCode(inst) + "\n");
         }
 
         code.append(".end method\n\n");
@@ -286,6 +298,7 @@ public class OllirToJasmin {
             }
             if(currentMethod.getVarTable().get(((Operand) element).getName()) == null){
                 code.append("");
+                return code.toString();
             }
             int currentLocation = currentMethod.getVarTable().get(((Operand) element).getName()).getVirtualReg();
             switch (element.getType().getTypeOfElement()) {
@@ -326,8 +339,6 @@ public class OllirToJasmin {
                     code.append("ireturn \n");
                     break;
                 case OBJECTREF:
-                    code.append("areturn \n");
-                    break;
                 case ARRAYREF:
                     code.append("areturn \n");
                     break;
@@ -374,25 +385,10 @@ public class OllirToJasmin {
     }
 
 
-    private String getCode(GotoInstruction inst){
+    private String getCode(GotoInstruction inst){ return ("goto " + inst.getLabel() + "\n"); }
+
+    private String getCode(UnaryOpInstruction inst) {
         var code = new StringBuilder();
-
-        code.append("goto ");
-
-        var label = new StringBuilder();
-        label.append(inst.getLabel());
-        label.deleteCharAt(label.length() - 1);
-
-        switch (label.toString()) {
-            case "endif_":
-                code.append("else_" + inst.getLabel().toString().substring(inst.getLabel().toString().length() - 1) + "\n");
-                break;
-            default:
-                throw new NotImplementedException("Label Not Implemented:" + inst.getLabel());
-
-        }
-
-        code.append("THEN_" + ifIndex + ":\n");
 
         return code.toString();
     }
@@ -431,6 +427,8 @@ public class OllirToJasmin {
 
         code.append("new " + className + "\n");
         code.append("dup\n");
+        code.append(getCodeInvokeSpecial(inst));
+        ignoreNextCall = true;
         return code.toString();
     }
 
@@ -477,10 +475,10 @@ public class OllirToJasmin {
         code.append(generateLoadInstruction(inst.getFirstArg()));
 
 
-        code.append("invokespecial ").append(inst.getFirstArg().getType()
-                .getTypeOfElement() == ElementType.THIS
-                        ? classUnit.getSuperClass() : ((ClassType) inst.getFirstArg().getType()).getName())
-                .append("/<init>(");
+        code.append("invokespecial ")
+                .append(inst.getFirstArg().getType().getTypeOfElement() == ElementType.THIS
+                        ? classUnit.getSuperClass() : className )
+                .append(".<init>(");
 
         for(var operand : inst.getListOfOperands()){
             getArgumentCode(operand);
@@ -502,6 +500,7 @@ public class OllirToJasmin {
     }
 
     public String getJasminType(Type type){
+        System.out.println(type.getTypeOfElement() + "\n");
         if (type instanceof ArrayType){
             return "[" + getJasminType(((ArrayType) type).getTypeOfElements());
         }
@@ -509,7 +508,7 @@ public class OllirToJasmin {
             case THIS:
                 return classUnit.getClassName();
             case OBJECTREF:
-                return ((ClassType) type).getName();
+                return "L" + ((ClassType) type).getName() + ";";
             default:
                 getJasminType(type.getTypeOfElement());
                 break;
@@ -518,6 +517,11 @@ public class OllirToJasmin {
         return getJasminType(type.getTypeOfElement());
     }
 
+    private String getObjectName(String name) {
+        if (name.equals("this"))
+            return className;
+        return name;
+    }
     public String getJasminType(ElementType type){
         switch (type){
             case STRING:
@@ -533,3 +537,5 @@ public class OllirToJasmin {
         }
     }
 }
+
+
