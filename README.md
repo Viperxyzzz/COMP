@@ -17,8 +17,11 @@ NAME4: Pedro Nunes, NR4: 201905396, GRADE4: 18, CONTRIBUTION4: 25%
 GLOBAL Grade of the project: 17
 
 
-## SUMMARY: (Describe what your tool does and its main features.)
+## SUMMARY:
 
+This tool translates programs written in Java-- into java bytecodes, passing through different stages. First, it detectes syntactic errors using a well defined grammar. Then it generates an AST that is semantically analysed, producing a symbol table. From the AST, Ollir code is generated and, finally, from that, the jasmin code is produced.
+
+This Java-- compiler can be used by running `gradle installDist`, which compiles and installs the program, and `comp2022-5a.bat filename.jmm` to run it.
 
 ## SEMANTIC ANALYSIS: (Refer the semantic rules implemented by your tool.)
 
