@@ -13,15 +13,12 @@ public class OllirToJasmin {
     private final FunctionClassMap<Instruction, String> instructionMap;
     private Method currentMethod;
 
-    private boolean ignoreNextCall;
-
     private String className;
     private int ifIndex;
     public OllirToJasmin (ClassUnit classUnit){
         this.classUnit = classUnit;
         this.currentMethod = null;
         this.ifIndex = 0;
-        this.ignoreNextCall = false;
 
         instructionMap = new FunctionClassMap<>();
         instructionMap.put(CallInstruction.class, this::getCode);
@@ -154,10 +151,6 @@ public class OllirToJasmin {
 
 
         for (var inst : method.getInstructions()){
-            if (ignoreNextCall) {
-                ignoreNextCall = false;
-                continue;
-            }
 
             for (var label : method.getLabels().keySet()) {
                 if (method.getLabels().get(label) == inst) {
@@ -454,12 +447,37 @@ public class OllirToJasmin {
     private String getCodeNew(CallInstruction inst){
         var code = new StringBuilder();
 
-        var className = getJasminType(inst.getReturnType());
+        if (inst.getReturnType().getTypeOfElement() == ElementType.OBJECTREF) {
+            for (Element e : inst.getListOfOperands()) {
+                code.append(generateLoadInstruction(e));
+            }
+
+            code.append("new ");
+            code.append(((Operand) inst.getFirstArg()).getName());
+            code.append("\n");
+            code.append("dup\n");
+        }
+
+        else if (inst.getReturnType().getTypeOfElement() == ElementType.ARRAYREF) {
+            for (Element e : inst.getListOfOperands()) {
+                code.append(generateLoadInstruction(e));
+            }
+
+            code.append("newarray ");
+            if (inst.getListOfOperands().get(0).getType().getTypeOfElement() == ElementType.INT32) {
+                code.append("int\n");
+            }
+
+
+        }
+
+        /*var className = getJasminType(inst.getReturnType());
 
         code.append("new " + className + "\n");
         code.append("dup\n");
-        code.append(getCodeInvokeSpecial(inst));
-        ignoreNextCall = true;
+        //code.append(getCodeInvokeSpecial(inst));
+
+         */
         return code.toString();
     }
 
@@ -531,6 +549,7 @@ public class OllirToJasmin {
     }
 
     public String getJasminType(Type type){
+        //if (true)  return "type of element is: " + type.getTypeOfElement();
         if (type instanceof ArrayType){
             return "[" + getJasminType(((ArrayType) type).getTypeOfElements());
         }
