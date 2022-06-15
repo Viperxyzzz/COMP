@@ -99,7 +99,7 @@ public class SemanticVerification extends PreorderJmmVisitor<MySymbolTable,Strin
         // check for calls to undeclared methods
         if (!symbolTable.getMethods().contains(methodName)){
             if (symbolTable.getSuper() != null){
-                System.out.println("Method '" + methodName + "' could be in super class.");
+                //System.out.println("Method '" + methodName + "' could be in super class.");
                 return "dot";
             }
             else {
@@ -197,7 +197,7 @@ public class SemanticVerification extends PreorderJmmVisitor<MySymbolTable,Strin
                                     Integer.valueOf(jmmNode.get("col")), varType.getName() + " cannot be used with length."));
                         }
                         else if (symbolTable.getImports().contains(varType.getName()) || symbolTable.getClassName().equals(varType.getName()) || symbolTable.getImports().contains(id.get("value"))){
-                            System.out.println(id.get("value") + " pode ser importado.");
+                            //System.out.println(id.get("value") + " pode ser importado.");
                         }
                         else if (!varType.isArray()){
                             reports.add(new Report(ReportType.ERROR, Stage.SEMANTIC, Integer.valueOf(jmmNode.get("line")),
@@ -206,11 +206,6 @@ public class SemanticVerification extends PreorderJmmVisitor<MySymbolTable,Strin
                     }
 
                 }
-                else {
-                    var type = visit(id, symbolTable);
-                    System.out.println("Este tipo fica À esquerda de length " + type);
-                }
-
 
                 return "int";
             }
@@ -226,7 +221,7 @@ public class SemanticVerification extends PreorderJmmVisitor<MySymbolTable,Strin
             }
 
             if (symbolTable.getImports().contains(id.get("value"))){
-                System.out.println(id.get("value") + " could be imported.");
+                //System.out.println(id.get("value") + " could be imported.");
                 return "dot";
             }
 
@@ -289,10 +284,10 @@ public class SemanticVerification extends PreorderJmmVisitor<MySymbolTable,Strin
                 }
             }
             else if (varType != null && (symbolTable.getImports().contains(varType.getName()))) { // é de um tipo importado
-                System.out.println("Method " + methodName + " could be imported in: " + id.get("value") + " of type " + varType.getName());
+                //System.out.println("Method " + methodName + " could be imported in: " + id.get("value") + " of type " + varType.getName());
             }
             else if(symbolTable.getImports().contains(id.get("value"))) { // é igual ao import
-                System.out.println("Method " + methodName + " could be imported, extended or is the class");
+                //System.out.println("Method " + methodName + " could be imported, extended or is the class");
             }
             else {
                 reports.add(new Report(ReportType.ERROR, Stage.SEMANTIC, Integer.valueOf(jmmNode.get("line")),
@@ -411,14 +406,6 @@ public class SemanticVerification extends PreorderJmmVisitor<MySymbolTable,Strin
         String leftType = visit(leftNode, symbolTable);
         String rightType = visit(rightNode, symbolTable);
 
-        if (symbolTable.getSuper() != null && ((symbolTable.getSuper().equals(rightType) && symbolTable.getClassName().equals(leftType)) || (symbolTable.getSuper().equals(leftType) && symbolTable.getClassName().equals(rightType)))){
-            System.out.println(leftType + " and " + rightType + " can be assigned because one extends the other.");
-        }
-
-        if (isImported(leftNode, symbolTable) && isImported(rightNode,symbolTable)){
-            System.out.println("Both imported with types " + leftType + " and " + rightType);
-        }
-
         if ((!(leftType.equals(rightType) || leftType.equals("dot") || rightType.equals("dot") || (isImported(leftNode, symbolTable) && isImported(rightNode,symbolTable)))) &&
                 !(symbolTable.getSuper() != null && ((symbolTable.getSuper().equals(rightType) && symbolTable.getClassName().equals(leftType)) ||
                         (symbolTable.getSuper().equals(leftType) && symbolTable.getClassName().equals(rightType))))) {
@@ -435,26 +422,6 @@ public class SemanticVerification extends PreorderJmmVisitor<MySymbolTable,Strin
             return;
             // Não precisamos lidar com expressões matemáticas, porque o visitor já irá visitá-las
         }
-        /*else if (jmmNode.getKind().equals("Id")){
-            Type varType = AstUtils.getVarType(jmmNode.get("value"), jmmNode.getAncestor("MethodDecl").get().getJmmChild(1).get("value"), symbolTable);
-            System.out.println("var do tipo: " + varType.getName());
-            if (!varType.getName().equals("int")){
-                reports.add(new Report(ReportType.ERROR, Stage.SEMANTIC,Integer.valueOf(jmmNode.get("line")),
-                        Integer.valueOf(jmmNode.get("col")),"Operand of operation must be of type Int, got: " + varType.getName()));
-                return;
-            }
-            else if (varType.isArray()){
-                reports.add(new Report(ReportType.ERROR, Stage.SEMANTIC,Integer.valueOf(jmmNode.get("line")),
-                        Integer.valueOf(jmmNode.get("col")),"Array cannot be used in arithmetic operations."));
-                return;
-            }
-        }
-        else if (!visited.equals("dot") && !visited.equals("int")){
-            reports.add(new Report(ReportType.ERROR, Stage.SEMANTIC,Integer.valueOf(jmmNode.get("line")),
-                    Integer.valueOf(jmmNode.get("col")),"Operand of operation must be of type Int, got: " + visited));
-            return;
-        }*/
-
         else if (visited.equals("int[]")){
             reports.add(new Report(ReportType.ERROR, Stage.SEMANTIC,Integer.valueOf(jmmNode.get("line")),
                     Integer.valueOf(jmmNode.get("col")),"Array cannot be used in arithmetic operations."));
@@ -495,7 +462,7 @@ public class SemanticVerification extends PreorderJmmVisitor<MySymbolTable,Strin
         if (!jmmNode.getAncestor("DotExp").isPresent() && !jmmNode.getAncestor("NewExp").isPresent()){
 
             Type varType = AstUtils.getVarType(varName, jmmNode.getAncestor("MethodDecl").get().getJmmChild(1).get("value"), symbolTable);
-            //System.out.println("var: " + jmmNode.get("value"));
+
             if (varType == null){
                 reports.add(new Report(ReportType.ERROR, Stage.SEMANTIC,Integer.valueOf(jmmNode.get("line")),
                         Integer.valueOf(jmmNode.get("col")),"Variable " + varName + " not declared."));
@@ -533,10 +500,8 @@ public class SemanticVerification extends PreorderJmmVisitor<MySymbolTable,Strin
         Type methodReturnType = symbolTable.getReturnType(methodName);
         String actualReturnType = visit(jmmNode.getJmmChild(0),symbolTable);
 
-        //System.out.println("Expected return type: " + methodReturnType + "; Actual return type: " + actualReturnType);
-
         if (actualReturnType.equals("dot")){
-            System.out.println("Return pode ser válido");
+            //System.out.println("Return pode ser válido");
         }
         else if (!((methodReturnType.isArray() && actualReturnType.equals("int[]")) ||
                 (!methodReturnType.isArray() && methodReturnType.getName().equals(actualReturnType)))){
@@ -564,12 +529,6 @@ public class SemanticVerification extends PreorderJmmVisitor<MySymbolTable,Strin
         var arrayIndex = arrayExp.getJmmChild(1);
 
         String indexType = visit(arrayIndex, symbolTable);
-
-        if (indexType == null){
-            System.out.println("null");
-        }
-        else
-            System.out.println(indexType);
 
         if (!(indexType.equals("int") || indexType.equals("dot"))){
             reports.add(new Report(ReportType.ERROR, Stage.SEMANTIC,Integer.valueOf(arrayExp.get("line")),

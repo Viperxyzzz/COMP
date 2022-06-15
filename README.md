@@ -4,30 +4,71 @@ For this project, you need to install [Java](https://jdk.java.net/), [Gradle](ht
 
 ## GROUP: <identifier of the group>
 
-(Names, numbers, self assessment, and contribution of the members of the group to the project according to:)
-NAME1: <name>, NR1: <student number>, GRADE1: <0 to 20 value>, CONTRIBUTION1: <0 to 100 %>
-NAME2: <name>, NR2: < student number >, GRADE2: <0 to 20 value>, CONTRIBUTION2: <0 to 100 %>
+NAME1: Guilherme Garrido, NR1: 201905407, GRADE1: 18, CONTRIBUTION1: 25%
+
+NAME2: Luís Lucas, NR2: 201904624, GRADE2: 17, CONTRIBUTION2: 25%
+
+NAME3: Óscar Esteves, NR3: 201906834, GRADE3: 18, CONTRIBUTION3: 25%
+
+NAME4: Pedro Nunes, NR4: 201905396, GRADE4: 18, CONTRIBUTION4: 25%
+
 ...
-(Note that the sum of the CONTRIBUTION? values must be 100 %)
+
+GLOBAL Grade of the project: 17
 
 
-GLOBAL Grade of the project: <0 to 20>
+## SUMMARY:
 
+This tool translates programs written in Java-- into java bytecodes, passing through different stages. First, it detectes syntactic errors using a well defined grammar. Then it generates an AST that is semantically analysed, producing a symbol table. From the AST, Ollir code is generated and, finally, from that, the jasmin code is produced.
 
-## SUMMARY: (Describe what your tool does and its main features.)
+This Java-- compiler can be used by running `gradle installDist`, which compiles and installs the program, and `comp2022-5a.bat filename.jmm` to run it.
 
+## SEMANTIC ANALYSIS: 
 
-## SEMANTIC ANALYSIS: (Refer the semantic rules implemented by your tool.)
+Semantic rules implemented:
+
+* Variables must be declared
+* Operands must be compatible with the operation (int for arithmetic and comparisons, boolean for logical)
+* Expressions in conditions must return a boolean
+* Negation (!) can only be used for boolean expressions
+* Length can only be used for arrays
+* Arrays cannot be used in arithmetic operations
+* Array access must be done over an array
+* Array access index must be an expression of type int
+* Non-static symbols can´t be accessed from static methods
+* Assignments can only be done to variables (left-hand side must a variable)
+* The type of the assignee must be compatible with the assigned
+* Returned expression type of a method must be compatible with the return type defined in the method declaration
+* When calling methods of the class declared in the code, types and number of arguments in the call must compatible with the ones in the method declaration
+* Calling undeclared methods of the class declared in the code can only be done if the class extends another class
+* Calling undeclared methods from other class can only be done if the class is imported
 
 
 ## CODE GENERATION: (describe how the code generation of your tool works and identify the possible problems your tool has regarding code generation.)
 
+### Abstract Syntax Tree - AST
+
+If the code respects the defined grammar, an AST is generated, structuring everything needed in the following stages, like types, declarations, expressions, operations and identifiers. This information is used for building the symbol table, semantic analysis and for generating the Ollir code.
+
+### Ollir
+
+
+### Jasmin
+
+
+
 
 ## PROS: (Identify the most positive aspects of your tool)
 
+We were able to write a grammar that, along with semantic analysis, detects any Java-- language error, whether syntactic or semantic. 
+
+We built a functional and well-structured AST that contains everything needed in the next phases, respecting every rule, like operator precedence.
+
+**Falar sobre o q funciona no ollir e no jasmin.**
 
 ## CONS: (Identify the most negative aspects of your tool)
 
+**O que não foi feito**
 
 ## Project setup
 
