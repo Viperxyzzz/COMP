@@ -21,7 +21,7 @@ GLOBAL Grade of the project: 17
 
 This tool translates programs written in Java-- into java bytecodes, passing through different stages. First, it detectes syntactic errors using a well defined grammar. Then it generates an AST that is semantically analysed, producing a symbol table. From the AST, Ollir code is generated and, finally, from that, the jasmin code is produced.
 
-This Java-- compiler can be used by running `gradle installDist`, which compiles and installs the program, and `comp2022-5a.bat filename.jmm` to run it.
+This Java-- compiler can be used by running `gradle installDist`, which compiles and installs the program, and `comp2022-5a [-r=<num>] [-o] [-d] -i=<input_file.jmm>` to run it.
 
 ## SEMANTIC ANALYSIS: 
 
@@ -79,12 +79,15 @@ We were able to write a grammar that, along with semantic analysis, detects any 
 
 We built a functional and well-structured AST that contains everything needed in the next phases, respecting every rule, like operator precedence.
 
-The ollir is well functional, three adresses parsing works well and every other feature was implemented sucesfully.
-**Falar sobre o q funciona no ollir e no jasmin.**
+The ollir is well functional, three adresses parsing works well and every other feature was implemented successfully.
+
+**Falar sobre o q funciona no jasmin.**
 
 ## CONS: (Identify the most negative aspects of your tool)
 
-OLLIR Code could be more modular, it was scalable but we repeat code, specially in the types identification. Other negative aspect is the creation of a temporary variable without deciding if it's really needed or not 
+OLLIR Code could be more modular, it was scalable but we repeat code, specially in the types identification. Other negative aspect is the creation of a temporary variable without deciding if it's really needed or not.
+
+**Falar sobre o q n funciona no jasmin
 
 ## Project setup
 
