@@ -19,6 +19,7 @@ public class OllirGenerator extends AJmmVisitor<String, Code> {
     private final StringBuilder code;
     private final SymbolTable mySymbolTable;
     private int ifIndex;
+    private int maxIf;
     private String currentMethodname;
     private HashMap<String, String> temporaryTypeHashMap;
     public OllirGenerator(SymbolTable mySymbolTable){
@@ -27,6 +28,7 @@ public class OllirGenerator extends AJmmVisitor<String, Code> {
         this.currentMethodname = "";
         this.temporaryTypeHashMap = new HashMap<String, String>();
         this.ifIndex = 0;
+        this.maxIf = 0;
 
         addVisit("Start",this::programVisit);
         addVisit("ClassDeclaration", this::classDeclVisit);
@@ -566,7 +568,14 @@ public class OllirGenerator extends AJmmVisitor<String, Code> {
 
     private Code ifStatementVisit(JmmNode node, String dummy){
         var lhs = visit(node.getJmmChild(0),dummy);
+
         this.ifIndex += 1;
+        if(this.ifIndex <= this.maxIf){
+            this.ifIndex = maxIf + 1;
+        }
+        if(this.ifIndex > this.maxIf){
+            maxIf = ifIndex;
+        }
         code.append(lhs.prefix);
         var type = this.temporaryTypeHashMap.get(lhs.code);
         type = "bool";
