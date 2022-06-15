@@ -5,6 +5,7 @@ import org.specs.comp.ollir.Type;
 import pt.up.fe.specs.util.classmap.FunctionClassMap;
 import pt.up.fe.specs.util.exceptions.NotImplementedException;
 
+import java.util.ArrayList;
 import java.util.stream.Collectors;
 
 public class OllirToJasmin {
@@ -14,11 +15,14 @@ public class OllirToJasmin {
     private Method currentMethod;
 
     private String className;
-    private int ifIndex;
+    private int conditionals;
+
+    private int comparisons;
+
+
     public OllirToJasmin (ClassUnit classUnit){
         this.classUnit = classUnit;
         this.currentMethod = null;
-        this.ifIndex = 0;
 
         instructionMap = new FunctionClassMap<>();
         instructionMap.put(CallInstruction.class, this::getCode);
@@ -31,6 +35,7 @@ public class OllirToJasmin {
         instructionMap.put(SingleOpCondInstruction.class, this::getCode);
         instructionMap.put(CondBranchInstruction.class, this::getCode);
         instructionMap.put(GotoInstruction.class, this::getCode);
+        instructionMap.put(UnaryOpInstruction.class, this::getCode);
     }
 
     public String getFullyQualifiedName(String className){
@@ -82,7 +87,7 @@ public class OllirToJasmin {
 
         code.append(getConstructor(superQualifiedName)).append("\n\n");
 
-        for (var method : classUnit.getMethods()){
+        for (Method method : classUnit.getMethods()){
             code.append(getCode(method) + "\n");
             //System.out.println("\nMethod is:" + method.getMethodName() + "\n");
         }
@@ -119,7 +124,9 @@ public class OllirToJasmin {
 
     public String getCode(Method method){
 
-        ifIndex = 0;
+        conditionals = 0;
+        comparisons = 0;
+
 
         if (method.isConstructMethod()){
             return "";
@@ -145,18 +152,27 @@ public class OllirToJasmin {
         code.append("\n");
 
 
+        ArrayList<Integer> locals = new ArrayList<>();
+        for (Descriptor d : method.getVarTable().values()) {
+            if (!locals.contains(d.getVirtualReg()))
+                locals.add(d.getVirtualReg());
+        }
+        if (!locals.contains(0) && !method.isConstructMethod())
+            locals.add(0);
 
-        code.append(".limit stack 99\n");
-        code.append(".limit locals 99\n");
+        code.append("\t.limit stack 99\n");
+        code.append("\t.limit locals ").append(locals.size()).append("\n\n");
 
 
-        for (var inst : method.getInstructions()){
+        for (Instruction inst : method.getInstructions()){
 
             for (var label : method.getLabels().keySet()) {
                 if (method.getLabels().get(label) == inst) {
                     code.append(label + ":\n");
                 }
             }
+
+            //code.append("entering inst: " + inst.getInstType() + " ");
 
             //testing
             //code.append("Inst of type: \n" + inst.getInstType().toString() + "\n");
@@ -217,7 +233,7 @@ public class OllirToJasmin {
         var code = new StringBuilder();
 
 
-        //code.append("loading:\n");
+        //code.append("singleOpInst load: ");
         code.append(generateLoadInstruction(inst.getSingleOperand()));
         //code.append("\n");
 
@@ -229,33 +245,45 @@ public class OllirToJasmin {
 
 
 
-        //code.append("BinaryOpInst op type is:\n" + inst.getOperation().getOpType().toString() + "\n");
+        //code.append("BinaryOpInst op type is: " + inst.getOperation().getOpType().toString() + "\n");
 
         switch (inst.getOperation().getOpType()) {
+            /*case ANDB:
+                code.append(generateLoadInstruction(inst.getOperands().get(0)));
+                code.append(generateLoadInstruction(inst.getOperands().get(1)));
+                code.append("imul\n");
+
+             */
             case ANDB:
-                ifIndex++;
+                conditionals++;
+                //code.append("binaryOpInst andb load left: ");
                 code.append(generateLoadInstruction(inst.getLeftOperand()));
-                code.append("ifeq FALSE_" + ifIndex + "\n");
+                code.append("ifeq FALSE_" + conditionals + "\n");
+                //code.append("binaryOpInst andb load right: ");
                 code.append(generateLoadInstruction(inst.getRightOperand()));
-                code.append("ifeq FALSE_" + ifIndex + "\n");
+                code.append("ifeq FALSE_" + conditionals + "\n");
                 code.append("iconst_1" + "\n");
-                code.append("goto STORE_" + ifIndex + "\n");
-                code.append("FALSE_" + ifIndex + ":\n");
+                code.append("goto STORE_" + conditionals + "\n");
+                code.append("FALSE_" + conditionals + ":\n");
                 code.append("iconst_0" + "\n");
-                code.append("STORE_" + ifIndex + ":\n");
+                code.append("STORE_" + conditionals + ":\n");
                 break;
+
             case LTH:
-                ifIndex++;
+                conditionals++;
+                //code.append("binaryOpInst lth load left: ");
                 code.append(generateLoadInstruction(inst.getLeftOperand()));
+                //code.append("binaryOpInst lth load right: ");
                 code.append(generateLoadInstruction(inst.getRightOperand()));
-                code.append("if_icmplt TRUE_" + ifIndex + "\n");
+                code.append("if_icmplt TRUE_" + conditionals + "\n");
                 code.append("iconst_0\n");
-                code.append("goto STORE_" + ifIndex + "\n");
-                code.append("TRUE_" + ifIndex + ":\n");
+                code.append("goto STORE_" + conditionals + "\n");
+                code.append("TRUE_" + conditionals + ":\n");
                 code.append("iconst_1\n");
-                code.append("STORE_" + ifIndex + ":\n");
+                code.append("STORE_" + conditionals + ":\n");
                 break;
             default:
+                //code.append("binaryOpInst default load left: ");
                 code.append(generateLoadInstruction(inst.getLeftOperand()));
                 code.append(getCodeUnaryOpInstruction(inst));
                 return code.toString();
@@ -270,8 +298,10 @@ public class OllirToJasmin {
         int lhsCurrent = currentMethod.getVarTable().get(((Operand)inst.getDest()).getName()).getVirtualReg();
 
 
-        //code.append("before map:\n"+ inst.getRhs().getInstType().toString() + "\n");
+        //code.append("before map: "+ inst.getRhs().getInstType().toString() + "\n");
         code.append(instructionMap.apply(inst.getRhs()));
+
+
         //code.append("after map\n");
 
         switch (inst.getTypeOfAssign().getTypeOfElement()) {
@@ -287,6 +317,7 @@ public class OllirToJasmin {
             case ARRAYREF:
                 code.append("iastore");
 
+
                 break;
 
             default:
@@ -299,7 +330,7 @@ public class OllirToJasmin {
         return code.toString();
     }
 
-    public String generateLoadInstruction(Element element){
+    public String generateLoadInstruction(Element element) {
         var code = new StringBuilder();
 
         if (element.isLiteral()) {
@@ -308,6 +339,7 @@ public class OllirToJasmin {
         }
 
         else {
+            //code.append("var " + element.getType() + " isn't literal\n");
             if(currentMethod.getVarTable().isEmpty()){
                 code.append("");
                 return code.toString();
@@ -367,6 +399,8 @@ public class OllirToJasmin {
 
         else { code.append("return\n"); }
 
+
+
         return code.toString();
     }
 
@@ -392,10 +426,13 @@ public class OllirToJasmin {
     private String getCode(CondBranchInstruction inst){
         var code = new StringBuilder();
 
+        comparisons++;
+
 
         //code.append("condition is:\n" + inst.getCondition().getInstType().toString() + "\n");
         code.append(instructionMap.apply(inst.getCondition()));
-        code.append("ifne THEN_" + ifIndex + "\n");
+        code.append("ifne THEN_" + comparisons + "\n");
+
 
         return code.toString();
     }
@@ -405,9 +442,23 @@ public class OllirToJasmin {
         return ("goto " + inst.getLabel() + "\n");
     }
 
+    private String getCode(UnaryOpInstruction inst) {
+        var code = new StringBuilder();
+
+        //code.append("unaryOpInst load right: ");
+        code.append(generateLoadInstruction(inst.getOperand()));
+        code.append("\n");
+        code.append("i");
+        code.append(inst.getOperation().getOpType().toString().toLowerCase());
+        code.append("\n");
+
+        return code.toString();
+    }
+
     private String getCodeUnaryOpInstruction (BinaryOpInstruction inst) {
         var code = new StringBuilder();
 
+        //code.append("unaryOpInst load right: ");
         code.append(generateLoadInstruction(inst.getRightOperand()));
         code.append("\n");
         code.append("i");
@@ -424,6 +475,7 @@ public class OllirToJasmin {
 
         for (Element e : inst.getListOfOperands())
             code.append(generateLoadInstruction(e));
+
 
         var className = ((ClassType)inst.getFirstArg().getType()).getName();
         var methodCall = ((LiteralElement)inst.getSecondArg()).getLiteral().replace("\"", "");
@@ -478,6 +530,8 @@ public class OllirToJasmin {
         //code.append(getCodeInvokeSpecial(inst));
 
          */
+
+
         return code.toString();
     }
 
@@ -537,6 +591,7 @@ public class OllirToJasmin {
         code.append(getJasminType(inst.getReturnType()));
         code.append("\n");
 
+
         return code.toString();
     }
 
@@ -585,6 +640,8 @@ public class OllirToJasmin {
                 throw new NotImplementedException(type);
         }
     }
+
+
 }
 
 

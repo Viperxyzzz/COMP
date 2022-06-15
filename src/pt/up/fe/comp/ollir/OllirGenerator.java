@@ -334,36 +334,36 @@ public class OllirGenerator extends AJmmVisitor<String, Code> {
                 prefixCode += argCode.prefix;
                 var returnType = AstUtils.getVarType(argCode.code,this.currentMethodname,(MySymbolTable) mySymbolTable);
                 var returnTypeString = "";
-               if (returnType != null)
-                        returnTypeString = "." + OllirUtils.getCode(returnType);
-               else {
+                if (returnType != null)
+                    returnTypeString = "." + OllirUtils.getCode(returnType);
+                else {
                     var paramType = this.temporaryTypeHashMap.get(argCode.code);
 
-                   if(paramType == null) {
-                       switch(arg.getKind()){
-                           case "TrueId":
-                           case "FalseId":
-                               returnTypeString = ".bool";
-                               break;
-                           case "IdInt":
-                               returnTypeString = ".i32";
-                               break;
-                           default:
-                               returnTypeString =".V";
-                       }
-                   }
-                   else
-                       returnTypeString = "." + paramType;
-               }
+                    if(paramType == null) {
+                        switch(arg.getKind()){
+                            case "TrueId":
+                            case "FalseId":
+                                returnTypeString = ".bool";
+                                break;
+                            case "IdInt":
+                                returnTypeString = ".i32";
+                                break;
+                            default:
+                                returnTypeString =".V";
+                        }
+                    }
+                    else
+                        returnTypeString = "." + paramType;
+                }
 
-               if(arg.getKind().equals("ArrayExp")){
-                   var temp = OllirUtils.createTemp();
-                   prefixCode += temp + returnTypeString + " :=" + returnTypeString + " " + argCode.code + returnTypeString + ";\n";
-                   this.temporaryTypeHashMap.put(temp,returnTypeString.substring(1));
-                   finalCode += "," + temp + returnTypeString;
-               }
-               else
-                finalCode += "," + argCode.code + returnTypeString;
+                if(arg.getKind().equals("ArrayExp")){
+                    var temp = OllirUtils.createTemp();
+                    prefixCode += temp + returnTypeString + " :=" + returnTypeString + " " + argCode.code + returnTypeString + ";\n";
+                    this.temporaryTypeHashMap.put(temp,returnTypeString.substring(1));
+                    finalCode += "," + temp + returnTypeString;
+                }
+                else
+                    finalCode += "," + argCode.code + returnTypeString;
             }
         }
         var returnType = mySymbolTable.getReturnType(methodName);
@@ -694,9 +694,7 @@ public class OllirGenerator extends AJmmVisitor<String, Code> {
             thisCode.prefix += nodeCode.prefix;
         }
         thisCode.prefix += "goto Loop;\n";
-        int nMethods = node.getJmmParent().getJmmParent().getNumChildren();
-        if(nMethods - 1 != node.getJmmParent().getIndexOfSelf())
-            thisCode.prefix += "EndLoop:\n";
+        thisCode.prefix += "EndLoop:\n";
         return thisCode;
     }
 
