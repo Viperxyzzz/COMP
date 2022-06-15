@@ -298,6 +298,8 @@ public class OllirGenerator extends AJmmVisitor<String, Code> {
         thisCode.prefix = temp + "." + returnType + " :=." + returnType + " " + "arraylength(" + varName +".array." + returnType + ").i32;\n";
         thisCode.code = temp;
 
+        this.temporaryTypeHashMap.put(temp,"i32");
+
         return thisCode;
     }
 
@@ -350,6 +352,7 @@ public class OllirGenerator extends AJmmVisitor<String, Code> {
                                 break;
                             default:
                                 returnTypeString =".V";
+                                break;
                         }
                     }
                     else
