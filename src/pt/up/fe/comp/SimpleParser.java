@@ -49,7 +49,10 @@ public class SimpleParser implements JmmParser {
 
             //var root = ((JmmNode) parser.rootNode()).sanitize();
 
-            System.out.println(((JmmNode)root).sanitize().toTree());
+            if (config.get("debug") == "true")
+                System.out.println(((JmmNode)root).sanitize().toTree());
+            else
+                System.out.println("Generating AST");
 
             if (!(root instanceof JmmNode)) {
                 return JmmParserResult.newError(new Report(ReportType.WARNING, Stage.SYNTATIC, -1,

@@ -33,7 +33,12 @@ public class JmmOptimizer implements JmmOptimization {
                 "temp1.V :=.V invokestatic(io,\"println\",a.V).V;\n" +
                 "}\n" +
                 "}";*/
-        System.out.print("OLLIR CODE :\n" + ollirCode);
+
+        if (semanticsResult.getConfig().get("debug") == "true")
+            System.out.print("OLLIR CODE :\n" + ollirCode);
+        else
+            System.out.println("Generating Ollir");
+        
         return new OllirResult(semanticsResult,ollirCode, Collections.emptyList());
     }
 }

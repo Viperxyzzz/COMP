@@ -21,21 +21,48 @@ public class Launcher {
         SpecsLogs.info("Executing with args: " + Arrays.toString(args));
 
         // read the input code
-        if (args.length != 1) {
-            throw new RuntimeException("Expected a single argument, a path to an existing input file.");
+        if (args.length > 4){
+            throw new RuntimeException("Expected four arguments maximum, usage: comp2022-5a [-r=<num>] [-o] [-d] -i=<input_file.jmm>");
         }
-        File inputFile = new File(args[0]);
+
+        String fileArg = args[args.length - 1];
+
+        if (!fileArg.contains("-i=")) {
+            throw new RuntimeException("Filename must be preceded by '-i=', usage: comp2022-5a [-r=<num>] [-o] [-d] -i=<input_file.jmm>");
+        }
+
+        String filename = fileArg.substring(3);
+
+        File inputFile = new File(filename);
         if (!inputFile.isFile()) {
-            throw new RuntimeException("Expected a path to an existing input file, got '" + args[0] + "'.");
+            throw new RuntimeException("Expected a path to an existing input file, got '" + filename + "'.");
         }
         String input = SpecsIo.read(inputFile);
 
         // Create config
         Map<String, String> config = new HashMap<>();
-        config.put("inputFile", args[0]);
-        config.put("optimize", "false");
-        config.put("registerAllocation", "-1");
-        config.put("debug", "false");
+
+        config.put("inputFile", filename);
+        if (args[0].contains("-r")) {
+            config.put("registerAllocation", args[0].substring(3));
+            // Not implemented
+        }
+        else {
+            config.put("registerAllocation", "-1");
+        }
+        if (Arrays.asList(args).contains("-o")) {
+            config.put("optimize", "true");
+            // Not implemented
+        }
+        else {
+            config.put("optimize", "false");
+        }
+        if (Arrays.asList(args).contains("-d")) {
+            config.put("debug", "true");
+        }
+        else {
+            config.put("debug", "false");
+        }
 
         // Instantiate JmmParser
         SimpleParser parser = new SimpleParser();
@@ -63,7 +90,7 @@ public class Launcher {
 
         // Check if there are parsing errors
         TestUtils.noErrors(optimizationResult.getReports());
-        /*
+
         // Instantiate JasminBackend
         JasminEmitter jasminEmitter = new JasminEmitter();
 
@@ -72,10 +99,6 @@ public class Launcher {
 
         // Check if there are parsing errors
         TestUtils.noErrors(backendResult.getReports());
-
-        // ... add remaining stages
-        */
-
 
     }
 
