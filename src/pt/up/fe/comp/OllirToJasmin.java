@@ -122,6 +122,8 @@ public class OllirToJasmin {
 
     public String getCode(Method method){
 
+        ifIndex = 0;
+
         if (method.isConstructMethod()){
             return "";
         }
@@ -221,9 +223,10 @@ public class OllirToJasmin {
     public String getCode(SingleOpInstruction inst) {
         var code = new StringBuilder();
 
-        code.append(generateLoadInstruction(inst.getSingleOperand()));
 
-        inst.getSingleOperand().getType();
+        //code.append("loading:\n");
+        code.append(generateLoadInstruction(inst.getSingleOperand()));
+        //code.append("\n");
 
         return code.toString();
     }
@@ -231,12 +234,13 @@ public class OllirToJasmin {
     public String getCode(BinaryOpInstruction inst){
         var code = new StringBuilder();
 
-        ifIndex++;
+
 
         //code.append("BinaryOpInst op type is:\n" + inst.getOperation().getOpType().toString() + "\n");
 
         switch (inst.getOperation().getOpType()) {
             case ANDB:
+                ifIndex++;
                 code.append(generateLoadInstruction(inst.getLeftOperand()));
                 code.append("ifeq FALSE_" + ifIndex + "\n");
                 code.append(generateLoadInstruction(inst.getRightOperand()));
@@ -245,6 +249,17 @@ public class OllirToJasmin {
                 code.append("goto STORE_" + ifIndex + "\n");
                 code.append("FALSE_" + ifIndex + ":\n");
                 code.append("iconst_0" + "\n");
+                code.append("STORE_" + ifIndex + ":\n");
+                break;
+            case LTH:
+                ifIndex++;
+                code.append(generateLoadInstruction(inst.getLeftOperand()));
+                code.append(generateLoadInstruction(inst.getRightOperand()));
+                code.append("if_icmplt TRUE_" + ifIndex + "\n");
+                code.append("iconst_0\n");
+                code.append("goto STORE_" + ifIndex + "\n");
+                code.append("TRUE_" + ifIndex + ":\n");
+                code.append("iconst_1\n");
                 code.append("STORE_" + ifIndex + ":\n");
                 break;
             default:
@@ -384,6 +399,8 @@ public class OllirToJasmin {
     private String getCode(CondBranchInstruction inst){
         var code = new StringBuilder();
 
+
+        //code.append("condition is:\n" + inst.getCondition().getInstType().toString() + "\n");
         code.append(instructionMap.apply(inst.getCondition()));
         code.append("ifne THEN_" + ifIndex + "\n");
 
