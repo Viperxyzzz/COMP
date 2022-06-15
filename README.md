@@ -23,7 +23,25 @@ This tool translates programs written in Java-- into java bytecodes, passing thr
 
 This Java-- compiler can be used by running `gradle installDist`, which compiles and installs the program, and `comp2022-5a.bat filename.jmm` to run it.
 
-## SEMANTIC ANALYSIS: (Refer the semantic rules implemented by your tool.)
+## SEMANTIC ANALYSIS: 
+
+Semantic rules implemented:
+
+* Variables must be declared
+* Operands must be compatible with the operation (int for arithmetic and comparisons, boolean for logical)
+* Expressions in conditions must return a boolean
+* Negation (!) can only be used for boolean expressions
+* Length can only be used for arrays
+* Arrays cannot be be used in arithmetic operations
+* Array access must be done over an array
+* Array access index must be an expression of type int
+* Non-static symbols can´t be accessed from static methods
+* Assignments can only be done to variables
+* The type of the assignee must be compatible with the assigned
+* Returned expression type of a method must be compatible with the return type defined in the method declaration
+* When calling methods of the class declared in the code, types and number of arguments in the call must compatible with the ones in the method declaration
+* Calling undeclared methods of the class declared in the code can only be done if the class extends another class
+* Calling undeclared methods from other class can only be done if the class is imported
 
 
 ## CODE GENERATION: (describe how the code generation of your tool works and identify the possible problems your tool has regarding code generation.)
