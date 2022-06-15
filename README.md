@@ -95,7 +95,7 @@ The jasmin code is for the most part functional and follows the specifications.
 
 OLLIR Code could be more modular, it was scalable but we repeat code, specially in the types identification. Other negative aspect is the creation of a temporary variable without deciding if it's really needed or not.
 
-Due to some constraints in time we were not able to sucesfully implement arrays.
+Due to some constraints in time we were not able to sucesfully implement arrays on Jasmin.
 
 The tool has no optimizations or register allocation.
 
