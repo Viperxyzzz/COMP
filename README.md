@@ -52,6 +52,21 @@ If the code respects the defined grammar, an AST is generated, structuring every
 
 ### Ollir
 
+Using both the symbol table and the AST we generate OLLIR code. The main OLLIR generator is OllirGenerator with help of an auxiliar class, OllirUtils. Our generator is able to:
+
+* Class Declarations
+* Method Declarations
+* Parsing to OLLIR data types
+* Arithmetics
+* Logical Operations
+* Method Calls
+* While and If statements
+* Arrays creation and indexing
+* Three adresses parsing
+* Creation of temporary variables
+
+Regarding the creation of temporary variables, they are always created whereas they're needed or not.
+
 
 ### Jasmin
 
@@ -64,11 +79,12 @@ We were able to write a grammar that, along with semantic analysis, detects any 
 
 We built a functional and well-structured AST that contains everything needed in the next phases, respecting every rule, like operator precedence.
 
+The ollir is well functional, three adresses parsing works well and every other feature was implemented sucesfully.
 **Falar sobre o q funciona no ollir e no jasmin.**
 
 ## CONS: (Identify the most negative aspects of your tool)
 
-**O que não foi feito**
+OLLIR Code could be more modular, it was scalable but we repeat code, specially in the types identification. Other negative aspect is the creation of a temporary variable without deciding if it's really needed or not 
 
 ## Project setup
 
