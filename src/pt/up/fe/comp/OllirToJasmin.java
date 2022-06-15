@@ -34,7 +34,6 @@ public class OllirToJasmin {
         instructionMap.put(SingleOpCondInstruction.class, this::getCode);
         instructionMap.put(CondBranchInstruction.class, this::getCode);
         instructionMap.put(GotoInstruction.class, this::getCode);
-        instructionMap.put(UnaryOpInstruction.class, this::getCode);
     }
 
     public String getFullyQualifiedName(String className){
@@ -55,7 +54,7 @@ public class OllirToJasmin {
             }
         }
 
-        System.out.println("STRING BUGGY: " + className);
+        //System.out.println("STRING BUGGY: " + className);
 
         return "java/lang/Object";
     }
@@ -158,14 +157,18 @@ public class OllirToJasmin {
                 continue;
             }
 
-            code.append(getCode(inst));
             for (var label : method.getLabels().keySet()) {
                 if (method.getLabels().get(label) == inst) {
                     code.append(label + ":\n");
                 }
             }
 
-            //System.out.println("\nCode for inst " + inst.getInstType().toString() + " is:\n" + getCode(inst) + "\n");
+            //testing
+            //code.append("Inst of type: \n" + inst.getInstType().toString() + "\n");
+
+            code.append(getCode(inst));
+
+
         }
 
         code.append(".end method\n\n");
@@ -230,6 +233,8 @@ public class OllirToJasmin {
 
         ifIndex++;
 
+        //code.append("BinaryOpInst op type is:\n" + inst.getOperation().getOpType().toString() + "\n");
+
         switch (inst.getOperation().getOpType()) {
             case ANDB:
                 code.append(generateLoadInstruction(inst.getLeftOperand()));
@@ -244,7 +249,7 @@ public class OllirToJasmin {
                 break;
             default:
                 code.append(generateLoadInstruction(inst.getLeftOperand()));
-                code.append(generateLoadInstruction(inst.getRightOperand()));
+                code.append(getCodeUnaryOpInstruction(inst));
                 return code.toString();
         }
 
@@ -256,7 +261,10 @@ public class OllirToJasmin {
 
         int lhsCurrent = currentMethod.getVarTable().get(((Operand)inst.getDest()).getName()).getVirtualReg();
 
+
+        //code.append("before map:\n"+ inst.getRhs().getInstType().toString() + "\n");
         code.append(instructionMap.apply(inst.getRhs()));
+        //code.append("after map\n");
 
         switch (inst.getTypeOfAssign().getTypeOfElement()) {
             case INT32:
@@ -376,8 +384,6 @@ public class OllirToJasmin {
     private String getCode(CondBranchInstruction inst){
         var code = new StringBuilder();
 
-        ifIndex++;
-
         code.append(instructionMap.apply(inst.getCondition()));
         code.append("ifne THEN_" + ifIndex + "\n");
 
@@ -385,10 +391,18 @@ public class OllirToJasmin {
     }
 
 
-    private String getCode(GotoInstruction inst){ return ("goto " + inst.getLabel() + "\n"); }
+    private String getCode(GotoInstruction inst){
+        return ("goto " + inst.getLabel() + "\n");
+    }
 
-    private String getCode(UnaryOpInstruction inst) {
+    private String getCodeUnaryOpInstruction (BinaryOpInstruction inst) {
         var code = new StringBuilder();
+
+        code.append(generateLoadInstruction(inst.getRightOperand()));
+        code.append("\n");
+        code.append("i");
+        code.append(inst.getOperation().getOpType().toString().toLowerCase());
+        code.append("\n");
 
         return code.toString();
     }
@@ -500,7 +514,6 @@ public class OllirToJasmin {
     }
 
     public String getJasminType(Type type){
-        System.out.println(type.getTypeOfElement() + "\n");
         if (type instanceof ArrayType){
             return "[" + getJasminType(((ArrayType) type).getTypeOfElements());
         }

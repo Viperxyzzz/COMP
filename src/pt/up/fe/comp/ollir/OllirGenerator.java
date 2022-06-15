@@ -584,11 +584,23 @@ public class OllirGenerator extends AJmmVisitor<String, Code> {
             }
 
         }*/
-        code.append("if (" + lhs.code + "." + type + ") goto else_"+ ifIndex + ";\n");
+        code.append("if (" + lhs.code + "." + type + ") goto THEN_"+ ifIndex + ";\n");
         var nodeList = node.getChildren();
         for(int i = 1; i < node.getNumChildren(); i++){
-            var nodeCode = visit(nodeList.get(i));
-            code.append(nodeCode.prefix);
+            if(nodeList.get(i).getKind().equals("ElseStatement")){
+                //System.out.println("yup");
+                var elseList = nodeList.get(i).getChildren();
+                System.out.println(nodeList.get(i));
+                System.out.println("ELSE LIST " + elseList);
+                for(int j = 0; j < nodeList.get(i).getNumChildren();j++){
+                    System.out.println("DEBUG " + elseList.get(j));
+                    var nodeCode = visit(elseList.get(j));
+                    code.append(nodeCode.prefix);
+                }
+                var elseCode = visit(nodeList.get(i));
+                code.append(elseCode.prefix);
+            }
+
         }
         Code thisCode = new Code();
         thisCode.prefix = "";
@@ -598,8 +610,12 @@ public class OllirGenerator extends AJmmVisitor<String, Code> {
     }
     private Code elseStatementVisit(JmmNode node, String dummy){
         code.append("goto endif_"+ ifIndex + ";\n"); //this is really dumb but makes some sense
-        code.append("else_"+ifIndex+": \n");
-        for(var jmmNode : node.getChildren()){
+        code.append("THEN_"+ifIndex+": \n");
+        for(var jmmNode : node.getJmmParent().getChildren()){
+
+            if(jmmNode.getKind().equals("ElseStatement")){
+                continue;
+            }
             var nodeCode = visit(jmmNode);
             code.append(nodeCode.prefix);
         }
@@ -609,7 +625,7 @@ public class OllirGenerator extends AJmmVisitor<String, Code> {
 
 
         if(nMethods - 1 != node.getJmmParent().getIndexOfSelf())*/
-            code.append("endif_"+ifIndex+": \n");
+        code.append("endif_"+ifIndex+": \n");
         this.ifIndex-=1;
 
         Code thisCode = new Code();
