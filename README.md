@@ -32,11 +32,11 @@ Semantic rules implemented:
 * Expressions in conditions must return a boolean
 * Negation (!) can only be used for boolean expressions
 * Length can only be used for arrays
-* Arrays cannot be be used in arithmetic operations
+* Arrays cannot be used in arithmetic operations
 * Array access must be done over an array
 * Array access index must be an expression of type int
 * Non-static symbols can´t be accessed from static methods
-* Assignments can only be done to variables
+* Assignments can only be done to variables (left-hand side must a variable)
 * The type of the assignee must be compatible with the assigned
 * Returned expression type of a method must be compatible with the return type defined in the method declaration
 * When calling methods of the class declared in the code, types and number of arguments in the call must compatible with the ones in the method declaration
@@ -46,12 +46,29 @@ Semantic rules implemented:
 
 ## CODE GENERATION: (describe how the code generation of your tool works and identify the possible problems your tool has regarding code generation.)
 
+### Abstract Syntax Tree - AST
+
+If the code respects the defined grammar, an AST is generated, structuring everything needed in the following stages, like types, declarations, expressions, operations and identifiers. This information is used for building the symbol table, semantic analysis and for generating the Ollir code.
+
+### Ollir
+
+
+### Jasmin
+
+
+
 
 ## PROS: (Identify the most positive aspects of your tool)
 
+We were able to write a grammar that, along with semantic analysis, detects any Java-- language error, whether syntactic or semantic. 
+
+We built a functional and structured AST that contains everything needed in the next phases, respecting every rule, like operator precedence.
+
+**Falar sobre o q funciona no ollir e no jasmin.**
 
 ## CONS: (Identify the most negative aspects of your tool)
 
+**O que não foi feito**
 
 ## Project setup
 
