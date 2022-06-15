@@ -62,7 +62,7 @@ If the code respects the defined grammar, an AST is generated, structuring every
 
 We were able to write a grammar that, along with semantic analysis, detects any Java-- language error, whether syntactic or semantic. 
 
-We built a functional and structured AST that contains everything needed in the next phases, respecting every rule, like operator precedence.
+We built a functional and well-structured AST that contains everything needed in the next phases, respecting every rule, like operator precedence.
 
 **Falar sobre o q funciona no ollir e no jasmin.**
 
