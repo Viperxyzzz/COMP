@@ -132,7 +132,7 @@ public class OllirGenerator extends AJmmVisitor<String, Code> {
         }
         var stmts = methodDecl.getChildren().subList(lastParamIndex+2, methodDecl.getNumChildren());
         for (var stmt: stmts){
-            System.out.println(stmt.getKind());
+            //System.out.println(stmt.getKind());
             visit(stmt);
         }
         if(stmts.get(stmts.size()-1).getKind().equals("InitStatement")){
@@ -235,8 +235,8 @@ public class OllirGenerator extends AJmmVisitor<String, Code> {
         Code thisCode = new Code();
         thisCode.prefix = lhs.prefix;
         thisCode.prefix += rhs.prefix;
-        System.out.println("RHS PREFIX " + rhs.prefix);
-        System.out.println("RHS CODE " + rhs.code);
+        //System.out.println("RHS PREFIX " + rhs.prefix);
+        //System.out.println("RHS CODE " + rhs.code);
         String temp = OllirUtils.createTemp();
         thisCode.prefix += "putfield(this," + lhs.code + "." + type + "," + rhs.code + "." + type +").V;\n";
         thisCode.code = temp;
@@ -439,7 +439,7 @@ public class OllirGenerator extends AJmmVisitor<String, Code> {
         if(jmmNode.getJmmChild(1).getKind().equals("ArrayExp")){
             String temp2 = OllirUtils.createTemp();
             thisCode.prefix += temp2 + "." + type + " :=." + type + " " + rhs.code + "." + type + ";\n";
-            System.out.println("temp3.i32 :=.i32 3.i32; + " + thisCode.prefix);
+            //System.out.println("temp3.i32 :=.i32 3.i32; + " + thisCode.prefix);
             rhs.code = temp2;
             this.temporaryTypeHashMap.put(temp2,type);
         }
@@ -606,10 +606,10 @@ public class OllirGenerator extends AJmmVisitor<String, Code> {
             if(nodeList.get(i).getKind().equals("ElseStatement")){
                 //System.out.println("yup");
                 var elseList = nodeList.get(i).getChildren();
-                System.out.println(nodeList.get(i));
-                System.out.println("ELSE LIST " + elseList);
+                //System.out.println(nodeList.get(i));
+                //System.out.println("ELSE LIST " + elseList);
                 for(int j = 0; j < nodeList.get(i).getNumChildren();j++){
-                    System.out.println("DEBUG " + elseList.get(j));
+                    //System.out.println("DEBUG " + elseList.get(j));
                     var nodeCode = visit(elseList.get(j));
                     code.append(nodeCode.prefix);
                 }
