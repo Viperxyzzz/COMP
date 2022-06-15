@@ -683,32 +683,32 @@ public class OllirGenerator extends AJmmVisitor<String, Code> {
     private Code whileStatementVisit(JmmNode node, String dummy){
         var loop = visit(node.getJmmChild(0));
         Code thisCode = new Code();
-        whileIndex++;
-        if(this.whileIndex <= this.maxWhileIndex){
-            this.whileIndex = maxWhileIndex + 1;
+        ifIndex++;
+        if(this.ifIndex <= this.maxIf){
+            this.ifIndex = maxIf + 1;
         }
-        if(this.whileIndex > this.maxWhileIndex){
-            maxWhileIndex = whileIndex;
+        if(this.ifIndex > this.maxIf){
+            maxIf = ifIndex;
         }
         //Loop
-        thisCode.prefix = "Loop_" + whileIndex + ":\n";
+        thisCode.prefix = "Loop_" + ifIndex + ":\n";
         thisCode.prefix += loop.prefix;
 
 
 
-        thisCode.prefix += "if ( " + loop.code +".bool" + " ) goto THEN_" + whileIndex + ";\n";
-        thisCode.prefix += "goto EndLoop_" + whileIndex + ";\n";
+        thisCode.prefix += "if ( " + loop.code +".bool" + " ) goto THEN_" + ifIndex + ";\n";
+        thisCode.prefix += "goto EndLoop_" + ifIndex + ";\n";
 
         //Body
-        thisCode.prefix += "THEN_" + whileIndex + ":\n";
+        thisCode.prefix += "THEN_" + ifIndex + ":\n";
         var nodeList = node.getChildren();
         for(int i = 1; i < node.getNumChildren(); i++){
             var nodeCode = visit(nodeList.get(i));
             thisCode.prefix += nodeCode.prefix;
         }
-        thisCode.prefix += "goto Loop_" + whileIndex +";\n";
-        thisCode.prefix += "EndLoop_" + whileIndex + ":\n";
-        whileIndex--;
+        thisCode.prefix += "goto Loop_" + ifIndex +";\n";
+        thisCode.prefix += "EndLoop_" + ifIndex + ":\n";
+        ifIndex--;
         return thisCode;
     }
 
