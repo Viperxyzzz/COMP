@@ -67,6 +67,19 @@ Regarding the creation of temporary variables, they are always created whereas t
 
 ### Jasmin
 
+For jasmin we use OLLIR code. The main Jasmin generator is OllirToJasmin and with it we're able to parse to:
+
+* Class Declarations
+* Call Instructions
+* Return Instructions
+* Methods
+* Conditional Instructions
+* Arithmentic Instructions
+* Assignment Instructions
+* Limit Locals
+
+However we don't support:
+* Arrays
 
 
 ## PROS: (Identify the most positive aspects of your tool)
@@ -77,13 +90,13 @@ We built a functional and well-structured AST that contains everything needed in
 
 The ollir is well functional, three adresses parsing works well and every other feature was implemented successfully.
 
-**Falar sobre o q funciona no jasmin.**
+The jasmin code is for the most part functional and follows the specifications.
 
 ## CONS: (Identify the most negative aspects of your tool)
 
 OLLIR Code could be more modular, it was scalable but we repeat code, specially in the types identification. Other negative aspect is the creation of a temporary variable without deciding if it's really needed or not.
 
-**Falar sobre o q n funciona no jasmin**
+Due to some constraints in time we were not able to sucesfully implement arrays.
 
 The tool has no optimizations or register allocation.
 
