@@ -355,7 +355,7 @@ public class OllirGenerator extends AJmmVisitor<String, Code> {
                                 returnTypeString = ".i32";
                                 break;
                             default:
-                                returnTypeString =".V";
+                                returnTypeString =".i32";
                                 break;
                         }
                     }
