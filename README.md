@@ -12,7 +12,7 @@ NAME3: Óscar Esteves, NR3: 201906834, GRADE3: 18, CONTRIBUTION3: 25%
 
 NAME4: Pedro Nunes, NR4: 201905396, GRADE4: 18, CONTRIBUTION4: 25%
 
-GLOBAL Grade of the project: 17
+GLOBAL Grade of the project: 18
 
 
 ## SUMMARY:
